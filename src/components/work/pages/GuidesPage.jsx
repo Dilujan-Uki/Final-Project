@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import GuideCard from '../common/GuideCard';
 import FilterPanel from '../common/FilterPanel';
 import SearchBar from '../common/SearchBar';
-import { guides } from '../assets/data/guides';
+import { guides } from '../data/guides';  // Create this file
 import './GuidesPage.css';
 
 const GuidesPage = () => {

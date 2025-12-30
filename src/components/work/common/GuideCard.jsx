@@ -1,7 +1,7 @@
 // src/components/work/GuideCard.jsx
 import React from 'react';
 import { Link } from 'react-router-dom';
-import './styles/GuideCard.css';
+import '../common/GuideCard.css';
 
 const GuideCard = ({ guide }) => {
   return (

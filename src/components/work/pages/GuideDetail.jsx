@@ -4,17 +4,18 @@ import { useParams, useNavigate } from 'react-router-dom';
 import BookingForm from '../common/BookingForm';
 import Testimonials from '../common/Testimonials';
 import SriLankaMap from '../common/SriLankaMap';
-import { guides } from '../assets/data/guides';
+import { guides } from '../data/guides';
 import './GuideDetail.css';
+
 
 const GuideDetail = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState('overview');
-  
+
   // Find guide by ID
   const guide = guides.find(g => g.id === parseInt(id)) || guides[0];
-  
+
   const testimonials = [
     {
       id: 1,
@@ -81,11 +82,30 @@ const GuideDetail = () => {
           <div className="guide-hero-content">
             <div className="guide-profile">
               <div className="profile-image-container">
-                <img 
-                  src={require(`../assets/images/guides/${guide.image}`)} 
-                  alt={guide.name}
-                  className="profile-image"
-                />
+                <div className="profile-image-container">
+                  {/* FIXED: Replace require() with a placeholder div */}
+                  <div style={{
+                    width: '200px',
+                    height: '200px',
+                    borderRadius: '20px',
+                    background: `linear-gradient(135deg, #2c5f2d, #17B794)`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: 'white',
+                    fontSize: '3rem',
+                    border: '4px solid white',
+                    boxShadow: '0 10px 30px rgba(0, 0, 0, 0.2)'
+                  }}>
+                    {guide.name.split(' ')[0].charAt(0)}
+                  </div>
+                  {guide.verified && (
+                    <div className="verified-badge">
+                      <span className="verified-icon">✓</span>
+                      Verified Guide
+                    </div>
+                  )}
+                </div>
                 {guide.verified && (
                   <div className="verified-badge">
                     <span className="verified-icon">✓</span>
@@ -93,7 +113,7 @@ const GuideDetail = () => {
                   </div>
                 )}
               </div>
-              
+
               <div className="profile-info">
                 <div className="profile-header">
                   <div>
@@ -105,7 +125,7 @@ const GuideDetail = () => {
                   </div>
                   <div className="profile-badge">{guide.badge}</div>
                 </div>
-                
+
                 <div className="profile-stats">
                   <div className="stat">
                     <div className="stat-value">{guide.rating}</div>
@@ -114,23 +134,23 @@ const GuideDetail = () => {
                       <span>({guide.reviews} reviews)</span>
                     </div>
                   </div>
-                  
+
                   <div className="stat">
                     <div className="stat-value">{guide.experience}</div>
                     <div className="stat-label">Experience</div>
                   </div>
-                  
+
                   <div className="stat">
                     <div className="stat-value">{guide.responseTime}</div>
                     <div className="stat-label">Response Time</div>
                   </div>
-                  
+
                   <div className="stat">
                     <div className="stat-value">${guide.price}/day</div>
                     <div className="stat-label">Starting Price</div>
                   </div>
                 </div>
-                
+
                 <div className="profile-tags">
                   <div className="tag-group">
                     <span className="tag-label">Languages:</span>
@@ -140,7 +160,7 @@ const GuideDetail = () => {
                       ))}
                     </div>
                   </div>
-                  
+
                   <div className="tag-group">
                     <span className="tag-label">Specialties:</span>
                     <div className="tags">
@@ -162,32 +182,32 @@ const GuideDetail = () => {
           <main className="guide-main">
             {/* Tabs Navigation */}
             <div className="guide-tabs">
-              <button 
+              <button
                 className={`tab-btn ${activeTab === 'overview' ? 'active' : ''}`}
                 onClick={() => setActiveTab('overview')}
               >
                 Overview
               </button>
-              <button 
+              <button
                 className={`tab-btn ${activeTab === 'tours' ? 'active' : ''}`}
                 onClick={() => setActiveTab('tours')}
               >
                 Available Tours
               </button>
-              <button 
+              <button
                 className={`tab-btn ${activeTab === 'reviews' ? 'active' : ''}`}
                 onClick={() => setActiveTab('reviews')}
               >
                 Reviews ({guide.reviews})
               </button>
-              <button 
+              <button
                 className={`tab-btn ${activeTab === 'location' ? 'active' : ''}`}
                 onClick={() => setActiveTab('location')}
               >
                 Location
               </button>
             </div>
-            
+
             {/* Tab Content */}
             <div className="tab-content">
               {activeTab === 'overview' && (
@@ -195,7 +215,7 @@ const GuideDetail = () => {
                   <div className="about-section">
                     <h2>About {guide.name}</h2>
                     <p className="guide-description">{guide.description}</p>
-                    
+
                     <div className="about-details">
                       <div className="detail-item">
                         <span className="detail-label">Years Guiding:</span>
@@ -215,7 +235,7 @@ const GuideDetail = () => {
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="whats-included">
                     <h3>What's Included</h3>
                     <ul>
@@ -227,7 +247,7 @@ const GuideDetail = () => {
                       <li>✓ 24/7 support during tour</li>
                     </ul>
                   </div>
-                  
+
                   <div className="whats-not-included">
                     <h3>What's Not Included</h3>
                     <ul>
@@ -240,7 +260,7 @@ const GuideDetail = () => {
                   </div>
                 </div>
               )}
-              
+
               {activeTab === 'tours' && (
                 <div className="tours-tab">
                   <div className="tours-grid">
@@ -263,7 +283,7 @@ const GuideDetail = () => {
                       </div>
                     ))}
                   </div>
-                  
+
                   <div className="custom-tour">
                     <h3>Custom Tour Request</h3>
                     <p>Don't see what you're looking for? Contact {guide.name} directly to create a custom itinerary.</p>
@@ -273,11 +293,11 @@ const GuideDetail = () => {
                   </div>
                 </div>
               )}
-              
+
               {activeTab === 'reviews' && (
                 <div className="reviews-tab">
                   <Testimonials testimonials={testimonials} />
-                  
+
                   <div className="review-summary">
                     <h3>Review Summary</h3>
                     <div className="summary-stats">
@@ -301,16 +321,16 @@ const GuideDetail = () => {
                   </div>
                 </div>
               )}
-              
+
               {activeTab === 'location' && (
                 <div className="location-tab">
                   <h3>Operating Area</h3>
                   <p>{guide.name} operates primarily in and around {guide.location}.</p>
-                  
+
                   <div className="location-map">
                     <SriLankaMap city={guide.location} />
                   </div>
-                  
+
                   <div className="location-details">
                     <h4>Popular Destinations Covered:</h4>
                     <div className="destination-tags">
@@ -325,11 +345,11 @@ const GuideDetail = () => {
               )}
             </div>
           </main>
-          
+
           {/* Booking Sidebar */}
           <aside className="booking-sidebar">
             <BookingForm guide={guide} price={guide.price} />
-            
+
             <div className="safety-info">
               <h3>Safety First</h3>
               <div className="safety-item">
@@ -349,7 +369,7 @@ const GuideDetail = () => {
                 <span>Guide rating system</span>
               </div>
             </div>
-            
+
             <div className="quick-contact">
               <h3>Quick Questions?</h3>
               <button className="message-btn">

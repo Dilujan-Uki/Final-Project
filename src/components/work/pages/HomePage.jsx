@@ -1,9 +1,9 @@
 // src/components/work/pages/HomePage.jsx
 import React from 'react';
-import GuideCard from '../GuideCard';
-import SriLankaMap from '../SriLankaMap';
-import BookingForm from '../BookingForm';
-import '../styles/HomePage.css';
+import GuideCard from '../common/GuideCard';
+import SriLankaMap from '../common/SriLankaMap';
+import BookingForm from '../common/BookingForm';
+import './HomePage.css';
 
 // Sample data - in real app, this would come from API
 const featuredGuides = [

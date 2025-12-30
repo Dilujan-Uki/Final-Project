@@ -5,8 +5,7 @@
 
 /* Hero Section */
 .about-hero {
-  background: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),
-              url('../../assets/images/backgrounds/about-hero.jpg') center/cover no-repeat;
+ background: linear-gradient(rgba(44, 95, 45, 0.9), rgba(44, 95, 45, 0.8));
   color: white;
   padding: 100px 0;
   text-align: center;

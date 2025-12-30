@@ -1,6 +1,6 @@
 // src/components/work/BookingForm.jsx
 import React, { useState } from 'react';
-import './styles/BookingForm.css';
+import '../common/BookingForm.css';
 
 const BookingForm = ({ guide, price }) => {
   const [formData, setFormData] = useState({

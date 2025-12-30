@@ -2,7 +2,7 @@
 import React, { useState } from 'react';
 import SriLankaMap from '../common/SriLankaMap';
 import PricingCard from '../common/PricingCard';
-import { destinations } from '../assets/data/destinations';
+import { destinations } from '../data/destinations';
 import './DestinationsPage.css';
 
 const DestinationsPage = () => {
@@ -88,7 +88,7 @@ const DestinationsPage = () => {
             <h2 className="section-title">Explore Our Island Paradise</h2>
             <p className="section-subtitle">Click on any location to discover local guides and attractions</p>
           </div>
-          
+
           <SriLankaMap />
         </div>
       </section>
@@ -100,7 +100,7 @@ const DestinationsPage = () => {
             <h2 className="section-title">Popular Destinations</h2>
             <p className="section-subtitle">Find your perfect Sri Lankan adventure</p>
           </div>
-          
+
           {/* Filters */}
           <div className="destination-filters">
             {destinationTypes.map(type => (
@@ -114,16 +114,25 @@ const DestinationsPage = () => {
               </button>
             ))}
           </div>
-          
+
           {/* Destinations Grid */}
           <div className="destinations-grid">
             {destinations.map(destination => (
               <div key={destination.id} className="destination-card">
                 <div className="destination-image">
-                  <img 
-                    src={require(`../assets/images/backgrounds/${destination.image}`)} 
-                    alt={destination.name}
-                  />
+                  <div style={{
+                    width: '100%',
+                    height: '200px',
+                    background: `linear-gradient(135deg, #2c5f2d, #17B794)`,
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'center',
+                    color: 'white',
+                    fontSize: '1.5rem',
+                    fontWeight: 'bold'
+                  }}>
+                    {destination.name}
+                  </div>
                   <div className="image-overlay">
                     <div className="guides-count">
                       <span className="guide-icon">👨‍🏫</span>
@@ -131,17 +140,17 @@ const DestinationsPage = () => {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="destination-content">
                   <h3 className="destination-name">{destination.name}</h3>
                   <p className="destination-description">{destination.description}</p>
-                  
+
                   <div className="destination-tags">
                     {destination.bestFor.map((tag, index) => (
                       <span key={index} className="tag">{tag}</span>
                     ))}
                   </div>
-                  
+
                   <div className="destination-details">
                     <div className="detail">
                       <span className="detail-label">Best Time:</span>
@@ -152,8 +161,8 @@ const DestinationsPage = () => {
                       <span className="detail-value">{destination.guides} available</span>
                     </div>
                   </div>
-                  
-                  <button 
+
+                  <button
                     className="explore-btn"
                     onClick={() => setSelectedDestination(destination)}
                   >
@@ -175,7 +184,7 @@ const DestinationsPage = () => {
                 <h2 className="detail-title">{selectedDestination.name}</h2>
                 <p className="detail-subtitle">{selectedDestination.description}</p>
               </div>
-              
+
               <div className="detail-content">
                 <div className="attractions">
                   <h3>Top Attractions</h3>
@@ -188,7 +197,7 @@ const DestinationsPage = () => {
                     ))}
                   </ul>
                 </div>
-                
+
                 <div className="destination-info">
                   <div className="info-card">
                     <h4>Best For</h4>
@@ -198,18 +207,18 @@ const DestinationsPage = () => {
                       ))}
                     </div>
                   </div>
-                  
+
                   <div className="info-card">
                     <h4>Local Guides</h4>
                     <p className="guide-count">{selectedDestination.guides} verified guides available</p>
-                    <button 
+                    <button
                       className="find-guides-btn"
                       onClick={() => window.location.href = `/guides?location=${selectedDestination.name}`}
                     >
                       Find Guides in {selectedDestination.name}
                     </button>
                   </div>
-                  
+
                   <div className="info-card">
                     <h4>Best Time to Visit</h4>
                     <p className="best-time">{selectedDestination.bestTime}</p>
@@ -232,7 +241,7 @@ const DestinationsPage = () => {
             <h2 className="section-title">Transparent Pricing</h2>
             <p className="section-subtitle">No hidden fees. Everything included in one price</p>
           </div>
-          
+
           <div className="pricing-grid">
             {pricingPlans.map((plan, index) => (
               <PricingCard
@@ -242,7 +251,7 @@ const DestinationsPage = () => {
               />
             ))}
           </div>
-          
+
           <div className="pricing-note">
             <p>All prices are per day. Multi-day discounts available. Contact for group rates.</p>
           </div>
@@ -256,13 +265,13 @@ const DestinationsPage = () => {
             <h2>Ready to Explore Sri Lanka?</h2>
             <p>Connect with local experts for an authentic experience</p>
             <div className="cta-buttons">
-              <button 
+              <button
                 className="btn-primary"
                 onClick={() => window.location.href = '/guides'}
               >
                 Find Your Guide
               </button>
-              <button 
+              <button
                 className="btn-secondary"
                 onClick={() => window.location.href = '/contact'}
               >

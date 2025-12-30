@@ -1,6 +1,6 @@
 // src/components/work/common/Testimonials.jsx
 import React, { useState } from 'react';
-import './Testimonials.css';
+import '../common/Testimonials.css';
 
 const Testimonials = ({ testimonials = [] }) => {
   const [currentIndex, setCurrentIndex] = useState(0);

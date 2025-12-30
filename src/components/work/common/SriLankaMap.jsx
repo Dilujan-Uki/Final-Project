@@ -3,7 +3,7 @@ import React, { useState, useEffect } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, ZoomControl } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
-import './styles/SriLankaMap.css';
+import '../common/SrilankaMap.css';
 
 // Fix for default marker icons
 delete L.Icon.Default.prototype._getIconUrl;

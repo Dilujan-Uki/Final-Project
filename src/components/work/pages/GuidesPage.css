@@ -5,8 +5,7 @@
 
 /* Hero Section */
 .guides-hero {
-  background: linear-gradient(rgba(44, 95, 45, 0.9), rgba(44, 95, 45, 0.8)),
-              url('../../assets/images/backgrounds/guides-hero.jpg') center/cover no-repeat;
+  background: linear-gradient(rgba(44, 95, 45, 0.9), rgba(44, 95, 45, 0.8));
   color: white;
   padding: 80px 0;
   text-align: center;
@@ -404,4 +403,4 @@
   .quick-filters {
     justify-content: flex-start;
   }
-}
+} 
