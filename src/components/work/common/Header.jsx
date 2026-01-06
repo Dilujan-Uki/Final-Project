@@ -12,12 +12,12 @@ const Header = () => {
         <div className="flex items-center justify-between py-4">
           {/* Logo */}
           <Link to="/" className="flex items-center space-x-2">
-            <div className="w-10 h-10 bg-sri-green rounded-full flex items-center justify-center">
-              <span className="text-white font-bold text-xl">SL</span>
+            <div className="w-20 h-20 bg-sri-green rounded-full flex items-center justify-center">
+              <span className="text-white font-bold text-l">SL</span>
             </div>
             <div>
-              <h1 className="text-xl font-bold text-sri-green">Sri Lanka Guides</h1>
-              <p className="text-xs text-sri-teal">Connecting Tourists with Locals</p>
+              <h1 className="text-xl font-bold text-sri-green">SL Guides</h1>
+              <p className="text-s text-sri-teal">Connecting Tourists with Locals</p>
             </div>
           </Link>
           
