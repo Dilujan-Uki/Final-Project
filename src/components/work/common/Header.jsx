@@ -1,72 +1,69 @@
-// src/components/work/Header.jsx
+// src/components/work/common/Header.jsx
 import React from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import '../common/Header.css';
+import './Header.css';
 
 const Header = () => {
   const location = useLocation();
   
+  const navItems = [
+    { path: '/', label: 'Home', icon: '🏠' },
+    { path: '/guides', label: 'Find Guides', icon: '👨‍🏫' },
+    { path: '/destinations', label: 'Destinations', icon: '🗺️' },
+    { path: '/about', label: 'How it Works', icon: '❓' },
+    { path: '/contact', label: 'Contact', icon: '📞' },
+    { path: '/login', label: 'Login', icon: '🔐' },
+  ];
+
   return (
-    <header className="glass-nav sticky top-0 z-50">
-      <div className="container mx-auto px-4">
-        <div className="flex items-center justify-between py-4">
-          {/* Logo */}
-          <Link to="/" className="flex items-center space-x-2">
-            <div className="w-20 h-20 bg-sri-green rounded-full flex items-center justify-center">
-              <span className="text-white font-bold text-l">SL</span>
+    <>
+      {/* Skip to content link for accessibility */}
+      <a href="#main-content" className="skip-to-content">
+        Skip to main content
+      </a>
+      
+      <header className="header">
+        <div className="container">
+          <div className="header-content">
+            {/* Logo */}
+            <Link to="/" className="logo">
+              <div className="logo-icon">🇱🇰</div>
+              <div className="logo-text">
+                <h1 className="logo-title">Sri Lanka Guides</h1>
+                <p className="logo-subtitle">Local Experts, Authentic Experiences</p>
+              </div>
+            </Link>
+            
+            {/* Main Navigation */}
+            <nav className="main-nav">
+              <ul className="nav-list">
+                {navItems.map((item) => (
+                  <li key={item.path} className="nav-item">
+                    <Link 
+                      to={item.path} 
+                      className={`nav-link ${location.pathname === item.path ? 'active' : ''}`}
+                    >
+                      <span className="nav-icon">{item.icon}</span>
+                      <span className="nav-label">{item.label}</span>
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+            </nav>
+            
+            {/* User Actions */}
+            <div className="header-actions">
+              <Link to="/become-guide" className="btn-secondary">
+                Become a Guide
+              </Link>
+              <Link to="/guides" className="btn-primary">
+                Book Now
+              </Link>
             </div>
-            <div>
-              <h1 className="text-xl font-bold text-sri-green">SL Guides</h1>
-              <p className="text-s text-sri-teal">Connecting Tourists with Locals</p>
-            </div>
-          </Link>
-          
-          {/* Navigation */}
-          <nav className="hidden md:flex items-center space-x-8">
-            <Link 
-              to="/" 
-              className={`nav-link ${location.pathname === '/' ? 'active' : ''}`}
-            >
-              Home
-            </Link>
-            <Link 
-              to="/guides" 
-              className={`nav-link ${location.pathname === '/guides' ? 'active' : ''}`}
-            >
-              Find Guides
-            </Link>
-            <Link 
-              to="/destinations" 
-              className={`nav-link ${location.pathname === '/destinations' ? 'active' : ''}`}
-            >
-              Destinations
-            </Link>
-            <Link 
-              to="/about" 
-              className={`nav-link ${location.pathname === '/about' ? 'active' : ''}`}
-            >
-              How It Works
-            </Link>
-            <Link 
-              to="/contact" 
-              className={`nav-link ${location.pathname === '/contact' ? 'active' : ''}`}
-            >
-              Contact
-            </Link>
-          </nav>
-          
-          {/* CTA Buttons */}
-          <div className="flex items-center space-x-4">
-            <button className="btn-sri-green hidden md:block">
-              Become a Guide
-            </button>
-            <button className="btn-sri-yellow">
-              Book Now
-            </button>
           </div>
         </div>
-      </div>
-    </header>
+      </header>
+    </>
   );
 };
 

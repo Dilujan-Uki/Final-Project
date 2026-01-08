@@ -22,8 +22,10 @@ const FilterPanel = ({ locations, languages, specialties, filters, onFilterChang
   };
 
   const handlePriceChange = (min, max) => {
-    setPriceRange([min, max]);
-    onFilterChange({ ...filters, priceRange: [min, max] });
+    const newMin = Math.min(min, max - 10);
+    const newMax = Math.max(max, min + 10);
+    setPriceRange([newMin, newMax]);
+    onFilterChange({ ...filters, priceRange: [newMin, newMax] });
   };
 
   const handleRatingChange = (rating) => {
@@ -45,7 +47,11 @@ const FilterPanel = ({ locations, languages, specialties, filters, onFilterChang
     <div className="filter-panel">
       <div className="filter-header">
         <h3 className="filter-title">Filters</h3>
-        <button className="clear-btn" onClick={clearFilters}>
+        <button 
+          className="clear-btn" 
+          onClick={clearFilters}
+          aria-label="Clear all filters"
+        >
           Clear All
         </button>
       </div>
@@ -57,6 +63,7 @@ const FilterPanel = ({ locations, languages, specialties, filters, onFilterChang
           <button 
             className={`location-option ${!filters.location ? 'active' : ''}`}
             onClick={() => onFilterChange({ ...filters, location: '' })}
+            aria-label="All locations"
           >
             All Locations
           </button>
@@ -65,6 +72,7 @@ const FilterPanel = ({ locations, languages, specialties, filters, onFilterChang
               key={index}
               className={`location-option ${filters.location === location ? 'active' : ''}`}
               onClick={() => onFilterChange({ ...filters, location })}
+              aria-label={`Filter by ${location}`}
             >
               {location}
             </button>
@@ -74,7 +82,7 @@ const FilterPanel = ({ locations, languages, specialties, filters, onFilterChang
       
       {/* Price Range Filter */}
       <div className="filter-section">
-        <h4 className="filter-section-title">💰 Price Range</h4>
+        <h4 className="filter-section-title">💰 Price Range (per day)</h4>
         <div className="price-range">
           <div className="price-values">
             <span className="price-min">${priceRange[0]}</span>
@@ -90,6 +98,7 @@ const FilterPanel = ({ locations, languages, specialties, filters, onFilterChang
               value={priceRange[0]}
               onChange={(e) => handlePriceChange(parseInt(e.target.value), priceRange[1])}
               className="range-slider min"
+              aria-label="Minimum price"
             />
             <input
               type="range"
@@ -99,16 +108,29 @@ const FilterPanel = ({ locations, languages, specialties, filters, onFilterChang
               value={priceRange[1]}
               onChange={(e) => handlePriceChange(priceRange[0], parseInt(e.target.value))}
               className="range-slider max"
+              aria-label="Maximum price"
             />
           </div>
           <div className="price-presets">
-            <button className="price-preset" onClick={() => handlePriceChange(0, 30)}>
+            <button 
+              className="price-preset" 
+              onClick={() => handlePriceChange(0, 30)}
+              aria-label="Budget price range: $0-30"
+            >
               Budget ($0-30)
             </button>
-            <button className="price-preset" onClick={() => handlePriceChange(30, 60)}>
+            <button 
+              className="price-preset" 
+              onClick={() => handlePriceChange(30, 60)}
+              aria-label="Standard price range: $30-60"
+            >
               Standard ($30-60)
             </button>
-            <button className="price-preset" onClick={() => handlePriceChange(60, 100)}>
+            <button 
+              className="price-preset" 
+              onClick={() => handlePriceChange(60, 100)}
+              aria-label="Premium price range: $60+"
+            >
               Premium ($60+)
             </button>
           </div>
@@ -124,6 +146,7 @@ const FilterPanel = ({ locations, languages, specialties, filters, onFilterChang
               key={rating}
               className={`rating-option ${filters.rating === rating ? 'active' : ''}`}
               onClick={() => handleRatingChange(rating)}
+              aria-label={`Minimum rating: ${rating} stars`}
             >
               {rating}+ ★
             </button>
@@ -131,6 +154,7 @@ const FilterPanel = ({ locations, languages, specialties, filters, onFilterChang
           <button
             className={`rating-option ${filters.rating === 0 ? 'active' : ''}`}
             onClick={() => handleRatingChange(0)}
+            aria-label="Any rating"
           >
             Any Rating
           </button>
@@ -149,6 +173,7 @@ const FilterPanel = ({ locations, languages, specialties, filters, onFilterChang
                 checked={filters.languages.includes(language)}
                 onChange={() => handleLanguageToggle(language)}
                 className="checkbox-input"
+                aria-label={`Select ${language} language`}
               />
               <label htmlFor={`lang-${language}`} className="checkbox-label">
                 {language}
@@ -170,6 +195,7 @@ const FilterPanel = ({ locations, languages, specialties, filters, onFilterChang
                 checked={filters.specialties.includes(specialty)}
                 onChange={() => handleSpecialtyToggle(specialty)}
                 className="checkbox-input"
+                aria-label={`Select ${specialty} specialty`}
               />
               <label htmlFor={`spec-${specialty}`} className="checkbox-label">
                 {specialty}
@@ -180,16 +206,29 @@ const FilterPanel = ({ locations, languages, specialties, filters, onFilterChang
       </div>
       
       {/* Active Filters Display */}
-      {(filters.languages.length > 0 || filters.specialties.length > 0 || filters.rating > 0) && (
+      {(filters.languages.length > 0 || filters.specialties.length > 0 || filters.rating > 0 || filters.location) && (
         <div className="active-filters">
           <h4 className="active-filters-title">Active Filters</h4>
           <div className="active-filter-tags">
+            {filters.location && (
+              <span className="active-filter-tag">
+                Location: {filters.location}
+                <button 
+                  className="remove-filter"
+                  onClick={() => onFilterChange({ ...filters, location: '' })}
+                  aria-label={`Remove location filter: ${filters.location}`}
+                >
+                  ×
+                </button>
+              </span>
+            )}
             {filters.rating > 0 && (
               <span className="active-filter-tag">
                 Rating: {filters.rating}+ ★
                 <button 
                   className="remove-filter"
                   onClick={() => handleRatingChange(0)}
+                  aria-label="Remove rating filter"
                 >
                   ×
                 </button>
@@ -201,6 +240,7 @@ const FilterPanel = ({ locations, languages, specialties, filters, onFilterChang
                 <button 
                   className="remove-filter"
                   onClick={() => handleLanguageToggle(lang)}
+                  aria-label={`Remove language filter: ${lang}`}
                 >
                   ×
                 </button>
@@ -212,6 +252,7 @@ const FilterPanel = ({ locations, languages, specialties, filters, onFilterChang
                 <button 
                   className="remove-filter"
                   onClick={() => handleSpecialtyToggle(spec)}
+                  aria-label={`Remove specialty filter: ${spec}`}
                 >
                   ×
                 </button>

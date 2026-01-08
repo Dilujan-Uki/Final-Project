@@ -2,7 +2,7 @@
 import React from 'react';
 import './PricingCard.css';
 
-const PricingCard = ({ plan, featured }) => {
+const PricingCard = ({ plan, featured = false }) => {
   return (
     <div className={`pricing-card ${featured ? 'featured' : ''}`}>
       {featured && <div className="popular-badge">Most Popular</div>}
@@ -21,7 +21,10 @@ const PricingCard = ({ plan, featured }) => {
         <ul>
           {plan.features.map((feature, index) => (
             <li key={index} className={feature.included ? '' : 'not-included'}>
-              {feature.included ? '✓' : '✗'} {feature.text}
+              <span className="feature-icon">
+                {feature.included ? '✓' : '✗'}
+              </span>
+              <span className="feature-text">{feature.text}</span>
             </li>
           ))}
         </ul>

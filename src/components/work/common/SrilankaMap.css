@@ -1,205 +1,241 @@
 /* src/components/work/styles/SriLankaMap.css */
+.sri-lanka-map {
+  width: 100%;
+}
+
 .map-container {
-  background: white;
+  background: var(--white);
   border-radius: 16px;
-  padding: 24px;
-  box-shadow: var(--shadow-md);
-  margin: 20px 0;
+  padding: var(--spacing-xl);
+  box-shadow: 0 4px 16px rgba(0,0,0,0.1);
 }
 
 .map-header {
   text-align: center;
-  margin-bottom: 24px;
+  margin-bottom: var(--spacing-lg);
 }
 
 .map-title {
-  font-size: 1.75rem;
-  color: var(--sri-green);
+  font-size: var(--font-lg);
+  color: var(--primary-green);
   font-weight: 700;
-  margin-bottom: 8px;
+  margin-bottom: 0.5rem;
 }
 
 .map-subtitle {
   color: var(--text-light);
-  font-size: 1rem;
+  font-size: var(--font-sm);
 }
 
-.map-stats {
-  display: flex;
-  justify-content: center;
-  gap: 20px;
-  margin-bottom: 24px;
-}
-
-.stat-card {
-  background: var(--bg-light);
-  padding: 16px 24px;
-  border-radius: 12px;
-  text-align: center;
-  min-width: 120px;
-  transition: transform 0.3s ease;
-}
-
-.stat-card:hover {
-  transform: translateY(-4px);
-  background: linear-gradient(135deg, #E8F5E9, #FFFFFF);
-}
-
-.stat-number {
-  display: block;
-  font-size: 2rem;
-  font-weight: 700;
-  color: var(--sri-green);
-  line-height: 1;
-  margin-bottom: 4px;
-}
-
-.stat-label {
-  font-size: 0.875rem;
-  color: var(--text-light);
-}
-
-.map-wrapper {
-  margin-bottom: 24px;
+/* Leaflet Map Container */
+.map-visual {
+  margin: var(--spacing-lg) 0;
   border-radius: 12px;
   overflow: hidden;
-  border: 1px solid #E2E8F0;
+  border: 2px solid #e0e0e0;
+  height: 400px;
 }
 
-.popup-content {
-  padding: 10px;
+/* Customize Leaflet */
+.leaflet-container {
+  font-family: 'Arial', sans-serif;
+  font-size: var(--font-sm);
+  width: 100%;
+  height: 100%;
+}
+
+.leaflet-popup-content {
+  margin: 1rem;
   min-width: 200px;
 }
 
-.popup-title {
-  font-size: 1.1rem;
-  font-weight: 700;
-  color: var(--sri-green);
-  margin-bottom: 8px;
+.map-popup h3 {
+  color: var(--primary-green);
+  margin-bottom: 0.5rem;
+  font-size: var(--font-md);
 }
 
-.popup-type {
-  font-size: 0.9rem;
-  color: var(--sri-teal);
-  margin-bottom: 4px;
+.map-popup p {
+  color: var(--text-dark);
+  margin-bottom: 0.5rem;
+  font-size: var(--font-sm);
 }
 
-.popup-guides {
-  font-size: 0.9rem;
-  color: var(--text-light);
-  margin-bottom: 12px;
-}
-
-.popup-button {
+.popup-btn {
   width: 100%;
-  padding: 8px 16px;
-  background-color: var(--sri-green);
-  color: white;
+  background: var(--primary-green);
+  color: var(--white);
   border: none;
+  padding: 0.5rem;
   border-radius: 6px;
-  font-size: 0.875rem;
+  font-size: var(--font-sm);
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
+  margin-top: 0.5rem;
 }
 
-.popup-button:hover {
-  background-color: #1e4c24;
+.popup-btn:hover {
+  background: #0d3c11;
 }
 
+/* Destination List */
 .destination-list {
-  background: #F8FAFC;
-  padding: 20px;
-  border-radius: 12px;
-  margin-top: 20px;
+  margin-top: var(--spacing-xl);
 }
 
 .list-title {
-  font-size: 1.25rem;
-  color: var(--text-dark);
-  margin-bottom: 16px;
+  font-size: var(--font-md);
+  color: var(--primary-green);
+  margin-bottom: var(--spacing-md);
   font-weight: 600;
 }
 
-.destination-grid {
+.destinations-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-  gap: 12px;
+  gap: 0.75rem;
+  margin-bottom: var(--spacing-lg);
 }
 
 .destination-item {
-  background: white;
-  padding: 12px 16px;
+  background: var(--white);
+  border: 2px solid #e0e0e0;
+  padding: 1rem;
   border-radius: 8px;
   cursor: pointer;
   transition: all 0.3s ease;
-  border: 2px solid transparent;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 
 .destination-item:hover {
-  background: #E8F5E9;
-  transform: translateX(4px);
+  border-color: var(--primary-green);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
 }
 
 .destination-item.selected {
-  border-color: var(--sri-green);
-  background: #E8F5E9;
+  background: rgba(27, 94, 32, 0.1);
+  border-color: var(--primary-green);
+}
+
+.dest-info {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.dest-icon {
+  font-size: 1.5rem;
+  flex-shrink: 0;
 }
 
 .dest-name {
-  font-weight: 500;
+  font-weight: 600;
   color: var(--text-dark);
+  font-size: var(--font-sm);
+}
+
+.dest-type {
+  color: var(--text-light);
+  font-size: var(--font-xs);
+  margin-top: 0.25rem;
+  text-transform: capitalize;
 }
 
 .dest-guides {
-  font-size: 0.875rem;
-  color: var(--sri-green);
+  background: rgba(27, 94, 32, 0.1);
+  color: var(--primary-green);
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  font-size: var(--font-xs);
   font-weight: 600;
-  background: #C8E6C9;
-  padding: 2px 8px;
+  white-space: nowrap;
+}
+
+/* Selected Destination */
+.selected-destination {
+  background: rgba(27, 94, 32, 0.05);
   border-radius: 12px;
+  padding: var(--spacing-lg);
+  border: 2px solid var(--primary-green);
+  margin-top: var(--spacing-lg);
 }
 
-.weather-info {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 12px;
-  margin-top: 20px;
-  padding: 16px;
-  background: linear-gradient(135deg, #E3F2FD, #E8F5E9);
-  border-radius: 12px;
-}
-
-.weather-icon {
-  font-size: 2.5rem;
-}
-
-.weather-details {
-  text-align: left;
-}
-
-.weather-temp {
-  font-size: 1.5rem;
+.selected-title {
+  font-size: var(--font-md);
+  color: var(--primary-green);
+  margin-bottom: var(--spacing-md);
   font-weight: 700;
-  color: var(--sri-green);
-  line-height: 1;
+  text-align: center;
 }
 
-.weather-condition {
-  font-size: 0.9rem;
+.selected-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+.detail {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.label {
+  font-size: var(--font-xs);
   color: var(--text-light);
+  font-weight: 500;
 }
 
-/* Leaflet map customizations */
-.leaflet-container {
-  font-family: 'Poppins', sans-serif;
+.value {
+  font-size: var(--font-sm);
+  color: var(--primary-green);
+  font-weight: 600;
 }
 
-.leaflet-popup-content {
-  margin: 13px 19px;
-  line-height: 1.4;
+.find-guides-btn {
+  width: 100%;
+  background: var(--primary-green);
+  color: var(--white);
+  border: none;
+  padding: 0.75rem;
+  border-radius: 8px;
+  font-size: var(--font-sm);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.find-guides-btn:hover {
+  background: #0d3c11;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(27, 94, 32, 0.3);
+}
+
+@media (max-width: 768px) {
+  .map-visual {
+    height: 300px;
+  }
+  
+  .destinations-grid {
+    grid-template-columns: 1fr 1fr;
+  }
+  
+  .selected-details {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 576px) {
+  .map-visual {
+    height: 250px;
+  }
+  
+  .destinations-grid {
+    grid-template-columns: 1fr;
+  }
 }

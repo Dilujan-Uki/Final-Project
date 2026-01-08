@@ -1,29 +1,33 @@
-// src/components/work/Footer.jsx
+// src/components/work/common/Footer.jsx
 import React from 'react';
 import { Link } from 'react-router-dom';
-import '../common/Footer.css';
+import './Footer.css';
 
 const Footer = () => {
+  const currentYear = new Date().getFullYear();
+
   return (
     <footer className="footer">
       <div className="container">
         <div className="footer-content">
+          {/* Company Info */}
           <div className="footer-section">
             <div className="footer-logo">
-              <div className="logo-circle">SL</div>
+              <div className="logo-icon">🇱🇰</div>
               <div>
-                <h3>Sri Lanka Guides</h3>
-                <p>Connecting tourists with authentic local experiences</p>
+                <h3 className="logo-title">Sri Lanka Guides</h3>
+                <p className="logo-subtitle">Local Experts, Authentic Experiences</p>
               </div>
             </div>
             <p className="footer-description">
-              We connect international tourists with verified local tour guides 
-              across Sri Lanka. Experience authentic culture, food, and hidden gems.
+              Connecting international tourists with verified local guides across Sri Lanka.
+              Experience authentic culture, food, and hidden gems.
             </p>
           </div>
           
+          {/* Quick Links */}
           <div className="footer-section">
-            <h4>Quick Links</h4>
+            <h4 className="footer-title">Quick Links</h4>
             <ul className="footer-links">
               <li><Link to="/">Home</Link></li>
               <li><Link to="/guides">Find Guides</Link></li>
@@ -33,36 +37,32 @@ const Footer = () => {
             </ul>
           </div>
           
+          {/* Contact Info */}
           <div className="footer-section">
-            <h4>Destinations</h4>
-            <ul className="footer-links">
-              <li><Link to="/guides?location=Colombo">Colombo</Link></li>
-              <li><Link to="/guides?location=Kandy">Kandy</Link></li>
-              <li><Link to="/guides?location=Galle">Galle</Link></li>
-              <li><Link to="/guides?location=Sigiriya">Sigiriya</Link></li>
-              <li><Link to="/guides?location=Ella">Ella</Link></li>
-            </ul>
-          </div>
-          
-          <div className="footer-section">
-            <h4>Contact Info</h4>
+            <h4 className="footer-title">Contact Us</h4>
             <div className="contact-info">
-              <p>📍 Colombo, Sri Lanka</p>
-              <p>📞 +94 77 123 4567</p>
-              <p>✉️ info@srilankaguides.com</p>
-            </div>
-            <div className="social-links">
-              <a href="#" className="social-icon">📘</a>
-              <a href="#" className="social-icon">📸</a>
-              <a href="#" className="social-icon">🐦</a>
-              <a href="#" className="social-icon">▶️</a>
+              <p className="contact-item">
+                <span className="icon">📍</span>
+                Colombo, Sri Lanka
+              </p>
+              <p className="contact-item">
+                <span className="icon">📞</span>
+                +94 77 123 4567
+              </p>
+              <p className="contact-item">
+                <span className="icon">📧</span>
+                info@srilankaguides.com
+              </p>
             </div>
           </div>
         </div>
         
+        {/* Footer Bottom */}
         <div className="footer-bottom">
-          <p>© {new Date().getFullYear()} Sri Lanka Guides. All rights reserved.</p>
-          <div className="footer-legal">
+          <p className="copyright">
+            © {currentYear} Sri Lanka Guides. All rights reserved.
+          </p>
+          <div className="footer-links-bottom">
             <Link to="/privacy">Privacy Policy</Link>
             <Link to="/terms">Terms & Conditions</Link>
             <Link to="/safety">Safety Guidelines</Link>
