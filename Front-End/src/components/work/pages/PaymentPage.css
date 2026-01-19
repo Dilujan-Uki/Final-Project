@@ -1,0 +1,287 @@
+/* src/pages/PaymentPage.css */
+.payment-page {
+  min-height: 100vh;
+  padding: var(--spacing-xl) 0;
+  background-color: var(--light-bg);
+}
+
+.payment-header {
+  text-align: center;
+  margin-bottom: var(--spacing-xl);
+}
+
+.page-title {
+  font-size: var(--font-xxl);
+  color: var(--primary-green);
+  margin-bottom: var(--spacing-sm);
+}
+
+.page-subtitle {
+  color: var(--text-light);
+  font-size: var(--font-md);
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.payment-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-xl);
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+@media (max-width: 992px) {
+  .payment-content {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-lg);
+  }
+}
+
+/* Order Summary */
+.order-summary {
+  background: var(--white);
+  border-radius: 16px;
+  padding: var(--spacing-xl);
+  box-shadow: var(--shadow-md);
+  height: fit-content;
+}
+
+@media (min-width: 993px) {
+  .order-summary {
+    position: sticky;
+    top: 100px;
+  }
+}
+
+@media (max-width: 992px) {
+  .order-summary {
+    order: 2;
+    margin-top: var(--spacing-lg);
+  }
+}
+
+.summary-header {
+  margin-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing-md);
+  border-bottom: 2px solid var(--gray-light);
+}
+
+.summary-title {
+  font-size: var(--font-lg);
+  color: var(--primary-green);
+  margin: 0;
+}
+
+.tour-details {
+  margin-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing-lg);
+  border-bottom: 1px solid var(--gray-light);
+}
+
+.tour-name {
+  font-size: var(--font-md);
+  color: var(--text-dark);
+  margin-bottom: var(--spacing-md);
+  font-weight: 600;
+}
+
+.tour-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.info-label {
+  font-size: var(--font-sm);
+  color: var(--text-light);
+}
+
+.info-value {
+  font-size: var(--font-sm);
+  color: var(--text-dark);
+  font-weight: 600;
+}
+
+.price-breakdown {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.price-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: var(--font-sm);
+  color: var(--text-dark);
+}
+
+.price-total {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: var(--spacing-md);
+  margin-top: var(--spacing-md);
+  border-top: 2px solid var(--gray-light);
+  font-size: var(--font-md);
+  font-weight: 600;
+  color: var(--primary-green);
+}
+
+.total-amount {
+  font-size: var(--font-lg);
+  color: var(--primary-green);
+  font-weight: 700;
+}
+
+/* Payment Form */
+.payment-form-section {
+  background: var(--white);
+  border-radius: 16px;
+  padding: var(--spacing-xl);
+  box-shadow: var(--shadow-md);
+}
+
+@media (max-width: 992px) {
+  .payment-form-section {
+    order: 1;
+  }
+}
+
+.payment-form {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-lg);
+}
+
+.form-section {
+  padding-bottom: var(--spacing-lg);
+  border-bottom: 1px solid var(--gray-light);
+}
+
+.form-section:last-child {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.section-title {
+  font-size: var(--font-md);
+  color: var(--primary-green);
+  margin-bottom: var(--spacing-md);
+  font-weight: 600;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-md);
+}
+
+@media (max-width: 576px) {
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.terms-agreement {
+  margin-top: var(--spacing-md);
+}
+
+.terms-agreement .checkbox {
+  font-size: var(--font-sm);
+}
+
+.terms-agreement a {
+  color: var(--primary-green);
+  font-weight: 500;
+  text-decoration: none;
+}
+
+.terms-agreement a:hover {
+  text-decoration: underline;
+}
+
+.submit-btn {
+  background: var(--primary-green);
+  color: var(--white);
+  border: none;
+  padding: var(--spacing-lg);
+  border-radius: 8px;
+  font-size: var(--font-md);
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+  margin-top: var(--spacing-md);
+}
+
+.submit-btn:hover {
+  background: var(--primary-dark);
+}
+
+.security-note {
+  text-align: center;
+  color: var(--text-light);
+  font-size: var(--font-sm);
+  margin-top: var(--spacing-md);
+}
+
+/* Form Input Styles */
+.payment-form .form-input {
+  background: var(--white);
+  border: 2px solid var(--gray-light);
+}
+
+.payment-form .form-input:focus {
+  border-color: var(--primary-green);
+  box-shadow: 0 0 0 3px rgba(44, 95, 45, 0.1);
+}
+
+/* Checkbox Styles */
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  font-size: var(--font-sm);
+  color: var(--text-dark);
+}
+
+.checkbox input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--primary-green);
+}
+
+/* Form Group Styles */
+.form-group {
+  margin-bottom: var(--spacing-md);
+}
+
+.form-group:last-child {
+  margin-bottom: 0;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-size: var(--font-sm);
+  color: var(--text-dark);
+  font-weight: 500;
+}
+
+.form-input {
+  width: 100%;
+  padding: 0.875rem 1rem;
+  border-radius: 8px;
+  font-size: var(--font-sm);
+  transition: all 0.3s ease;
+  outline: none;
+}

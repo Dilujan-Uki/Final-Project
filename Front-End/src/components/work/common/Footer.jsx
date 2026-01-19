@@ -1,4 +1,4 @@
-// src/components/work/common/Footer.jsx
+// src/components/common/Footer.jsx
 import React from 'react';
 import { Link } from 'react-router-dom';
 import './Footer.css';
@@ -12,17 +12,13 @@ const Footer = () => {
         <div className="footer-content">
           {/* Company Info */}
           <div className="footer-section">
-            <div className="footer-logo">
-              <div className="logo-icon">🇱🇰</div>
-              <div>
-                <h3 className="logo-title">Sri Lanka Guides</h3>
-                <p className="logo-subtitle">Local Experts, Authentic Experiences</p>
-              </div>
+            <div className="footer-brand">
+              <h3 className="footer-logo">Ceylon Tours</h3>
+              <p className="footer-description">
+                Experience the pearl of the Indian Ocean with our expert guides 
+                and personalized tour packages.
+              </p>
             </div>
-            <p className="footer-description">
-              Connecting international tourists with verified local guides across Sri Lanka.
-              Experience authentic culture, food, and hidden gems.
-            </p>
           </div>
           
           {/* Quick Links */}
@@ -30,10 +26,10 @@ const Footer = () => {
             <h4 className="footer-title">Quick Links</h4>
             <ul className="footer-links">
               <li><Link to="/">Home</Link></li>
-              <li><Link to="/guides">Find Guides</Link></li>
-              <li><Link to="/destinations">Destinations</Link></li>
-              <li><Link to="/about">How It Works</Link></li>
-              <li><Link to="/contact">Contact Us</Link></li>
+              <li><Link to="/tours">Tours</Link></li>
+              <li><Link to="/tour-guides">Tour Guides</Link></li>
+              <li><Link to="/contact">Contact</Link></li>
+              <li><Link to="/login">Login</Link></li>
             </ul>
           </div>
           
@@ -47,11 +43,11 @@ const Footer = () => {
               </p>
               <p className="contact-item">
                 <span className="icon">📞</span>
-                +94 77 123 4567
+                +94 11 234 5678
               </p>
               <p className="contact-item">
-                <span className="icon">📧</span>
-                info@srilankaguides.com
+                <span className="icon">✉️</span>
+                info@ceylontours.lk
               </p>
             </div>
           </div>
@@ -60,13 +56,8 @@ const Footer = () => {
         {/* Footer Bottom */}
         <div className="footer-bottom">
           <p className="copyright">
-            © {currentYear} Sri Lanka Guides. All rights reserved.
+            © {currentYear} Ceylon Tours. All rights reserved.
           </p>
-          <div className="footer-links-bottom">
-            <Link to="/privacy">Privacy Policy</Link>
-            <Link to="/terms">Terms & Conditions</Link>
-            <Link to="/safety">Safety Guidelines</Link>
-          </div>
         </div>
       </div>
     </footer>

@@ -1,4 +1,4 @@
-// src/components/work/pages/ContactPage.jsx
+// src/pages/ContactPage.jsx
 import React, { useState } from 'react';
 import './ContactPage.css';
 
@@ -9,30 +9,55 @@ const ContactPage = () => {
     subject: '',
     message: ''
   });
+  const [loading, setLoading] = useState(false);
+  const [success, setSuccess] = useState(false);
+  const [error, setError] = useState('');
 
-  const contactInfo = [
-    {
-      icon: '📧',
-      title: 'Email Us',
-      details: ['info@srilankaguides.com', 'support@srilankaguides.com']
-    },
-    {
-      icon: '📞',
-      title: 'Call Us',
-      details: ['+94 77 123 4567', '+94 11 234 5678']
-    },
-    {
-      icon: '📍',
-      title: 'Visit Us',
-      details: ['123 Galle Road', 'Colombo 03', 'Sri Lanka']
-    }
-  ];
-
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Contact form submitted:', formData);
-    alert('Thank you! We will contact you soon.');
-    setFormData({ name: '', email: '', subject: '', message: '' });
+    setLoading(true);
+    setError('');
+    setSuccess(false);
+
+    try {
+      // Call backend API
+      const response = await fetch('http://localhost:5000/api/contact',{
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
+
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to send message');
+      }
+
+      // Success
+      setSuccess(true);
+      setFormData({ name: '', email: '', subject: '', message: '' });
+      
+      // Reset success message after 5 seconds
+      setTimeout(() => setSuccess(false), 5000);
+      
+      // Log to console for debugging
+      console.log('Contact form submitted successfully:', data);
+    } catch (err) {
+      setError(err.message || 'Failed to send message. Please try again.');
+      console.error('Contact form error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
   };
 
   return (
@@ -42,85 +67,82 @@ const ContactPage = () => {
         <div className="container">
           <div className="hero-content">
             <h1 className="hero-title">Contact Us</h1>
-            <p className="hero-subtitle">We're here to help with your Sri Lankan adventure</p>
+            <p className="hero-subtitle">Get in touch for inquiries and bookings</p>
           </div>
         </div>
       </section>
 
       <div className="container">
         <div className="contact-content">
-          {/* Contact Information */}
-          <div className="contact-info">
-            <div className="section-header">
-              <h2 className="section-title">Get in Touch</h2>
-              <p className="section-subtitle">Choose your preferred way to contact us</p>
-            </div>
-            
-            <div className="contact-cards">
-              {contactInfo.map((info, index) => (
-                <div key={index} className="contact-card">
-                  <div className="contact-icon">{info.icon}</div>
-                  <h3 className="card-title">{info.title}</h3>
-                  <div className="card-details">
-                    {info.details.map((detail, idx) => (
-                      <p key={idx} className="detail">{detail}</p>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
           {/* Contact Form */}
           <div className="contact-form-section">
-            <div className="section-header">
-              <h2 className="section-title">Send a Message</h2>
-              <p className="section-subtitle">We'll respond within 24 hours</p>
+            <div className="form-header">
+              <h2 className="form-title">Send Us a Message</h2>
             </div>
             
+            {/* Success Message */}
+            {success && (
+              <div className="success-message">
+                ✅ Thank you! Your message has been sent. We'll contact you soon.
+              </div>
+            )}
+            
+            {/* Error Message */}
+            {error && (
+              <div className="error-message">
+                ❌ {error}
+              </div>
+            )}
+            
             <form onSubmit={handleSubmit} className="contact-form">
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="name" className="form-label">Your Name *</label>
-                  <input
-                    type="text"
-                    id="name"
-                    name="name"
-                    value={formData.name}
-                    onChange={(e) => setFormData({...formData, name: e.target.value})}
-                    className="form-input"
-                    required
-                    placeholder="Enter your name"
-                  />
-                </div>
-                
-                <div className="form-group">
-                  <label htmlFor="email" className="form-label">Email Address *</label>
-                  <input
-                    type="email"
-                    id="email"
-                    name="email"
-                    value={formData.email}
-                    onChange={(e) => setFormData({...formData, email: e.target.value})}
-                    className="form-input"
-                    required
-                    placeholder="Enter your email"
-                  />
-                </div>
+              <div className="form-group">
+                <label htmlFor="name" className="form-label">Full Name *</label>
+                <input
+                  type="text"
+                  id="name"
+                  name="name"
+                  value={formData.name}
+                  onChange={handleChange}
+                  className="form-input"
+                  required
+                  placeholder="Enter your full name"
+                  disabled={loading}
+                />
+              </div>
+              
+              <div className="form-group">
+                <label htmlFor="email" className="form-label">Email Address *</label>
+                <input
+                  type="email"
+                  id="email"
+                  name="email"
+                  value={formData.email}
+                  onChange={handleChange}
+                  className="form-input"
+                  required
+                  placeholder="Enter your email address"
+                  disabled={loading}
+                />
               </div>
               
               <div className="form-group">
                 <label htmlFor="subject" className="form-label">Subject *</label>
-                <input
-                  type="text"
+                <select
                   id="subject"
                   name="subject"
                   value={formData.subject}
-                  onChange={(e) => setFormData({...formData, subject: e.target.value})}
-                  className="form-input"
+                  onChange={handleChange}
+                  className="form-select"
                   required
-                  placeholder="What is this regarding?"
-                />
+                  disabled={loading}
+                >
+                  <option value="">Select a subject</option>
+                  <option value="tour-inquiry">Tour Inquiry</option>
+                  <option value="booking">Booking</option>
+                  <option value="custom-tour">Custom Tour Request</option>
+                  <option value="general">General Question</option>
+                  <option value="feedback">Feedback</option>
+                </select>
               </div>
               
               <div className="form-group">
@@ -129,18 +151,62 @@ const ContactPage = () => {
                   id="message"
                   name="message"
                   value={formData.message}
-                  onChange={(e) => setFormData({...formData, message: e.target.value})}
+                  onChange={handleChange}
                   className="form-textarea"
                   required
-                  placeholder="How can we help you?"
-                  rows="6"
+                  placeholder="Tell us about your travel plans..."
+                  rows="5"
+                  disabled={loading}
                 />
               </div>
               
-              <button type="submit" className="submit-btn">
-                Send Message
+              <button 
+                type="submit" 
+                className="submit-btn"
+                disabled={loading}
+              >
+                {loading ? 'Sending...' : 'Send Message'}
               </button>
             </form>
+          </div>
+
+          {/* Contact Information */}
+          <div className="contact-info-section">
+            <div className="info-header">
+              <h2 className="info-title">Contact Information</h2>
+            </div>
+            
+            <div className="contact-details">
+              <div className="contact-method">
+                <div className="method-header">
+                  <span className="method-icon">📞</span>
+                  <h3 className="method-title">Phone Number</h3>
+                </div>
+                <p className="method-detail">+94 11 234 5678</p>
+              </div>
+              
+              <div className="contact-method">
+                <div className="method-header">
+                  <span className="method-icon">✉️</span>
+                  <h3 className="method-title">Email</h3>
+                </div>
+                <p className="method-detail">info@ceylontours.lk</p>
+                <p className="method-detail">booking@ceylontours.lk</p>
+              </div>
+              
+              <div className="contact-method">
+                <div className="method-header">
+                  <span className="method-icon">🕐</span>
+                  <h3 className="method-title">Office Hours</h3>
+                </div>
+                <div className="office-hours">
+                  <p className="hours-detail"><strong>Monday - Friday:</strong> 9:00 AM - 6:00 PM</p>
+                  <p className="hours-detail"><strong>Saturday:</strong> 9:00 AM - 2:00 PM</p>
+                  <p className="hours-detail"><strong>Sunday:</strong> Closed</p>
+                  <p className="hours-note">Emergency support available 24/7 for active tour participants</p>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
       </div>
