@@ -41,6 +41,7 @@
   display: flex;
   list-style: none;
   gap: var(--spacing-lg);
+  align-items: center;
 }
 
 .nav-item {
@@ -77,6 +78,132 @@
   border-radius: 3px;
 }
 
+/* User Dropdown Styles */
+.user-dropdown-container {
+  position: relative;
+}
+
+.user-menu {
+  position: relative;
+}
+
+.user-avatar-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: 8px;
+  transition: all 0.3s ease;
+}
+
+.user-avatar-btn:hover {
+  background-color: rgba(44, 95, 45, 0.1);
+}
+
+.account-icon {
+  color: var(--primary-green);
+}
+
+.user-name {
+  font-size: var(--font-sm);
+  font-weight: 500;
+  color: var(--text-dark);
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: var(--white);
+  border-radius: 8px;
+  box-shadow: var(--shadow-lg);
+  min-width: 220px;
+  margin-top: 0.5rem;
+  z-index: 1000;
+  overflow: hidden;
+}
+
+.dropdown-header {
+  padding: var(--spacing-md);
+  background: linear-gradient(135deg, var(--primary-green), var(--primary-dark));
+  color: var(--white);
+}
+
+.dropdown-welcome {
+  font-size: var(--font-xs);
+  opacity: 0.9;
+  margin: 0 0 0.25rem 0;
+}
+
+.dropdown-name {
+  font-size: var(--font-md);
+  font-weight: 600;
+  margin: 0 0 0.25rem 0;
+}
+
+.dropdown-email {
+  font-size: var(--font-xs);
+  opacity: 0.8;
+  margin: 0;
+}
+
+.dropdown-divider {
+  height: 1px;
+  background-color: var(--gray-light);
+  margin: 0;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: var(--spacing-md);
+  color: var(--text-dark);
+  text-decoration: none;
+  font-size: var(--font-sm);
+  transition: all 0.2s ease;
+  border: none;
+  background: none;
+  width: 100%;
+  text-align: left;
+  cursor: pointer;
+}
+
+.dropdown-item:hover {
+  background-color: rgba(44, 95, 45, 0.1);
+  color: var(--primary-green);
+}
+
+.dropdown-item svg {
+  color: var(--primary-green);
+}
+
+.logout-btn {
+  color: #dc3545;
+}
+
+.logout-btn svg {
+  color: #dc3545;
+}
+
+.logout-btn:hover {
+  background-color: rgba(220, 53, 69, 0.1);
+  color: #dc3545;
+}
+
+/* Click outside to close dropdown */
+.dropdown-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 999;
+}
+
 /* Responsive */
 @media (max-width: 768px) {
   .header-content {
@@ -92,5 +219,21 @@
   
   .logo-text {
     text-align: center;
+  }
+  
+  .dropdown-menu {
+    position: fixed;
+    top: auto;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    margin: 0;
+    border-radius: 12px 12px 0 0;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+  
+  .dropdown-overlay {
+    background: rgba(0, 0, 0, 0.5);
   }
 }

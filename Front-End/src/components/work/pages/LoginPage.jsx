@@ -1,4 +1,3 @@
-// src/pages/LoginPage.jsx
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './AuthPages.css';
@@ -143,19 +142,6 @@ const LoginPage = () => {
               >
                 {loading ? 'Logging in...' : 'Sign In'}
               </button>
-
-              <div className="divider">
-                <span>Or continue with</span>
-              </div>
-
-              <div className="social-login">
-                <button type="button" className="social-btn google">
-                  Google
-                </button>
-                <button type="button" className="social-btn facebook">
-                  Facebook
-                </button>
-              </div>
 
               <div className="auth-footer">
                 <p>

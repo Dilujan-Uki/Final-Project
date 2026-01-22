@@ -1,4 +1,3 @@
-// src/pages/RegisterPage.jsx
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './AuthPages.css';
@@ -15,90 +14,90 @@ const RegisterPage = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
-  
-  // Check password match
-  if (formData.password !== formData.confirmPassword) {
-    setError('Passwords do not match');
-    return;
-  }
-
-  // Check password length
-  if (formData.password.length < 6) {
-    setError('Password must be at least 6 characters');
-    return;
-  }
-
-  setLoading(true);
-  setError('');
-
-  try {
-    // Prepare data for backend
-    const userData = {
-      name: formData.name,
-      email: formData.email,
-      password: formData.password,
-      phone: formData.phone || ''
-    };
-
-    // Call backend API
-    const response = await fetch('http://localhost:5000/api/auth/register', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(userData),
-    });
-
-    const data = await response.json();
-    console.log('Registration response:', data); // Debug log
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     
-    if (!response.ok) {
-      throw new Error(data.message || 'Registration failed');
+    // Check password match
+    if (formData.password !== formData.confirmPassword) {
+      setError('Passwords do not match');
+      return;
     }
 
-    // Handle both placeholder and real responses
-    if (data.status === 'success') {
-      // Check if this is the placeholder response
-      if (data.message.includes('add controller later')) {
-        // It's placeholder - create dummy token for testing
-        const dummyToken = btoa(JSON.stringify({
-          email: formData.email,
-          name: formData.name,
-          timestamp: Date.now()
-        }));
-        
-        localStorage.setItem('token', dummyToken);
-        localStorage.setItem('user', JSON.stringify({
-          email: formData.email,
-          name: formData.name,
-          phone: formData.phone
-        }));
-        
-        alert('Registration successful! (Test mode - using dummy token)');
-      } else if (data.data && data.data.token) {
-        // It's real response with token
-        localStorage.setItem('token', data.data.token);
-        localStorage.setItem('user', JSON.stringify(data.data));
-        alert('Registration successful!');
-      } else {
-        // Unexpected response
-        throw new Error('Unexpected server response');
-      }
-      
-      // Redirect to home page
-      navigate('/');
-    } else {
-      throw new Error(data.message || 'Registration failed');
+    // Check password length
+    if (formData.password.length < 6) {
+      setError('Password must be at least 6 characters');
+      return;
     }
-  } catch (err) {
-    setError(err.message || 'Registration failed. Please try again.');
-    console.error('Registration error:', err);
-  } finally {
-    setLoading(false);
-  }
-};
+
+    setLoading(true);
+    setError('');
+
+    try {
+      // Prepare data for backend
+      const userData = {
+        name: formData.name,
+        email: formData.email,
+        password: formData.password,
+        phone: formData.phone || ''
+      };
+
+      // Call backend API
+      const response = await fetch('http://localhost:5000/api/auth/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(userData),
+      });
+
+      const data = await response.json();
+      console.log('Registration response:', data); // Debug log
+      
+      if (!response.ok) {
+        throw new Error(data.message || 'Registration failed');
+      }
+
+      // Handle both placeholder and real responses
+      if (data.status === 'success') {
+        // Check if this is the placeholder response
+        if (data.message.includes('add controller later')) {
+          // It's placeholder - create dummy token for testing
+          const dummyToken = btoa(JSON.stringify({
+            email: formData.email,
+            name: formData.name,
+            timestamp: Date.now()
+          }));
+          
+          localStorage.setItem('token', dummyToken);
+          localStorage.setItem('user', JSON.stringify({
+            email: formData.email,
+            name: formData.name,
+            phone: formData.phone
+          }));
+          
+          alert('Registration successful! (Test mode - using dummy token)');
+        } else if (data.data && data.data.token) {
+          // It's real response with token
+          localStorage.setItem('token', data.data.token);
+          localStorage.setItem('user', JSON.stringify(data.data));
+          alert('Registration successful!');
+        } else {
+          // Unexpected response
+          throw new Error('Unexpected server response');
+        }
+        
+        // Redirect to home page
+        navigate('/');
+      } else {
+        throw new Error(data.message || 'Registration failed');
+      }
+    } catch (err) {
+      setError(err.message || 'Registration failed. Please try again.');
+      console.error('Registration error:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -227,19 +226,6 @@ const handleSubmit = async (e) => {
               >
                 {loading ? 'Creating Account...' : 'Create Account'}
               </button>
-
-              <div className="divider">
-                <span>Or continue with</span>
-              </div>
-
-              <div className="social-login">
-                <button type="button" className="social-btn google">
-                  Google
-                </button>
-                <button type="button" className="social-btn facebook">
-                  Facebook
-                </button>
-              </div>
 
               <div className="auth-footer">
                 <p>
