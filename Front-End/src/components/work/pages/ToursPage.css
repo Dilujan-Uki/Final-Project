@@ -1,4 +1,3 @@
-
 /* src/pages/ToursPage.css */
 .tours-page {
   min-height: 100vh;
@@ -88,7 +87,7 @@
 
 .tour-details {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(3, 1fr);
   gap: var(--spacing-sm);
   margin-bottom: var(--spacing-md);
   padding: var(--spacing-md);
@@ -132,11 +131,9 @@
 
 .tour-actions {
   display: flex;
-  gap: var(--spacing-sm);
 }
 
-.tour-actions .btn-primary,
-.tour-actions .btn-secondary {
+.tour-actions .btn-primary {
   flex: 1;
   text-align: center;
   padding: 0.75rem;
@@ -149,10 +146,13 @@
   }
   
   .tour-details {
-    grid-template-columns: 1fr;
+    grid-template-columns: repeat(3, 1fr);
   }
-  
-  .tour-actions {
-    flex-direction: column;
+}
+
+@media (max-width: 576px) {
+  .tour-details {
+    grid-template-columns: 1fr;
+    gap: var(--spacing-md);
   }
 }

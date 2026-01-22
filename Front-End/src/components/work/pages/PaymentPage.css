@@ -23,125 +23,22 @@
   margin: 0 auto;
 }
 
-.payment-content {
+.payment-container {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: 1.2fr 0.8fr;
   gap: var(--spacing-xl);
   max-width: 1200px;
   margin: 0 auto;
 }
 
 @media (max-width: 992px) {
-  .payment-content {
+  .payment-container {
     grid-template-columns: 1fr;
     gap: var(--spacing-lg);
   }
 }
 
-/* Order Summary */
-.order-summary {
-  background: var(--white);
-  border-radius: 16px;
-  padding: var(--spacing-xl);
-  box-shadow: var(--shadow-md);
-  height: fit-content;
-}
-
-@media (min-width: 993px) {
-  .order-summary {
-    position: sticky;
-    top: 100px;
-  }
-}
-
-@media (max-width: 992px) {
-  .order-summary {
-    order: 2;
-    margin-top: var(--spacing-lg);
-  }
-}
-
-.summary-header {
-  margin-bottom: var(--spacing-lg);
-  padding-bottom: var(--spacing-md);
-  border-bottom: 2px solid var(--gray-light);
-}
-
-.summary-title {
-  font-size: var(--font-lg);
-  color: var(--primary-green);
-  margin: 0;
-}
-
-.tour-details {
-  margin-bottom: var(--spacing-lg);
-  padding-bottom: var(--spacing-lg);
-  border-bottom: 1px solid var(--gray-light);
-}
-
-.tour-name {
-  font-size: var(--font-md);
-  color: var(--text-dark);
-  margin-bottom: var(--spacing-md);
-  font-weight: 600;
-}
-
-.tour-info {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.info-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.info-label {
-  font-size: var(--font-sm);
-  color: var(--text-light);
-}
-
-.info-value {
-  font-size: var(--font-sm);
-  color: var(--text-dark);
-  font-weight: 600;
-}
-
-.price-breakdown {
-  display: flex;
-  flex-direction: column;
-  gap: 0.75rem;
-}
-
-.price-row {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  font-size: var(--font-sm);
-  color: var(--text-dark);
-}
-
-.price-total {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding-top: var(--spacing-md);
-  margin-top: var(--spacing-md);
-  border-top: 2px solid var(--gray-light);
-  font-size: var(--font-md);
-  font-weight: 600;
-  color: var(--primary-green);
-}
-
-.total-amount {
-  font-size: var(--font-lg);
-  color: var(--primary-green);
-  font-weight: 700;
-}
-
-/* Payment Form */
+/* Left Column - Payment Form */
 .payment-form-section {
   background: var(--white);
   border-radius: 16px;
@@ -149,33 +46,44 @@
   box-shadow: var(--shadow-md);
 }
 
-@media (max-width: 992px) {
-  .payment-form-section {
-    order: 1;
-  }
+.form-section-title {
+  font-size: var(--font-lg);
+  color: var(--primary-green);
+  margin-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing-md);
+  border-bottom: 2px solid var(--gray-light);
+}
+
+.form-section {
+  margin-bottom: var(--spacing-xl);
+}
+
+.form-section:last-child {
+  margin-bottom: 0;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: var(--spacing-lg);
+  color: var(--text-dark);
+}
+
+.section-header svg {
+  color: var(--primary-green);
+}
+
+.section-header h3 {
+  font-size: var(--font-md);
+  margin: 0;
+  font-weight: 600;
 }
 
 .payment-form {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-lg);
-}
-
-.form-section {
-  padding-bottom: var(--spacing-lg);
-  border-bottom: 1px solid var(--gray-light);
-}
-
-.form-section:last-child {
-  border-bottom: none;
-  padding-bottom: 0;
-}
-
-.section-title {
-  font-size: var(--font-md);
-  color: var(--primary-green);
-  margin-bottom: var(--spacing-md);
-  font-weight: 600;
+  gap: var(--spacing-xl);
 }
 
 .form-row {
@@ -184,83 +92,12 @@
   gap: var(--spacing-md);
 }
 
-@media (max-width: 576px) {
+@media (max-width: 768px) {
   .form-row {
     grid-template-columns: 1fr;
   }
 }
 
-.terms-agreement {
-  margin-top: var(--spacing-md);
-}
-
-.terms-agreement .checkbox {
-  font-size: var(--font-sm);
-}
-
-.terms-agreement a {
-  color: var(--primary-green);
-  font-weight: 500;
-  text-decoration: none;
-}
-
-.terms-agreement a:hover {
-  text-decoration: underline;
-}
-
-.submit-btn {
-  background: var(--primary-green);
-  color: var(--white);
-  border: none;
-  padding: var(--spacing-lg);
-  border-radius: 8px;
-  font-size: var(--font-md);
-  font-weight: 700;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  text-align: center;
-  margin-top: var(--spacing-md);
-}
-
-.submit-btn:hover {
-  background: var(--primary-dark);
-}
-
-.security-note {
-  text-align: center;
-  color: var(--text-light);
-  font-size: var(--font-sm);
-  margin-top: var(--spacing-md);
-}
-
-/* Form Input Styles */
-.payment-form .form-input {
-  background: var(--white);
-  border: 2px solid var(--gray-light);
-}
-
-.payment-form .form-input:focus {
-  border-color: var(--primary-green);
-  box-shadow: 0 0 0 3px rgba(44, 95, 45, 0.1);
-}
-
-/* Checkbox Styles */
-.checkbox {
-  display: flex;
-  align-items: center;
-  gap: 0.75rem;
-  cursor: pointer;
-  font-size: var(--font-sm);
-  color: var(--text-dark);
-}
-
-.checkbox input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
-  accent-color: var(--primary-green);
-}
-
-/* Form Group Styles */
 .form-group {
   margin-bottom: var(--spacing-md);
 }
@@ -280,8 +117,312 @@
 .form-input {
   width: 100%;
   padding: 0.875rem 1rem;
+  border: 2px solid var(--gray-light);
   border-radius: 8px;
   font-size: var(--font-sm);
   transition: all 0.3s ease;
   outline: none;
+  background: var(--white);
+}
+
+.form-input:focus {
+  border-color: var(--primary-green);
+  box-shadow: 0 0 0 3px rgba(44, 95, 45, 0.1);
+}
+
+.input-with-icon {
+  position: relative;
+}
+
+.card-icon {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-light);
+}
+
+/* Checkbox Styles */
+.checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  font-size: var(--font-sm);
+  color: var(--text-dark);
+}
+
+.checkbox input[type="checkbox"] {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--primary-green);
+}
+
+/* Right Column - Order Summary */
+.order-summary-section {
+  background: var(--white);
+  border-radius: 16px;
+  padding: var(--spacing-xl);
+  box-shadow: var(--shadow-md);
+  height: fit-content;
+}
+
+@media (min-width: 993px) {
+  .order-summary-section {
+    position: sticky;
+    top: 100px;
+  }
+}
+
+.summary-title {
+  font-size: var(--font-lg);
+  color: var(--primary-green);
+  margin-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing-md);
+  border-bottom: 2px solid var(--gray-light);
+}
+
+/* Tour Info */
+.tour-info-card {
+  background: rgba(44, 95, 45, 0.05);
+  border-radius: 12px;
+  padding: var(--spacing-lg);
+  margin-bottom: var(--spacing-lg);
+}
+
+.tour-name {
+  font-size: var(--font-md);
+  color: var(--primary-green);
+  margin-bottom: var(--spacing-md);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tour-name svg {
+  color: var(--primary-green);
+}
+
+.tour-details {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-sm);
+  margin-bottom: var(--spacing-lg);
+}
+
+.tour-detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.detail-label {
+  font-size: var(--font-xs);
+  color: var(--text-light);
+  font-weight: 500;
+}
+
+.detail-value {
+  font-size: var(--font-sm);
+  color: var(--text-dark);
+  font-weight: 600;
+}
+
+/* Customization Controls */
+.customization-title {
+  font-size: var(--font-sm);
+  color: var(--text-dark);
+  margin-bottom: var(--spacing-md);
+  font-weight: 600;
+}
+
+.customization-controls {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--spacing-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+@media (max-width: 576px) {
+  .customization-controls {
+    grid-template-columns: 1fr;
+  }
+}
+
+.control-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.control-label {
+  font-size: var(--font-xs);
+  color: var(--text-light);
+  font-weight: 500;
+}
+
+.control-input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 2px solid var(--gray-light);
+  border-radius: 8px;
+  font-size: var(--font-sm);
+  text-align: center;
+  transition: all 0.3s ease;
+}
+
+.control-input:focus {
+  border-color: var(--primary-green);
+  outline: none;
+}
+
+/* Extra Services */
+.extra-services {
+  margin-bottom: var(--spacing-lg);
+}
+
+.services-title {
+  font-size: var(--font-sm);
+  color: var(--text-dark);
+  margin-bottom: var(--spacing-sm);
+  font-weight: 600;
+}
+
+.services-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+
+.service-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: var(--white);
+  border: 1px solid var(--gray-light);
+  border-radius: 8px;
+  transition: all 0.3s ease;
+  cursor: pointer;
+}
+
+.service-item:hover {
+  border-color: var(--primary-green);
+  background: rgba(44, 95, 45, 0.03);
+}
+
+.service-item.selected {
+  border-color: var(--primary-green);
+  background: rgba(44, 95, 45, 0.05);
+}
+
+.service-checkbox {
+  width: 18px;
+  height: 18px;
+  accent-color: var(--primary-green);
+}
+
+.service-info {
+  flex: 1;
+}
+
+.service-name {
+  font-size: var(--font-sm);
+  color: var(--text-dark);
+  font-weight: 500;
+  margin-bottom: 0.25rem;
+}
+
+.service-price {
+  font-size: var(--font-xs);
+  color: var(--primary-green);
+  font-weight: 600;
+}
+
+/* Price Breakdown */
+.price-breakdown {
+  background: var(--light-bg);
+  border-radius: 12px;
+  padding: var(--spacing-lg);
+  margin-top: var(--spacing-lg);
+}
+
+.price-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0;
+  font-size: var(--font-sm);
+  color: var(--text-dark);
+}
+
+.price-row.total {
+  border-top: 2px solid var(--gray-light);
+  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  font-size: var(--font-md);
+  font-weight: 600;
+  color: var(--primary-green);
+}
+
+.price-amount {
+  font-weight: 600;
+}
+
+.price-amount.total {
+  font-size: var(--font-lg);
+  font-weight: 700;
+}
+
+/* Payment Actions */
+.payment-actions {
+  margin-top: var(--spacing-xl);
+}
+
+.submit-btn {
+  width: 100%;
+  background: var(--primary-green);
+  color: var(--white);
+  border: none;
+  padding: 1rem;
+  border-radius: 8px;
+  font-size: var(--font-md);
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+  margin-bottom: var(--spacing-md);
+}
+
+.submit-btn:hover {
+  background: var(--primary-dark);
+  transform: translateY(-2px);
+}
+
+.security-note {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  color: var(--text-light);
+  font-size: var(--font-xs);
+  text-align: center;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .payment-page {
+    padding: var(--spacing-lg) var(--spacing-md);
+  }
+  
+  .payment-form-section,
+  .order-summary-section {
+    padding: var(--spacing-lg);
+  }
+  
+  .form-section-title,
+  .summary-title {
+    font-size: var(--font-md);
+  }
 }
