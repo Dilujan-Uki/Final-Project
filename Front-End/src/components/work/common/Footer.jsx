@@ -28,6 +28,7 @@ const Footer = () => {
               <li><Link to="/">Home</Link></li>
               <li><Link to="/tours">Tours</Link></li>
               <li><Link to="/tour-guides">Tour Guides</Link></li>
+              <li><Link to="/reviews">Reviews</Link></li> {/* Added Reviews */}
               <li><Link to="/contact">Contact</Link></li>
               <li><Link to="/login">Login</Link></li>
             </ul>

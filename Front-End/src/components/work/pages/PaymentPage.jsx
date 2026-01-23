@@ -15,6 +15,11 @@ const PaymentPage = () => {
   const pricePerDay = parseInt(queryParams.get('pricePerDay')) || 80;
   const basePrice = parseInt(queryParams.get('basePrice')) || 240;
   
+  // Get guide details from URL parameters
+  const guideId = queryParams.get('guide');
+  const guideName = queryParams.get('guideName') || "";
+  const guideDailyRate = parseInt(queryParams.get('guideDailyRate')) || 0;
+
   const [paymentData, setPaymentData] = useState({
     cardNumber: '',
     cardName: '',
@@ -27,28 +32,48 @@ const PaymentPage = () => {
     participants: 2,
     selectedDuration: duration,
     extraServices: {
-      guide: false,
       transport: false,
-      meals: false,
-      accommodation: false
+      meals: false
     }
   });
+
+  // Load saved selections from localStorage
+  useEffect(() => {
+    const savedTour = localStorage.getItem('selectedTour');
+    const savedGuide = localStorage.getItem('selectedGuide');
+    
+    if (savedTour && !tourId) {
+      const tourData = JSON.parse(savedTour);
+      // Update URL or state with saved tour
+    }
+    
+    if (savedGuide && !guideId) {
+      const guideData = JSON.parse(savedGuide);
+      // Update URL or state with saved guide
+    }
+  }, [tourId, guideId]);
 
   // Calculate prices based on customization
   const calculatePrices = () => {
     const baseTourPrice = customization.selectedDuration * pricePerDay * customization.participants;
+    const guideCost = guideDailyRate * customization.selectedDuration;
     
     let extraServicesCost = 0;
-    if (customization.extraServices.guide) extraServicesCost += 50 * customization.participants;
     if (customization.extraServices.transport) extraServicesCost += 100;
     if (customization.extraServices.meals) extraServicesCost += 30 * customization.participants * customization.selectedDuration;
-    if (customization.extraServices.accommodation) extraServicesCost += 60 * customization.participants * customization.selectedDuration;
     
-    const subtotal = baseTourPrice + extraServicesCost;
+    const subtotal = baseTourPrice + guideCost + extraServicesCost;
     const serviceFee = 15;
     const total = subtotal + serviceFee;
     
-    return { baseTourPrice, extraServicesCost, subtotal, serviceFee, total };
+    return { 
+      baseTourPrice, 
+      guideCost, 
+      extraServicesCost, 
+      subtotal, 
+      serviceFee, 
+      total 
+    };
   };
 
   const prices = calculatePrices();
@@ -66,6 +91,10 @@ const PaymentPage = () => {
     
     console.log('Payment submitted:', paymentData);
     console.log('Tour customization:', customization);
+    
+    // Clear selections after successful payment
+    localStorage.removeItem('selectedTour');
+    localStorage.removeItem('selectedGuide');
     
     alert('Payment Successful! Your booking is confirmed.');
     navigate('/');
@@ -125,13 +154,6 @@ const PaymentPage = () => {
 
   const extraServicesList = [
     {
-      id: 'guide',
-      name: 'Professional Guide',
-      price: 50,
-      description: '$50 per person',
-      checked: customization.extraServices.guide
-    },
-    {
       id: 'transport',
       name: 'Private Transport',
       price: 100,
@@ -144,22 +166,23 @@ const PaymentPage = () => {
       price: 30,
       description: '$30 per person/day',
       checked: customization.extraServices.meals
-    },
-    {
-      id: 'accommodation',
-      name: 'Accommodation',
-      price: 60,
-      description: '$60 per person/day',
-      checked: customization.extraServices.accommodation
     }
   ];
+
+  const handleChangeTour = () => {
+    navigate('/tours');
+  };
+
+  const handleChangeGuide = () => {
+    navigate('/tour-guides');
+  };
 
   return (
     <div className="payment-page">
       <div className="container">
         <div className="payment-header">
           <h1 className="page-title">Complete Your Booking</h1>
-          <p className="page-subtitle">Enter your payment details and customize your tour package</p>
+          <p className="page-subtitle">Review your selections and enter payment details</p>
         </div>
 
         <div className="payment-container">
@@ -319,12 +342,17 @@ const PaymentPage = () => {
             
             {/* Tour Info */}
             <div className="tour-info-card">
-              <h3 className="tour-name">
-                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M20.42 4.58a5.4 5.4 0 0 0-7.65 0l-.77.78-.77-.78a5.4 5.4 0 0 0-7.65 0C1.46 6.7 1.33 10.28 4 13l8 8 8-8c2.67-2.72 2.54-6.3.42-8.42z"></path>
-                </svg>
-                {decodeURIComponent(tourName)}
-              </h3>
+              <div className="tour-header">
+                <h3 className="tour-name">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M20.42 4.58a5.4 5.4 0 0 0-7.65 0l-.77.78-.77-.78a5.4 5.4 0 0 0-7.65 0C1.46 6.7 1.33 10.28 4 13l8 8 8-8c2.67-2.72 2.54-6.3.42-8.42z"></path>
+                  </svg>
+                  {decodeURIComponent(tourName)}
+                </h3>
+                <button onClick={handleChangeTour} className="change-btn">
+                  Change
+                </button>
+              </div>
               
               <div className="tour-details">
                 <div className="tour-detail-item">
@@ -337,6 +365,31 @@ const PaymentPage = () => {
                 </div>
               </div>
             </div>
+
+            {/* Guide Info */}
+            {guideName && (
+              <div className="tour-info-card">
+                <div className="tour-header">
+                  <h3 className="tour-name">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                      <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                    {decodeURIComponent(guideName)}
+                  </h3>
+                  <button onClick={handleChangeGuide} className="change-btn">
+                    Change
+                  </button>
+                </div>
+                
+                <div className="tour-details">
+                  <div className="tour-detail-item">
+                    <span className="detail-label">Daily Rate</span>
+                    <span className="detail-value">${guideDailyRate}/day</span>
+                  </div>
+                </div>
+              </div>
+            )}
 
             {/* Customization Controls */}
             <div className="customization-section">
@@ -407,6 +460,13 @@ const PaymentPage = () => {
                 <span>Base Tour Price</span>
                 <span className="price-amount">${prices.baseTourPrice}</span>
               </div>
+              
+              {guideName && (
+                <div className="price-row">
+                  <span>Tour Guide</span>
+                  <span className="price-amount">${prices.guideCost}</span>
+                </div>
+              )}
               
               {prices.extraServicesCost > 0 && (
                 <div className="price-row">

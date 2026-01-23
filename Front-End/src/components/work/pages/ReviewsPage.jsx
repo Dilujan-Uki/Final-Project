@@ -1,5 +1,5 @@
 // src/pages/ReviewsPage.jsx
-import React, { useState } from 'react';
+import React, { useState,useEffect } from 'react';
 import './ReviewsPage.css';
 
 const ReviewsPage = () => {
@@ -9,7 +9,8 @@ const ReviewsPage = () => {
     rating: 5,
     title: '',
     comment: '',
-    tour: ''
+    tour: '',
+    guide: ''
   });
 
   const existingReviews = [
@@ -20,8 +21,9 @@ const ReviewsPage = () => {
       rating: 5,
       date: "January 2024",
       title: "Amazing Cultural Experience",
-      comment: "The Cultural Triangle tour was absolutely incredible! Our guide was knowledgeable and made ancient history come alive. Highly recommended!",
-      tour: "Cultural Triangle Explorer"
+      comment: "The Cultural Triangle tour was absolutely incredible! Our guide Rajitha was knowledgeable and made ancient history come alive. Highly recommended!",
+      tour: "Cultural Triangle Explorer",
+      guide: "Rajitha Fernando"
     },
     {
       id: 2,
@@ -30,8 +32,9 @@ const ReviewsPage = () => {
       rating: 5,
       date: "December 2023",
       title: "Best Wildlife Safari",
-      comment: "Saw leopards, elephants, and so many birds in Yala National Park. Our guide was an expert tracker!",
-      tour: "Wildlife Safari Experience"
+      comment: "Saw leopards, elephants, and so many birds in Yala National Park. Our guide Sanduni was an expert tracker and made the experience unforgettable!",
+      tour: "Wildlife Safari Experience",
+      guide: "Sanduni Perera"
     },
     {
       id: 3,
@@ -40,8 +43,9 @@ const ReviewsPage = () => {
       rating: 5,
       date: "November 2023",
       title: "Perfect Hill Country Adventure",
-      comment: "The train journey through tea plantations was breathtaking. Ella was magical and our guide made the experience unforgettable.",
-      tour: "Hill Country Adventure"
+      comment: "The train journey through tea plantations was breathtaking. Our guide Kamal was excellent and made the experience magical.",
+      tour: "Hill Country Adventure",
+      guide: "Kamal Silva"
     },
     {
       id: 4,
@@ -50,8 +54,9 @@ const ReviewsPage = () => {
       rating: 4,
       date: "October 2023",
       title: "Great Beach Tour",
-      comment: "Galle Fort was fascinating and the beaches were pristine. Would love to come back for more water sports!",
-      tour: "Coastal Paradise Tour"
+      comment: "Galle Fort was fascinating and the beaches were pristine. Our guide Chaminda was very knowledgeable about marine life.",
+      tour: "Coastal Paradise Tour",
+      guide: "Chaminda Wickramasinghe"
     },
     {
       id: 5,
@@ -60,8 +65,9 @@ const ReviewsPage = () => {
       rating: 5,
       date: "September 2023",
       title: "Tea Plantation Excellence",
-      comment: "As a tea lover, this tour was perfect! Learned so much about Ceylon tea and the tasting sessions were amazing.",
-      tour: "Tea Country Journey"
+      comment: "As a tea lover, this tour was perfect! Priya's knowledge about Ceylon tea was incredible. The tasting sessions were amazing.",
+      tour: "Tea Country Journey",
+      guide: "Priya Jayawardena"
     },
     {
       id: 6,
@@ -70,32 +76,114 @@ const ReviewsPage = () => {
       rating: 5,
       date: "August 2023",
       title: "Complete Sri Lanka Experience",
-      comment: "12 days covering the entire island was worth every penny. Every day brought new adventures and discoveries.",
-      tour: "Complete Sri Lanka Experience"
+      comment: "12 days covering the entire island was worth every penny. Our guide Nilantha made every day special with his culinary insights.",
+      tour: "Complete Sri Lanka Experience",
+      guide: "Nilantha De Silva"
     }
   ];
 
   const tours = [
     "Cultural Triangle Explorer",
-    "Hill Country Adventure", 
+    "Hill Country Adventure",
     "Wildlife Safari Experience",
     "Coastal Paradise Tour",
     "Tea Country Journey",
     "Complete Sri Lanka Experience"
   ];
 
-  const handleSubmit = (e) => {
+  const guides = [
+    "Rajitha Fernando",
+    "Sanduni Perera",
+    "Kamal Silva",
+    "Nilantha De Silva",
+    "Chaminda Wickramasinghe",
+    "Priya Jayawardena"
+  ];
+
+
+  // Update the ReviewsPage.jsx handleSubmit function:
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log('Review submitted:', newReview);
-    alert('Thank you for your review! It will be published after moderation.');
-    setNewReview({
-      name: '',
-      email: '',
-      rating: 5,
-      title: '',
-      comment: '',
-      tour: ''
-    });
+
+    // Check if user is logged in
+    const token = localStorage.getItem('token');
+    if (!token) {
+      alert('Please login to submit a review');
+      return;
+    }
+
+    try {
+      const response = await fetch('http://localhost:5000/api/reviews', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify(newReview)
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to submit review');
+      }
+
+      alert('Thank you for your review! It will be published after moderation.');
+
+      // Reset form
+      setNewReview({
+        name: '',
+        email: '',
+        rating: 5,
+        title: '',
+        comment: '',
+        tour: '',
+        guide: ''
+      });
+
+      // Refresh reviews list
+      fetchReviews();
+
+    } catch (error) {
+      console.error('Review submission error:', error);
+      alert(error.message || 'Failed to submit review');
+    }
+  };
+
+  // Add useEffect to fetch reviews:
+  useEffect(() => {
+    fetchReviews();
+  }, []);
+
+  const fetchReviews = async () => {
+    try {
+      const response = await fetch('http://localhost:5000/api/reviews');
+      const data = await response.json();
+
+      if (data.status === 'success') {
+        // Transform API data to match existing format
+        const apiReviews = data.data.map(review => ({
+          id: review._id,
+          name: review.user?.name || 'Anonymous',
+          location: '', // You might want to add location to your Review model
+          rating: review.rating,
+          date: new Date(review.createdAt).toLocaleDateString('en-US', {
+            month: 'long',
+            year: 'numeric'
+          }),
+          title: review.title,
+          comment: review.comment,
+          tour: review.tour,
+          guide: review.guide || ''
+        }));
+
+        // You can either replace or merge with existing reviews
+        // setExistingReviews(apiReviews);
+      }
+    } catch (error) {
+      console.error('Error fetching reviews:', error);
+    }
   };
 
   const handleChange = (e) => {
@@ -121,7 +209,7 @@ const ReviewsPage = () => {
           <div className="hero-content">
             <h1 className="hero-title">Traveler Reviews</h1>
             <p className="hero-subtitle">
-              Share your experience and read what others say about Ceylon Tours
+              Share your experience and read what others say about Ceylon Tours and our guides
             </p>
           </div>
         </div>
@@ -153,7 +241,7 @@ const ReviewsPage = () => {
                     placeholder="Enter your name"
                   />
                 </div>
-                
+
                 <div className="form-group">
                   <label htmlFor="email" className="form-label">Email Address *</label>
                   <input
@@ -169,21 +257,39 @@ const ReviewsPage = () => {
                 </div>
               </div>
 
-              <div className="form-group">
-                <label htmlFor="tour" className="form-label">Tour Package *</label>
-                <select
-                  id="tour"
-                  name="tour"
-                  value={newReview.tour}
-                  onChange={handleChange}
-                  className="form-select"
-                  required
-                >
-                  <option value="">Select a tour</option>
-                  {tours.map((tour, index) => (
-                    <option key={index} value={tour}>{tour}</option>
-                  ))}
-                </select>
+              <div className="form-row">
+                <div className="form-group">
+                  <label htmlFor="tour" className="form-label">Tour Package *</label>
+                  <select
+                    id="tour"
+                    name="tour"
+                    value={newReview.tour}
+                    onChange={handleChange}
+                    className="form-select"
+                    required
+                  >
+                    <option value="">Select a tour</option>
+                    {tours.map((tour, index) => (
+                      <option key={index} value={tour}>{tour}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div className="form-group">
+                  <label htmlFor="guide" className="form-label">Tour Guide (Optional)</label>
+                  <select
+                    id="guide"
+                    name="guide"
+                    value={newReview.guide}
+                    onChange={handleChange}
+                    className="form-select"
+                  >
+                    <option value="">Select a guide (if any)</option>
+                    {guides.map((guide, index) => (
+                      <option key={index} value={guide}>{guide}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
 
               <div className="form-group">
@@ -227,7 +333,7 @@ const ReviewsPage = () => {
                   onChange={handleChange}
                   className="form-textarea"
                   required
-                  placeholder="Share details of your experience..."
+                  placeholder="Share details of your experience with the tour and guide..."
                   rows="6"
                 />
               </div>
@@ -247,7 +353,7 @@ const ReviewsPage = () => {
             <div className="section-header">
               <h2 className="section-title">Recent Reviews</h2>
               <p className="section-subtitle">
-                What our travelers are saying
+                What our travelers are saying about our tours and guides
               </p>
             </div>
 
@@ -282,10 +388,13 @@ const ReviewsPage = () => {
                       {'☆'.repeat(5 - review.rating)}
                     </div>
                   </div>
-                  
+
                   <div className="review-content">
                     <h3 className="review-title">{review.title}</h3>
                     <p className="review-tour">Tour: {review.tour}</p>
+                    {review.guide && (
+                      <p className="review-guide">Guide: {review.guide}</p>
+                    )}
                     <p className="review-comment">{review.comment}</p>
                   </div>
                 </div>

@@ -1,9 +1,11 @@
 // src/pages/ToursPage.jsx
 import React from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import './ToursPage.css';
 
 const ToursPage = () => {
+  const navigate = useNavigate();
+  
   const tourPackages = [
     {
       id: 1,
@@ -67,6 +69,27 @@ const ToursPage = () => {
     }
   ];
 
+  const handleSelectTour = (tour) => {
+    const days = parseInt(tour.duration.split(' ')[0]);
+    const basePrice = days * tour.pricePerDay;
+    
+    // Store tour selection in localStorage or pass via URL
+    const tourSelection = {
+      id: tour.id,
+      name: tour.name,
+      duration: days,
+      pricePerDay: tour.pricePerDay,
+      basePrice: basePrice,
+      groupSize: tour.groupSize,
+      features: tour.features
+    };
+    
+    localStorage.setItem('selectedTour', JSON.stringify(tourSelection));
+    
+    // Navigate to tour guides page
+    navigate(`/tour-guides?tour=${tour.id}&name=${encodeURIComponent(tour.name)}&duration=${days}&pricePerDay=${tour.pricePerDay}`);
+  };
+
   return (
     <div className="tours-page">
       {/* Hero Section */}
@@ -86,7 +109,6 @@ const ToursPage = () => {
         <div className="container">
           <div className="tours-grid">
             {tourPackages.map((tour) => {
-              // Calculate base price based on duration (3 days = 3 * $80)
               const days = parseInt(tour.duration.split(' ')[0]);
               const basePrice = days * tour.pricePerDay;
               
@@ -121,12 +143,12 @@ const ToursPage = () => {
                     </div>
                     
                     <div className="tour-actions">
-                      <Link 
-                        to={`/payment?tour=${tour.id}&name=${encodeURIComponent(tour.name)}&duration=${days}&pricePerDay=${tour.pricePerDay}&basePrice=${basePrice}`} 
+                      <button 
+                        onClick={() => handleSelectTour(tour)}
                         className="btn-primary"
                       >
-                        Book Now
-                      </Link>
+                        Select This Tour
+                      </button>
                     </div>
                   </div>
                 </div>

@@ -285,3 +285,12 @@
   font-size: var(--font-sm);
   line-height: 1.6;
 }
+
+/* Add to ReviewsPage.css */
+
+.review-guide {
+  font-size: var(--font-sm);
+  color: var(--primary-green);
+  font-weight: 500;
+  margin: 0.25rem 0 0.5rem 0;
+}

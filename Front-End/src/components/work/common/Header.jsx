@@ -1,61 +1,3 @@
-// // src/components/common/Header.jsx
-// import React from 'react';
-// import { Link, useLocation } from 'react-router-dom';
-// import './Header.css';
-
-// const Header = () => {
-//   const location = useLocation();
-  
-//   const navItems = [
-//     { path: '/', label: 'Home' },
-//     { path: '/tours', label: 'Tours' },
-//     { path: '/tour-guides', label: 'Tour Guides' },
-//     { path: '/contact', label: 'Contact' },
-//     { path: '/login', label: 'Login' },
-//   ];
-
-//   return (
-//     <>
-//       <a href="#main-content" className="skip-to-content">
-//         Skip to main content
-//       </a>
-      
-//       <header className="header">
-//         <div className="container">
-//           <div className="header-content">
-//             {/* Logo */}
-//             <Link to="/" className="logo">
-//               <div className="logo-text">
-//                 <h1 className="logo-title">Ceylon Tours</h1>
-//                 <p className="logo-subtitle">Experience the pearl of the Indian Ocean</p>
-//               </div>
-//             </Link>
-            
-//             {/* Navigation */}
-//             <nav className="main-nav">
-//               <ul className="nav-list">
-//                 {navItems.map((item) => (
-//                   <li key={item.path} className="nav-item">
-//                     <Link 
-//                       to={item.path} 
-//                       className={`nav-link ${location.pathname === item.path ? 'active' : ''}`}
-//                     >
-//                       {item.label}
-//                     </Link>
-//                   </li>
-//                 ))}
-//               </ul>
-//             </nav>
-//           </div>
-//         </div>
-//       </header>
-//     </>
-//   );
-// };
-
-// export default Header;
-
-
 // src/components/common/Header.jsx
 import React, { useState, useEffect } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
@@ -68,13 +10,17 @@ const Header = () => {
   const [showDropdown, setShowDropdown] = useState(false);
 
   // Check if user is logged in
-  useEffect(() => {
-    const userData = localStorage.getItem('user');
-    if (userData) {
-      setUser(JSON.parse(userData));
+ useEffect(() => {
+  const userData = localStorage.getItem('user');
+  if (userData) {
+    try {
+      const parsedUser = JSON.parse(userData);
+      setUser(parsedUser);
+    } catch (error) {
+      console.error('Error parsing user data:', error);
     }
-  }, []);
-
+  }
+}, []);
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('user');
@@ -87,15 +33,15 @@ const Header = () => {
     { path: '/', label: 'Home' },
     { path: '/tours', label: 'Tours' },
     { path: '/tour-guides', label: 'Tour Guides' },
+    { path: '/reviews', label: 'Reviews' },
     { path: '/contact', label: 'Contact' },
   ];
-
   return (
     <>
       <a href="#main-content" className="skip-to-content">
         Skip to main content
       </a>
-      
+
       <header className="header">
         <div className="container">
           <div className="header-content">
@@ -106,26 +52,26 @@ const Header = () => {
                 <p className="logo-subtitle">Experience the pearl of the Indian Ocean</p>
               </div>
             </Link>
-            
+
             {/* Navigation */}
             <nav className="main-nav">
               <ul className="nav-list">
                 {navItems.map((item) => (
                   <li key={item.path} className="nav-item">
-                    <Link 
-                      to={item.path} 
+                    <Link
+                      to={item.path}
                       className={`nav-link ${location.pathname === item.path ? 'active' : ''}`}
                     >
                       {item.label}
                     </Link>
                   </li>
                 ))}
-                
+
                 {/* User Account Dropdown or Login Link */}
                 <li className="nav-item user-dropdown-container">
                   {user ? (
                     <div className="user-menu">
-                      <button 
+                      <button
                         className="user-avatar-btn"
                         onClick={() => setShowDropdown(!showDropdown)}
                         aria-expanded={showDropdown}
@@ -137,7 +83,7 @@ const Header = () => {
                         </svg>
                         <span className="user-name">{user.name.split(' ')[0]}</span>
                       </button>
-                      
+
                       {showDropdown && (
                         <div className="dropdown-menu">
                           <div className="dropdown-header">
@@ -146,8 +92,26 @@ const Header = () => {
                             <p className="dropdown-email">{user.email}</p>
                           </div>
                           <div className="dropdown-divider"></div>
-                          <Link 
-                            to="/account" 
+
+                          {/* Add the admin dashboard link here */}
+                          {user.role === 'admin' && (
+                            <Link
+                              to="/admin"
+                              className="dropdown-item"
+                              onClick={() => setShowDropdown(false)}
+                            >
+                              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                <rect x="3" y="3" width="7" height="9"></rect>
+                                <rect x="14" y="3" width="7" height="5"></rect>
+                                <rect x="3" y="15" width="7" height="6"></rect>
+                                <rect x="14" y="13" width="7" height="8"></rect>
+                              </svg>
+                              Admin Dashboard
+                            </Link>
+                          )}
+
+                          <Link
+                            to="/account"
                             className="dropdown-item"
                             onClick={() => setShowDropdown(false)}
                           >
@@ -157,8 +121,10 @@ const Header = () => {
                             </svg>
                             My Account
                           </Link>
-                          <Link 
-                            to="/bookings" 
+
+                          {/* Your My Bookings link is already here - keep it */}
+                          <Link
+                            to="/bookings"
                             className="dropdown-item"
                             onClick={() => setShowDropdown(false)}
                           >
@@ -167,7 +133,8 @@ const Header = () => {
                             </svg>
                             My Bookings
                           </Link>
-                          <button 
+
+                          <button
                             className="dropdown-item logout-btn"
                             onClick={handleLogout}
                           >
@@ -182,8 +149,8 @@ const Header = () => {
                       )}
                     </div>
                   ) : (
-                    <Link 
-                      to="/login" 
+                    <Link
+                      to="/login"
                       className={`nav-link ${location.pathname === '/login' ? 'active' : ''}`}
                     >
                       Login

@@ -1,0 +1,347 @@
+/* src/pages/TourGuideDetailPage.css */
+.guide-detail-page {
+  min-height: 100vh;
+  padding-bottom: var(--spacing-xxl);
+}
+
+/* Hero Section */
+.guide-hero {
+  background: linear-gradient(rgba(44, 95, 45, 0.9), rgba(30, 58, 30, 0.8));
+  padding: var(--spacing-xxl) 0;
+  color: var(--white);
+}
+
+.guide-hero-content {
+  display: grid;
+  grid-template-columns: 300px 1fr;
+  gap: var(--spacing-xl);
+  align-items: center;
+}
+
+@media (max-width: 768px) {
+  .guide-hero-content {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
+}
+
+.guide-hero-image {
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: var(--shadow-lg);
+}
+
+.guide-hero-image img {
+  width: 100%;
+  height: 300px;
+  object-fit: cover;
+}
+
+.guide-hero-info {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.guide-name {
+  font-size: var(--font-xxl);
+  color: var(--white);
+  margin: 0;
+}
+
+.guide-title {
+  font-size: var(--font-lg);
+  color: var(--accent-gold);
+  margin: 0;
+  font-weight: 500;
+}
+
+.guide-rating {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
+.guide-rating .stars {
+  color: var(--accent-gold);
+  font-size: 1.5rem;
+  letter-spacing: 2px;
+}
+
+.rating-text {
+  font-size: var(--font-md);
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.guide-hero-details {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: var(--spacing-md);
+  background: rgba(255, 255, 255, 0.1);
+  padding: var(--spacing-md);
+  border-radius: 12px;
+  margin: var(--spacing-md) 0;
+}
+
+.guide-hero-details .detail {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.guide-hero-details .detail-label {
+  font-size: var(--font-xs);
+  color: rgba(255, 255, 255, 0.8);
+}
+
+.guide-hero-details .detail-value {
+  font-size: var(--font-md);
+  color: var(--white);
+  font-weight: 600;
+}
+
+.book-guide-btn {
+  align-self: flex-start;
+  padding: var(--spacing-md) var(--spacing-xl);
+  font-size: var(--font-md);
+}
+
+@media (max-width: 768px) {
+  .book-guide-btn {
+    align-self: center;
+    width: 100%;
+  }
+}
+
+/* Guide Detail Content */
+.guide-detail-content {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: var(--spacing-xl);
+  margin-top: var(--spacing-xl);
+}
+
+@media (max-width: 992px) {
+  .guide-detail-content {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Info Cards */
+.info-card {
+  background: var(--white);
+  border-radius: 16px;
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+.info-card:last-child {
+  margin-bottom: 0;
+}
+
+.info-title {
+  font-size: var(--font-lg);
+  color: var(--primary-green);
+  margin-bottom: var(--spacing-md);
+  padding-bottom: var(--spacing-sm);
+  border-bottom: 2px solid var(--gray-light);
+}
+
+.guide-bio {
+  font-size: var(--font-md);
+  color: var(--text-dark);
+  line-height: 1.6;
+  margin-bottom: var(--spacing-md);
+}
+
+.guide-description {
+  color: var(--text-light);
+  line-height: 1.6;
+}
+
+/* Specialties */
+.specialties-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.specialty-tag {
+  background: rgba(255, 180, 0, 0.1);
+  color: #B26A00;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-size: var(--font-sm);
+  font-weight: 500;
+}
+
+/* Languages */
+.languages-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.language-item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: var(--spacing-sm);
+  background: var(--light-bg);
+  border-radius: 8px;
+}
+
+.language-name {
+  font-size: var(--font-sm);
+  color: var(--text-dark);
+  font-weight: 500;
+}
+
+/* Certifications */
+.certifications-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.certifications-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: var(--spacing-sm);
+  background: var(--light-bg);
+  border-radius: 8px;
+  font-size: var(--font-sm);
+  color: var(--text-dark);
+}
+
+.certifications-list li::before {
+  content: '✓';
+  color: var(--primary-green);
+  font-weight: bold;
+}
+
+/* Sidebar */
+.sidebar-card {
+  background: var(--white);
+  border-radius: 16px;
+  padding: var(--spacing-lg);
+  box-shadow: var(--shadow-md);
+  margin-bottom: var(--spacing-lg);
+}
+
+.sidebar-card:last-child {
+  margin-bottom: 0;
+}
+
+.sidebar-title {
+  font-size: var(--font-md);
+  color: var(--primary-green);
+  margin-bottom: var(--spacing-md);
+}
+
+/* Tour List */
+.tour-list {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.tour-list li {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: var(--spacing-sm);
+  background: var(--light-bg);
+  border-radius: 8px;
+  font-size: var(--font-sm);
+  color: var(--text-dark);
+}
+
+.tour-list li::before {
+  content: '•';
+  color: var(--primary-green);
+  font-size: 1.5rem;
+}
+
+/* Contact Details */
+.contact-details {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.contact-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.contact-label {
+  font-size: var(--font-xs);
+  color: var(--text-light);
+  font-weight: 500;
+}
+
+.contact-value {
+  font-size: var(--font-sm);
+  color: var(--text-dark);
+  font-weight: 500;
+}
+
+/* Reviews */
+.reviews-list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+  max-height: 400px;
+  overflow-y: auto;
+  padding-right: var(--spacing-sm);
+}
+
+.review-item {
+  padding: var(--spacing-md);
+  background: var(--light-bg);
+  border-radius: 12px;
+  border: 1px solid var(--gray-light);
+}
+
+.review-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.reviewer-name {
+  font-size: var(--font-sm);
+  color: var(--text-dark);
+  font-weight: 600;
+}
+
+.review-date {
+  font-size: var(--font-xs);
+  color: var(--text-light);
+}
+
+.review-rating {
+  color: var(--accent-gold);
+  font-size: 1rem;
+  margin-bottom: 0.25rem;
+}
+
+.review-tour {
+  font-size: var(--font-xs);
+  color: var(--primary-green);
+  font-weight: 500;
+  margin-bottom: 0.5rem;
+}
+
+.review-comment {
+  font-size: var(--font-sm);
+  color: var(--text-dark);
+  line-height: 1.5;
+}

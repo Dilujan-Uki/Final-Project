@@ -31,7 +31,18 @@ const userSchema = new mongoose.Schema({
   createdAt: {
     type: Date,
     default: Date.now
+  },
+  address: {
+  type: String,
+  trim: true
+},
+preferences: {
+  tourTypes: [String],
+  language: {
+    type: String,
+    default: 'English'
   }
+},
 });
 
 // Hash password before saving

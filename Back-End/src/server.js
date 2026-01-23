@@ -53,11 +53,23 @@ try {
   console.log('Loading contactRoutes...');
   const contactRoutes = require('./routes/contactRoutes');
   console.log('✅ contactRoutes loaded');
+
+  console.log('Loading bookingRoutes...');
+  const bookingRoutes = require('./routes/bookingRoutes');
+  console.log('✅ bookingRoutes loaded');
+  
+  console.log('Loading reviewRoutes...');
+  const reviewRoutes = require('./routes/reviewRoutes');
+  console.log('✅ reviewRoutes loaded');
+
   
   // Use routes
   app.use('/api/auth', authRoutes);
   app.use('/api/tours', tourRoutes);
   app.use('/api/contact', contactRoutes);
+  app.use('/api/bookings', bookingRoutes);
+  app.use('/api/reviews', reviewRoutes);
+
   
   console.log('✅ All routes mounted successfully');
   
@@ -99,8 +111,9 @@ const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
   console.log(`\n🚀 Server running on port ${PORT}`);
   console.log(`🌐 API available at: http://localhost:${PORT}/api`);
-  console.log(`📊 Health check: http://localhost:${PORT}/api/health`);
   console.log(`🔐 Auth endpoints: http://localhost:${PORT}/api/auth`);
   console.log(`🗺️ Tour endpoints: http://localhost:${PORT}/api/tours`);
   console.log(`📞 Contact endpoints: http://localhost:${PORT}/api/contact`);
+  console.log(`📊 Booking endpoints: http://localhost:${PORT}/api/bookings`);
+  console.log(`⭐ Review endpoints: http://localhost:${PORT}/api/reviews`);
 });
