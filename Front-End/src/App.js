@@ -14,8 +14,9 @@ import PaymentPage from './components/work/pages/PaymentPage';
 import ReviewsPage from './components/work/pages/ReviewsPage';
 import BookingPage from './components/work/pages/BookingPage';
 import AdminDashboard from './components/work/pages/AdminDashboard';
+import MyBookingsPage from './components/work/pages/myBookingsPage';
 // Remove or comment out this line temporarily:
-import GlobalStyles from './components/work/styles/GlobalStyles.css';
+
 
 const App = () => {
   return (
@@ -36,6 +37,7 @@ const App = () => {
             <Route path="/reviews" element={<ReviewsPage />} />
             <Route path="/booking" element={<BookingPage />} />
             <Route path="/admin" element={<AdminDashboard />} />
+            <Route path="/my-bookings" element={<MyBookingsPage />} />
             {/* 404 Page */}
             <Route path="*" element={
               <div className="not-found">

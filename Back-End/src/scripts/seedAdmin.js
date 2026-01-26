@@ -1,6 +1,6 @@
 // scripts/seedAdmin.js
 const mongoose = require('mongoose');
-const User = require('./src/model/User');
+const User = require('../model/User');
 require('dotenv').config();
 
 const createAdmin = async () => {
@@ -8,7 +8,7 @@ const createAdmin = async () => {
     await mongoose.connect(process.env.MONGODB_URI);
     
     // Check if admin already exists
-    const existingAdmin = await User.findOne({ email: 'admin@ceylontours.lk' });
+    const existingAdmin = await User.findOne({ email: 'dilujan2005@gmail.com' });
     
     if (existingAdmin) {
       console.log('✅ Admin user already exists');
@@ -18,17 +18,17 @@ const createAdmin = async () => {
     // Create admin user
     const admin = new User({
       name: 'Administrator',
-      email: 'admin@ceylontours.lk',
-      password: 'admin123', // Change this in production!
-      phone: '+94 11 234 5678',
+      email: 'dilujan2005@gmail.com',
+      password: 'Dilujan@2005', // Change this in production!
+      phone: '+94 759427364',
       role: 'admin'
     });
     
     await admin.save();
     
     console.log('✅ Admin user created successfully');
-    console.log('📧 Email: admin@ceylontours.lk');
-    console.log('🔑 Password: admin123');
+    console.log('📧 Email: dilujan2005@gmail.com');
+    console.log('🔑 Password: Dilujan@2005');
     
     process.exit(0);
   } catch (error) {

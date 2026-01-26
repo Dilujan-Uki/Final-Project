@@ -124,7 +124,7 @@ const Header = () => {
 
                           {/* Your My Bookings link is already here - keep it */}
                           <Link
-                            to="/bookings"
+                            to="/my-bookings"
                             className="dropdown-item"
                             onClick={() => setShowDropdown(false)}
                           >
