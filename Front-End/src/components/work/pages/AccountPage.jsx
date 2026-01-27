@@ -83,6 +83,7 @@ const AccountPage = () => {
     );
   }
 
+  // Check if user is admin - FIXED: Proper admin detection
   const isAdmin = user?.role === 'admin';
 
   return (
@@ -90,7 +91,7 @@ const AccountPage = () => {
       <div className="container">
         <div className="account-header">
           <h1 className="account-title">
-            {isAdmin ? 'Administrator Dashboard' : 'My Account'}
+            {isAdmin ? 'Administrator Account' : 'My Account'}
           </h1>
           <p className="account-subtitle">
             Welcome back, {user?.name}!
@@ -185,7 +186,9 @@ const AccountPage = () => {
             {/* Profile Tab */}
             {activeTab === 'profile' && (
               <div className="account-card profile-card">
-                <h2 className="card-title">Personal Information</h2>
+                <div className="card-header">
+                  <h2 className="card-title">Personal Information</h2>
+                </div>
                 <div className="card-content">
                   <div className="info-grid">
                     <div className="info-item">
@@ -229,15 +232,6 @@ const AccountPage = () => {
                         </div>
                       </div>
                     )}
-                  </div>
-                  
-                  <div className="profile-actions">
-                    <button className="btn-primary">
-                      Edit Profile
-                    </button>
-                    <button className="btn-secondary">
-                      Change Password
-                    </button>
                   </div>
                 </div>
               </div>

@@ -16,6 +16,7 @@ const AdminDashboard = () => {
   });
   const [bookings, setBookings] = useState([]);
   const [reviews, setReviews] = useState([]);
+  const [users, setUsers] = useState([]);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -32,8 +33,9 @@ const AdminDashboard = () => {
         const user = JSON.parse(userData);
         setUser(user);
         
-        // Check if user is admin
+        // Check if user is admin - FIXED: Check role properly
         if (user.role !== 'admin') {
+          console.log('User is not admin, redirecting to account');
           navigate('/account');
           return;
         }
@@ -53,43 +55,76 @@ const AdminDashboard = () => {
 
   const fetchDashboardData = async (token) => {
     try {
-      // Fetch bookings
-      const bookingsRes = await fetch('http://localhost:5000/api/bookings', {
+      // Fetch ALL bookings (not just user's bookings)
+      const bookingsRes = await fetch('http://localhost:5000/api/bookings/all', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
       
-      const bookingsData = await bookingsRes.json();
-      if (bookingsData.status === 'success') {
-        setBookings(bookingsData.data);
+      if (bookingsRes.ok) {
+        const bookingsData = await bookingsRes.json();
+        console.log('All bookings data:', bookingsData);
         
-        // Calculate stats
-        const pending = bookingsData.data.filter(b => b.status === 'pending').length;
-        const revenue = bookingsData.data.reduce((sum, b) => sum + b.totalPrice, 0);
-        
-        setStats(prev => ({
-          ...prev,
-          totalBookings: bookingsData.data.length,
-          pendingBookings: pending,
-          totalRevenue: revenue
-        }));
+        if (bookingsData.status === 'success') {
+          setBookings(bookingsData.data);
+          
+          // Calculate stats
+          const pending = bookingsData.data.filter(b => b.status === 'pending').length;
+          const revenue = bookingsData.data.reduce((sum, b) => sum + b.totalPrice, 0);
+          
+          setStats(prev => ({
+            ...prev,
+            totalBookings: bookingsData.data.length,
+            pendingBookings: pending,
+            totalRevenue: revenue
+          }));
+        }
       }
 
-      // Fetch pending reviews
-      const reviewsRes = await fetch('http://localhost:5000/api/reviews?approved=false', {
+      // Fetch ALL reviews, especially pending ones
+      const reviewsRes = await fetch('http://localhost:5000/api/reviews/all', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
       });
       
-      const reviewsData = await reviewsRes.json();
-      if (reviewsData.status === 'success') {
-        setReviews(reviewsData.data);
+      if (reviewsRes.ok) {
+        const reviewsData = await reviewsRes.json();
+        console.log('All reviews data:', reviewsData);
+        
+        if (reviewsData.status === 'success') {
+          // Filter to show pending reviews first
+          const pendingReviews = reviewsData.data.filter(r => !r.isApproved);
+          setReviews(pendingReviews);
+        }
+      }
+
+      // Fetch users count if API exists
+      try {
+        const usersRes = await fetch('http://localhost:5000/api/users', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+        
+        if (usersRes.ok) {
+          const usersData = await usersRes.json();
+          if (usersData.status === 'success') {
+            setUsers(usersData.data);
+            setStats(prev => ({
+              ...prev,
+              totalUsers: usersData.data.length
+            }));
+          }
+        }
+      } catch (error) {
+        console.log('Users API not available, skipping');
       }
 
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
+      alert('Error loading dashboard data');
     }
   };
 
@@ -113,6 +148,13 @@ const AdminDashboard = () => {
         setBookings(prev => prev.map(booking => 
           booking._id === bookingId ? data.data : booking
         ));
+        
+        // Update stats
+        const pendingCount = bookings.filter(b => b.status === 'pending').length;
+        setStats(prev => ({
+          ...prev,
+          pendingBookings: newStatus === 'pending' ? pendingCount + 1 : pendingCount - 1
+        }));
         
         alert('Booking status updated successfully');
       }
@@ -165,17 +207,20 @@ const AdminDashboard = () => {
 
   if (loading) {
     return (
-      <div className="loading-page">
+      <div className="admin-dashboard">
         <div className="container">
-          <div className="loading-spinner"></div>
-          <p>Loading admin dashboard...</p>
+          <div className="loading-page">
+            <div className="loading-spinner"></div>
+            <p>Loading admin dashboard...</p>
+          </div>
         </div>
       </div>
     );
   }
 
   if (!isAdmin) {
-    return null; // Will redirect in useEffect
+    // This should redirect in useEffect, but as a fallback:
+    return null;
   }
 
   return (
@@ -184,7 +229,7 @@ const AdminDashboard = () => {
         {/* Header */}
         <div className="admin-header">
           <h1 className="admin-title">Admin Dashboard</h1>
-          <p className="admin-subtitle">Welcome back, Administrator!</p>
+          <p className="admin-subtitle">Welcome back, Administrator {user?.name}!</p>
         </div>
 
         <div className="admin-content">
@@ -222,7 +267,7 @@ const AdminDashboard = () => {
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
                 </svg>
-                Bookings
+                All Bookings ({bookings.length})
               </button>
               
               <button 
@@ -232,29 +277,31 @@ const AdminDashboard = () => {
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
                 </svg>
-                Reviews
+                Pending Reviews ({reviews.length})
               </button>
               
               <button 
-                className={`nav-item ${activeTab === 'tours' ? 'active' : ''}`}
-                onClick={() => setActiveTab('tours')}
+                className={`nav-item ${activeTab === 'users' ? 'active' : ''}`}
+                onClick={() => setActiveTab('users')}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M20.59 13.41l-7.17 7.17a2 2 0 0 1-2.83 0L2 12V2h10l8.59 8.59a2 2 0 0 1 0 2.82z"></path>
-                  <line x1="7" y1="7" x2="7.01" y2="7"></line>
+                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="9" cy="7" r="4"></circle>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
                 </svg>
-                Tours
+                Users ({users.length})
               </button>
               
               <button 
-                className="nav-item logout-btn"
+                className="nav-item"
                 onClick={() => navigate('/account')}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                   <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                   <circle cx="12" cy="7" r="4"></circle>
                 </svg>
-                User Account
+                My Account
               </button>
             </nav>
           </aside>
@@ -291,10 +338,10 @@ const AdminDashboard = () => {
                   </div>
                   
                   <div className="stat-card">
-                    <div className="stat-icon">⭐</div>
+                    <div className="stat-icon">👥</div>
                     <div className="stat-content">
-                      <h3 className="stat-value">{reviews.length}</h3>
-                      <p className="stat-label">Pending Reviews</p>
+                      <h3 className="stat-value">{stats.totalUsers}</h3>
+                      <p className="stat-label">Total Users</p>
                     </div>
                   </div>
                 </div>
@@ -315,9 +362,9 @@ const AdminDashboard = () => {
                     {bookings.slice(0, 5).map((booking) => (
                       <div key={booking._id} className="booking-item">
                         <div className="booking-info">
-                          <h4 className="booking-title">{booking.tour?.name}</h4>
+                          <h4 className="booking-title">{booking.tour?.name || 'Tour Name N/A'}</h4>
                           <div className="booking-details">
-                            <span className="booking-user">{booking.user?.name}</span>
+                            <span className="booking-user">{booking.user?.name || 'User N/A'}</span>
                             <span className="booking-date">{formatDate(booking.createdAt)}</span>
                             <span className={`booking-status ${booking.status}`}>
                               {booking.status}
@@ -325,14 +372,14 @@ const AdminDashboard = () => {
                           </div>
                         </div>
                         <div className="booking-amount">
-                          {formatCurrency(booking.totalPrice)}
+                          {formatCurrency(booking.totalPrice || 0)}
                         </div>
                       </div>
                     ))}
                     
                     {bookings.length === 0 && (
                       <div className="empty-state">
-                        <p>No bookings yet</p>
+                        <p>No bookings found</p>
                       </div>
                     )}
                   </div>
@@ -344,9 +391,16 @@ const AdminDashboard = () => {
             {activeTab === 'bookings' && (
               <div className="bookings-tab">
                 <div className="tab-header">
-                  <h3 className="tab-title">All Bookings</h3>
+                  <h3 className="tab-title">All Bookings ({bookings.length})</h3>
                   <div className="tab-actions">
-                    <select className="filter-select">
+                    <select 
+                      className="filter-select"
+                      onChange={(e) => {
+                        // Filter bookings by status
+                        const status = e.target.value;
+                        // You would implement filtering here
+                      }}
+                    >
                       <option value="all">All Status</option>
                       <option value="pending">Pending</option>
                       <option value="confirmed">Confirmed</option>
@@ -358,9 +412,9 @@ const AdminDashboard = () => {
                 
                 <div className="bookings-table">
                   <div className="table-header">
-                    <div className="table-col">Tour</div>
+                    <div className="table-col">Tour & Details</div>
                     <div className="table-col">Customer</div>
-                    <div className="table-col">Date</div>
+                    <div className="table-col">Booking Date</div>
                     <div className="table-col">Amount</div>
                     <div className="table-col">Status</div>
                     <div className="table-col">Actions</div>
@@ -369,28 +423,31 @@ const AdminDashboard = () => {
                   <div className="table-body">
                     {bookings.map((booking) => (
                       <div key={booking._id} className="table-row">
-                        <div className="table-col">
+                        <div className="table-col" data-label="Tour">
                           <div className="tour-info">
-                            <h4>{booking.tour?.name}</h4>
+                            <h4>{booking.tour?.name || 'N/A'}</h4>
                             <p>{booking.participants} participants • {booking.duration} days</p>
+                            {booking.bookingDate && (
+                              <p>Tour Date: {formatDate(booking.bookingDate)}</p>
+                            )}
                           </div>
                         </div>
-                        <div className="table-col">
-                          <p className="customer-name">{booking.user?.name}</p>
-                          <p className="customer-email">{booking.user?.email}</p>
+                        <div className="table-col" data-label="Customer">
+                          <p className="customer-name">{booking.user?.name || 'N/A'}</p>
+                          <p className="customer-email">{booking.user?.email || 'N/A'}</p>
                         </div>
-                        <div className="table-col">
-                          <p>{formatDate(booking.bookingDate)}</p>
+                        <div className="table-col" data-label="Booked On">
+                          <p>{formatDate(booking.createdAt)}</p>
                         </div>
-                        <div className="table-col">
-                          <p className="booking-amount">{formatCurrency(booking.totalPrice)}</p>
+                        <div className="table-col" data-label="Amount">
+                          <p className="booking-amount">{formatCurrency(booking.totalPrice || 0)}</p>
                         </div>
-                        <div className="table-col">
+                        <div className="table-col" data-label="Status">
                           <span className={`status-badge ${booking.status}`}>
                             {booking.status}
                           </span>
                         </div>
-                        <div className="table-col">
+                        <div className="table-col" data-label="Actions">
                           <div className="action-buttons">
                             <select 
                               className="status-select"
@@ -404,7 +461,11 @@ const AdminDashboard = () => {
                             </select>
                             <button 
                               className="action-btn view-btn"
-                              onClick={() => console.log('View booking', booking._id)}
+                              onClick={() => {
+                                // View booking details
+                                console.log('View booking', booking._id);
+                                // You can implement a modal or separate page for details
+                              }}
                             >
                               View
                             </button>
@@ -427,7 +488,7 @@ const AdminDashboard = () => {
             {activeTab === 'reviews' && (
               <div className="reviews-tab">
                 <div className="tab-header">
-                  <h3 className="tab-title">Pending Reviews</h3>
+                  <h3 className="tab-title">Pending Reviews ({reviews.length})</h3>
                 </div>
                 
                 <div className="reviews-grid">
@@ -435,20 +496,23 @@ const AdminDashboard = () => {
                     <div key={review._id} className="review-card">
                       <div className="review-header">
                         <div className="reviewer-info">
-                          <h4 className="reviewer-name">{review.user?.name}</h4>
+                          <h4 className="reviewer-name">{review.user?.name || 'Anonymous'}</h4>
                           <div className="review-rating">
-                            {'★'.repeat(review.rating)}
-                            {'☆'.repeat(5 - review.rating)}
+                            {'★'.repeat(review.rating || 5)}
+                            {'☆'.repeat(5 - (review.rating || 5))}
                           </div>
                         </div>
                         <div className="review-tour">
-                          Tour: {review.tour}
+                          Tour: {review.tour || 'Unknown Tour'}
                         </div>
                       </div>
                       
                       <div className="review-content">
-                        <h3 className="review-title">{review.title}</h3>
-                        <p className="review-comment">{review.comment}</p>
+                        <h3 className="review-title">{review.title || 'No Title'}</h3>
+                        <p className="review-comment">{review.comment || 'No comment provided'}</p>
+                        <p className="review-date">
+                          Submitted: {formatDate(review.createdAt)}
+                        </p>
                       </div>
                       
                       <div className="review-actions">
@@ -477,29 +541,60 @@ const AdminDashboard = () => {
               </div>
             )}
 
-            {/* Tours Tab */}
-            {activeTab === 'tours' && (
-              <div className="tours-tab">
+            {/* Users Tab */}
+            {activeTab === 'users' && (
+              <div className="users-tab">
                 <div className="tab-header">
-                  <h3 className="tab-title">Tour Management</h3>
-                  <button className="btn-primary">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                      <line x1="12" y1="5" x2="12" y2="19"></line>
-                      <line x1="5" y1="12" x2="19" y2="12"></line>
-                    </svg>
-                    Add New Tour
-                  </button>
+                  <h3 className="tab-title">Users ({users.length})</h3>
                 </div>
                 
-                <div className="tours-grid">
-                  <div className="info-card">
-                    <h4>Tour Statistics</h4>
-                    <p>Coming soon...</p>
+                <div className="users-table">
+                  <div className="table-header">
+                    <div className="table-col">Name</div>
+                    <div className="table-col">Email</div>
+                    <div className="table-col">Role</div>
+                    <div className="table-col">Joined Date</div>
+                    <div className="table-col">Actions</div>
                   </div>
                   
-                  <div className="info-card">
-                    <h4>Popular Tours</h4>
-                    <p>Analytics dashboard will be implemented here</p>
+                  <div className="table-body">
+                    {users.map((userItem) => (
+                      <div key={userItem._id} className="table-row">
+                        <div className="table-col" data-label="Name">
+                          <p className="user-name">{userItem.name}</p>
+                        </div>
+                        <div className="table-col" data-label="Email">
+                          <p className="user-email">{userItem.email}</p>
+                        </div>
+                        <div className="table-col" data-label="Role">
+                          <span className={`role-badge ${userItem.role}`}>
+                            {userItem.role}
+                          </span>
+                        </div>
+                        <div className="table-col" data-label="Joined">
+                          <p>{formatDate(userItem.createdAt)}</p>
+                        </div>
+                        <div className="table-col" data-label="Actions">
+                          <div className="action-buttons">
+                            <button 
+                              className="action-btn view-btn"
+                              onClick={() => {
+                                // View user details
+                                console.log('View user', userItem._id);
+                              }}
+                            >
+                              View
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    
+                    {users.length === 0 && (
+                      <div className="empty-table">
+                        <p>No users found</p>
+                      </div>
+                    )}
                   </div>
                 </div>
               </div>

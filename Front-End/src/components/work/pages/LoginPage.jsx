@@ -18,7 +18,7 @@ const LoginPage = () => {
 
     try {
       // Call backend API
-      const response = await fetch('http://localhost:5000/api/auth/login',{
+      const response = await fetch('http://localhost:5000/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -28,20 +28,48 @@ const LoginPage = () => {
 
       const data = await response.json();
       
+      console.log('Login response data:', data); // Debug log
+      
       if (!response.ok) {
         throw new Error(data.message || 'Login failed');
       }
 
       // Login successful - save token and user data
-      if (data.data && data.data.token) {
-        localStorage.setItem('token', data.data.token);
-        localStorage.setItem('user', JSON.stringify(data.data));
+      if (data.data) {
+        // Handle different response structures
+        let userData, token;
         
-        // Redirect to home page
-        navigate('/');
+        if (data.data.user && data.data.token) {
+          // Structure: { data: { user: {...}, token: '...' } }
+          userData = data.data.user;
+          token = data.data.token;
+        } else if (data.data._id && data.data.token) {
+          // Structure: { data: { _id: ..., name: ..., token: '...' } }
+          userData = data.data;
+          token = data.data.token;
+          // Remove token from userData if it's mixed in
+          delete userData.token;
+        } else {
+          // Unexpected structure
+          throw new Error('Invalid response format from server');
+        }
+
+        console.log('Storing user data:', userData); // Debug log
+        console.log('User role:', userData.role); // Debug log
         
-        // Show success message
-        alert('Login successful! Welcome back to Ceylon Tours.');
+        localStorage.setItem('token', token);
+        localStorage.setItem('user', JSON.stringify(userData));
+        
+        // Redirect based on role
+        if (userData.role === 'admin') {
+          navigate('/admin');
+          alert('Login successful! Welcome Administrator.');
+        } else {
+          navigate('/');
+          alert('Login successful! Welcome back to Ceylon Tours.');
+        }
+      } else {
+        throw new Error('Invalid response from server');
       }
     } catch (err) {
       setError(err.message || 'Login failed. Please check your credentials.');

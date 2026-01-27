@@ -15,7 +15,7 @@ import ReviewsPage from './components/work/pages/ReviewsPage';
 import BookingPage from './components/work/pages/BookingPage';
 import AdminDashboard from './components/work/pages/AdminDashboard';
 import MyBookingsPage from './components/work/pages/myBookingsPage';
-// Remove or comment out this line temporarily:
+import GlobalStyles from './components/work/styles/GlobalStyles.css'
 
 
 const App = () => {

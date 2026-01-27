@@ -1,7 +1,7 @@
 /* src/components/work/pages/AccountPage.css */
 .account-page {
   padding: var(--spacing-xl) 0;
-  background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+  background: var(--light-bg);
   min-height: calc(100vh - 200px);
 }
 
@@ -12,27 +12,12 @@
   padding: var(--spacing-xl);
   border-radius: 16px;
   box-shadow: var(--shadow-md);
-  border: 1px solid rgba(255, 255, 255, 0.8);
 }
 
 .account-title {
   font-size: var(--font-xxl);
   color: var(--primary-green);
   margin-bottom: var(--spacing-sm);
-  position: relative;
-  display: inline-block;
-}
-
-.account-title::after {
-  content: '';
-  position: absolute;
-  bottom: -10px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 80px;
-  height: 4px;
-  background: linear-gradient(90deg, var(--primary-green), var(--accent-gold));
-  border-radius: 2px;
 }
 
 .account-subtitle {
@@ -43,16 +28,16 @@
   align-items: center;
   justify-content: center;
   gap: var(--spacing-sm);
+  flex-wrap: wrap;
 }
 
 .admin-badge {
-  background: linear-gradient(135deg, #FFB400, #FF6B35);
-  color: white;
+  background: var(--accent-gold);
+  color: var(--white);
   padding: 0.5rem 1rem;
   border-radius: 20px;
   font-size: var(--font-sm);
   font-weight: 600;
-  box-shadow: var(--shadow-sm);
 }
 
 .account-content {
@@ -64,6 +49,7 @@
 @media (max-width: 992px) {
   .account-content {
     grid-template-columns: 1fr;
+    gap: var(--spacing-lg);
   }
 }
 
@@ -71,13 +57,16 @@
 .account-sidebar {
   background: var(--white);
   border-radius: 16px;
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--shadow-md);
   padding: var(--spacing-lg);
   height: fit-content;
-  position: sticky;
-  top: 100px;
-  border: 1px solid rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(10px);
+}
+
+@media (min-width: 993px) {
+  .account-sidebar {
+    position: sticky;
+    top: 100px;
+  }
 }
 
 .sidebar-profile {
@@ -87,6 +76,13 @@
   padding-bottom: var(--spacing-lg);
   border-bottom: 1px solid var(--gray-light);
   margin-bottom: var(--spacing-lg);
+}
+
+@media (max-width: 576px) {
+  .sidebar-profile {
+    flex-direction: column;
+    text-align: center;
+  }
 }
 
 .profile-avatar {
@@ -101,15 +97,16 @@
   font-size: 32px;
   font-weight: 600;
   box-shadow: var(--shadow-md);
-  border: 3px solid white;
+  flex-shrink: 0;
 }
 
 .admin-avatar {
-  background: linear-gradient(135deg, #FFB400, #FF6B35);
+  background: linear-gradient(135deg, var(--accent-gold), #FF6B35);
 }
 
 .profile-info {
   flex: 1;
+  min-width: 0;
 }
 
 .profile-name {
@@ -117,23 +114,24 @@
   color: var(--text-dark);
   margin: 0 0 0.25rem 0;
   font-weight: 700;
+  word-break: break-word;
 }
 
 .profile-email {
   font-size: var(--font-sm);
   color: var(--text-light);
   margin: 0 0 0.5rem 0;
+  word-break: break-word;
 }
 
 .role-badge {
   display: inline-block;
-  background: linear-gradient(135deg, #FFB400, #FF6B35);
-  color: white;
+  background: var(--accent-gold);
+  color: var(--white);
   padding: 0.25rem 0.75rem;
   border-radius: 12px;
   font-size: var(--font-xs);
   font-weight: 600;
-  box-shadow: var(--shadow-sm);
 }
 
 .sidebar-nav {
@@ -157,47 +155,43 @@
   background: none;
   cursor: pointer;
   text-align: left;
-  position: relative;
+  width: 100%;
 }
 
 .nav-item:hover {
-  background: linear-gradient(90deg, rgba(44, 95, 45, 0.1), transparent);
+  background: rgba(44, 95, 45, 0.1);
   color: var(--primary-green);
-  transform: translateX(5px);
 }
 
 .nav-item.active {
-  background: linear-gradient(90deg, rgba(44, 95, 45, 0.15), transparent);
+  background: rgba(44, 95, 45, 0.15);
   color: var(--primary-green);
   font-weight: 600;
-  border-left: 4px solid var(--primary-green);
 }
 
 .nav-item svg {
   color: inherit;
+  flex-shrink: 0;
 }
 
 .nav-badge {
-  position: absolute;
-  right: var(--spacing-md);
+  margin-left: auto;
   background: var(--primary-green);
-  color: white;
+  color: var(--white);
   font-size: var(--font-xs);
   padding: 0.25rem 0.5rem;
   border-radius: 10px;
-  min-width: 20px;
+  min-width: 24px;
   text-align: center;
 }
 
 .admin-link {
-  background: linear-gradient(90deg, rgba(255, 180, 0, 0.1), transparent);
+  background: rgba(255, 180, 0, 0.1);
   color: #B26A00;
-  border-left: 4px solid #FFB400;
 }
 
 .admin-link:hover {
-  background: linear-gradient(90deg, rgba(255, 180, 0, 0.2), transparent);
-  color: #B26A00;
+  background: rgba(255, 180, 0, 0.2);
 }
 
 .logout-btn {
@@ -206,7 +200,7 @@
 }
 
 .logout-btn:hover {
-  background: linear-gradient(90deg, rgba(220, 53, 69, 0.1), transparent);
+  background: rgba(220, 53, 69, 0.1);
   color: #dc3545;
 }
 
@@ -220,15 +214,8 @@
 .account-card {
   background: var(--white);
   border-radius: 16px;
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--shadow-md);
   overflow: hidden;
-  border: 1px solid rgba(255, 255, 255, 0.8);
-  backdrop-filter: blur(10px);
-  transition: transform 0.3s ease;
-}
-
-.account-card:hover {
-  transform: translateY(-2px);
 }
 
 .card-header {
@@ -237,7 +224,9 @@
   align-items: center;
   padding: var(--spacing-lg);
   border-bottom: 1px solid var(--gray-light);
-  background: linear-gradient(90deg, rgba(44, 95, 45, 0.05), transparent);
+  background: rgba(44, 95, 45, 0.05);
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
 }
 
 .card-title {
@@ -270,8 +259,8 @@
 /* Profile Info Grid */
 .info-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: var(--spacing-lg);
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: var(--spacing-md);
 }
 
 .info-item {
@@ -281,7 +270,6 @@
   padding: var(--spacing-md);
   background: var(--light-bg);
   border-radius: 12px;
-  border: 1px solid rgba(255, 255, 255, 0.5);
 }
 
 .info-item.full-width {
@@ -301,6 +289,7 @@
   color: var(--text-dark);
   margin: 0;
   font-weight: 500;
+  word-break: break-word;
 }
 
 .admin-permissions {
@@ -311,58 +300,12 @@
 }
 
 .permission-tag {
-  background: linear-gradient(135deg, #FFB400, #FF6B35);
-  color: white;
+  background: var(--accent-gold);
+  color: var(--white);
   padding: 0.5rem 1rem;
   border-radius: 20px;
   font-size: var(--font-xs);
   font-weight: 500;
-  box-shadow: var(--shadow-sm);
-}
-
-.profile-actions {
-  display: flex;
-  gap: var(--spacing-md);
-  margin-top: var(--spacing-xl);
-  padding-top: var(--spacing-lg);
-  border-top: 1px solid var(--gray-light);
-}
-
-.btn-primary, .btn-secondary {
-  padding: 0.75rem 2rem;
-  border-radius: 8px;
-  font-size: var(--font-sm);
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  text-decoration: none;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-}
-
-.btn-primary {
-  background: linear-gradient(135deg, var(--primary-green), var(--primary-dark));
-  color: var(--white);
-  border: none;
-}
-
-.btn-primary:hover {
-  background: linear-gradient(135deg, var(--primary-dark), var(--primary-green));
-  transform: translateY(-2px);
-  box-shadow: var(--shadow-md);
-}
-
-.btn-secondary {
-  background: transparent;
-  color: var(--primary-green);
-  border: 2px solid var(--primary-green);
-}
-
-.btn-secondary:hover {
-  background: rgba(44, 95, 45, 0.1);
-  transform: translateY(-2px);
 }
 
 /* Bookings List */
@@ -374,18 +317,20 @@
 
 .booking-item {
   display: grid;
-  grid-template-columns: 100px 1fr auto;
+  grid-template-columns: auto 1fr auto;
   gap: var(--spacing-md);
   padding: var(--spacing-md);
   background: var(--light-bg);
   border-radius: 12px;
   border: 1px solid var(--gray-light);
-  transition: all 0.3s ease;
+  align-items: center;
 }
 
-.booking-item:hover {
-  border-color: var(--primary-green);
-  box-shadow: var(--shadow-sm);
+@media (max-width: 768px) {
+  .booking-item {
+    grid-template-columns: 1fr;
+    text-align: center;
+  }
 }
 
 .booking-image {
@@ -393,6 +338,15 @@
   height: 100px;
   border-radius: 8px;
   overflow: hidden;
+  flex-shrink: 0;
+}
+
+@media (max-width: 768px) {
+  .booking-image {
+    width: 100%;
+    height: 150px;
+    margin: 0 auto;
+  }
 }
 
 .booking-image img {
@@ -403,9 +357,7 @@
 
 .booking-info {
   flex: 1;
-  display: flex;
-  flex-direction: column;
-  justify-content: space-between;
+  min-width: 0;
 }
 
 .booking-title {
@@ -413,6 +365,7 @@
   color: var(--primary-green);
   margin: 0 0 0.5rem 0;
   font-weight: 600;
+  word-break: break-word;
 }
 
 .booking-meta {
@@ -421,6 +374,14 @@
   font-size: var(--font-sm);
   color: var(--text-light);
   margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 576px) {
+  .booking-meta {
+    flex-direction: column;
+    gap: 0.25rem;
+  }
 }
 
 .booking-status-container {
@@ -428,6 +389,15 @@
   justify-content: space-between;
   align-items: center;
   margin-top: 0.5rem;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
+}
+
+@media (max-width: 576px) {
+  .booking-status-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
 }
 
 .booking-status {
@@ -470,6 +440,12 @@
   align-items: center;
 }
 
+@media (max-width: 768px) {
+  .booking-actions {
+    justify-content: center;
+  }
+}
+
 .btn-outline {
   padding: 0.5rem 1.5rem;
   border: 2px solid var(--primary-green);
@@ -481,6 +457,8 @@
   text-decoration: none;
   cursor: pointer;
   transition: all 0.3s ease;
+  display: inline-block;
+  text-align: center;
 }
 
 .btn-outline:hover {
@@ -495,6 +473,12 @@
   gap: var(--spacing-md);
 }
 
+@media (max-width: 768px) {
+  .reviews-list {
+    grid-template-columns: 1fr;
+  }
+}
+
 .review-item {
   background: var(--light-bg);
   padding: var(--spacing-md);
@@ -507,6 +491,8 @@
   justify-content: space-between;
   align-items: flex-start;
   margin-bottom: 0.5rem;
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
 }
 
 .review-tour {
@@ -514,11 +500,13 @@
   color: var(--primary-green);
   margin: 0;
   font-weight: 600;
+  word-break: break-word;
 }
 
 .review-rating {
   color: var(--accent-gold);
   font-size: 1rem;
+  line-height: 1;
 }
 
 .review-title {
@@ -533,6 +521,7 @@
   color: var(--text-dark);
   line-height: 1.6;
   margin: 0 0 0.5rem 0;
+  word-break: break-word;
 }
 
 .review-footer {
@@ -542,6 +531,8 @@
   margin-top: 0.5rem;
   padding-top: 0.5rem;
   border-top: 1px solid var(--gray-light);
+  flex-wrap: wrap;
+  gap: var(--spacing-sm);
 }
 
 .review-date {
@@ -586,6 +577,24 @@
 .empty-state p {
   color: var(--text-light);
   margin-bottom: var(--spacing-lg);
+  line-height: 1.6;
+}
+
+.btn-primary {
+  display: inline-block;
+  background: var(--primary-green);
+  color: var(--white);
+  padding: 0.75rem 2rem;
+  border-radius: 8px;
+  text-decoration: none;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.btn-primary:hover {
+  background: var(--primary-dark);
 }
 
 /* Loading State */
@@ -616,6 +625,10 @@
 /* Responsive */
 @media (max-width: 768px) {
   .account-page {
+    padding: var(--spacing-md) 0;
+  }
+  
+  .account-header {
     padding: var(--spacing-lg);
   }
   
@@ -625,47 +638,37 @@
   
   .account-subtitle {
     font-size: var(--font-md);
-    flex-direction: column;
-    gap: var(--spacing-sm);
   }
   
-  .profile-actions {
-    flex-direction: column;
+  .card-header {
+    padding: var(--spacing-md);
   }
   
-  .booking-item {
+  .card-content {
+    padding: var(--spacing-md);
+  }
+  
+  .info-grid {
     grid-template-columns: 1fr;
-    text-align: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .account-title {
+    font-size: var(--font-lg);
   }
   
-  .booking-image {
-    width: 100%;
-    height: 150px;
-    margin: 0 auto;
-  }
-  
-  .booking-meta {
-    flex-direction: column;
-    gap: 0.25rem;
-  }
-  
-  .booking-status-container {
-    flex-direction: column;
-    gap: var(--spacing-sm);
-  }
-  
-  .reviews-list {
-    grid-template-columns: 1fr;
+  .account-subtitle {
+    font-size: var(--font-sm);
   }
   
   .nav-item {
-    flex-direction: column;
-    text-align: center;
     padding: var(--spacing-sm);
+    font-size: var(--font-xs);
   }
   
   .nav-badge {
-    position: static;
-    margin-left: auto;
+    font-size: 0.75rem;
+    min-width: 20px;
   }
 }
