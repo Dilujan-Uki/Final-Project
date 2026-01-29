@@ -258,19 +258,6 @@
 }
 
 /* Use styles from PaymentPage.css for consistent look */
-.tour-info-card,
-.order-summary-section,
-.summary-title,
-.price-breakdown,
-.price-row,
-.tour-header,
-.tour-name,
-.tour-details,
-.detail-label,
-.detail-value,
-.change-btn {
-  /* These will use the same styles as PaymentPage.css */
-}
 
 .error-message {
   background: #ffeaea;
@@ -296,4 +283,109 @@
   .form-section-title {
     font-size: var(--font-md);
   }
+}
+
+/* Add to the end of BookingPage.css */
+.tour-info-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.25rem;
+  border: 1px solid var(--gray-light);
+  margin-bottom: 1rem;
+}
+
+.order-summary-section {
+  background: white;
+  border-radius: 16px;
+  padding: var(--spacing-xl);
+  box-shadow: var(--shadow-md);
+  align-self: flex-start;
+  position: sticky;
+  top: 2rem;
+}
+
+.summary-title {
+  font-size: var(--font-lg);
+  color: var(--primary-green);
+  margin-bottom: var(--spacing-lg);
+  padding-bottom: var(--spacing-md);
+  border-bottom: 2px solid var(--gray-light);
+}
+
+.tour-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--spacing-md);
+}
+
+.tour-name {
+  font-size: var(--font-md);
+  color: var(--primary-green);
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.tour-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.detail-label {
+  font-size: var(--font-xs);
+  color: var(--text-light);
+}
+
+.detail-value {
+  font-size: var(--font-sm);
+  color: var(--primary-green);
+  font-weight: 600;
+}
+
+.change-btn {
+  background: none;
+  border: none;
+  color: var(--primary-green);
+  font-size: var(--font-sm);
+  font-weight: 500;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+}
+
+.change-btn:hover {
+  color: var(--primary-dark);
+}
+
+.price-breakdown {
+  border-top: 1px solid var(--gray-light);
+  padding-top: var(--spacing-md);
+  margin-top: var(--spacing-md);
+}
+
+.price-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  font-size: var(--font-sm);
+  color: var(--text-dark);
+}
+
+.price-row.total {
+  border-top: 2px solid var(--gray-light);
+  margin-top: 0.5rem;
+  padding-top: 0.75rem;
+  font-weight: 700;
+  color: var(--primary-green);
+}
+
+.price-amount {
+  font-weight: 600;
+}
+
+.price-amount.total {
+  font-size: var(--font-lg);
 }
