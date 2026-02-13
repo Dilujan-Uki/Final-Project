@@ -2,6 +2,12 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import './ToursPage.css';
+import Cultural from '/home/uki-dsa-01/LESSONS/Final-Project/Front-End/src/components/work/assets/Cultural-Triangle.png';
+import Hill from '/home/uki-dsa-01/LESSONS/Final-Project/Front-End/src/components/work/assets/Hill-Country.png';
+import Safari from '/home/uki-dsa-01/LESSONS/Final-Project/Front-End/src/components/work/assets/Wild-Safari.png';
+import Coastal from '/home/uki-dsa-01/LESSONS/Final-Project/Front-End/src/components/work/assets/Coastal-Paradise.png';
+import Tea from '/home/uki-dsa-01/LESSONS/Final-Project/Front-End/src/components/work/assets/Tea-Plantation.png';
+import Full from '/home/uki-dsa-01/LESSONS/Final-Project/Front-End/src/components/work/assets/Complete-Experience.png'
 
 const ToursPage = () => {
   const navigate = useNavigate();
@@ -15,7 +21,7 @@ const ToursPage = () => {
       pricePerDay: 80,
       features: ["Sigiriya Rock Fortress", "Ancient Temples", "UNESCO Sites"],
       description: "Visit ancient cities of Anuradhapura, Polonnaruwa, and climb the iconic Sigiriya...",
-      image: "https://images.unsplash.com/photo-1593693399749-55d0b5d58b14?w=600&h=400&fit=crop"
+      image: Cultural
     },
     {
       id: 2,
@@ -25,7 +31,7 @@ const ToursPage = () => {
       pricePerDay: 80,
       features: ["Scenic Train Ride", "Tea Factory Visit", "Nine Arch Bridge"],
       description: "Experience the scenic train journey through tea plantations and visit Ella's breathtaking...",
-      image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=600&h=400&fit=crop"
+      image: Hill
     },
     {
       id: 3,
@@ -35,7 +41,7 @@ const ToursPage = () => {
       pricePerDay: 80,
       features: ["Safari Jeep Tours", "Elephant Watching", "Bird Watching"],
       description: "Spot elephants, leopards, and exotic birds in Yala and Udawalawe National Parks",
-      image: "https://images.unsplash.com/photo-1528164344705-47542687000d?w=600&h=400&fit=crop"
+      image: Safari
     },
     {
       id: 4,
@@ -45,7 +51,7 @@ const ToursPage = () => {
       pricePerDay: 80,
       features: ["Galle Fort", "Beach Relaxation", "Water Sports"],
       description: "Explore historic Galle Fort, pristine beaches, and enjoy water sports in the southern coast.",
-      image: "https://images.unsplash.com/photo-1512343879784-a960bf40e7f2?w=600&h=400&fit=crop"
+      image: Coastal
     },
     {
       id: 5,
@@ -55,7 +61,7 @@ const ToursPage = () => {
       pricePerDay: 80,
       features: ["Tea Plantation Tour", "Tea Tasting", "Colonial Heritage"],
       description: "Immerse yourself in the lush tea estates of Nuwara Eliya and learn about Ceylon tea...",
-      image: "https://images.unsplash.com/photo-1566836742817-68d55b53521d?w=600&h=400&fit=crop"
+      image: Tea
     },
     {
       id: 6,
@@ -65,7 +71,7 @@ const ToursPage = () => {
       pricePerDay: 80,
       features: ["All Major Attractions", "Full Island Tour", "Cultural Immersion"],
       description: "A comprehensive tour covering cultural sites, wildlife, hill country, and coastal attractions.",
-      image: "https://images.unsplash.com/photo-1551632811-561732d1e306?w=600&h=400&fit=crop"
+      image:Full
     }
   ];
 

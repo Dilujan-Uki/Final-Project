@@ -2,48 +2,62 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import './HomePage.css';
+import Sigiriya from '/home/uki-dsa-01/LESSONS/Final-Project/Front-End/src/components/work/assets/Sigiriya-Rock.png';
+import Train from '/home/uki-dsa-01/LESSONS/Final-Project/Front-End/src/components/work/assets/Ella-Train.png';
+import Tea from '/home/uki-dsa-01/LESSONS/Final-Project/Front-End/src/components/work/assets/Tea-Plantation.png';
+import SriLanka from '/home/uki-dsa-01/LESSONS/Final-Project/Front-End/src/components/work/assets/SriLanka.png';
 
 const HomePage = () => {
   const popularDestinations = [
     {
       name: "Sigiriya Rock Fortress",
-      image: "https://images.unsplash.com/photo-1593693399749-55d0b5d58b14?w=400&h=300&fit=crop",
-      description: "Ancient rock fortress and palace ruins"
+      image: Sigiriya,
+      description: "Ancient rock fortress and palace ruins, the 8th wonder of the world"
     },
     {
       name: "Ella Train Journey",
-      image: "https://images.unsplash.com/photo-1578662996442-48f60103fc96?w=400&h=300&fit=crop",
-      description: "Scenic train ride through tea plantations"
+      image: Train,
+      description: "Scenic train ride through misty tea plantations and breathtaking valleys"
     },
     {
       name: "Tea Plantations",
-      image: "https://images.unsplash.com/photo-1566836742817-68d55b53521d?w-400&h=300&fit=crop",
-      description: "Visit lush tea estates in hill country"
+      image: Tea,
+      description: "Visit lush tea estates in hill country and taste world-famous Ceylon tea"
     }
   ];
 
   const whyChooseUs = [
     {
-      title: "Best Locations",
-      description: "Explore UNESCO World Heritage Sites and hidden gems across Sri Lanka"
+      icon: "🏆",
+      title: "Authentic Experiences",
+      description: "Handcrafted tours that showcase the real Sri Lanka, beyond tourist traps"
     },
     {
-      title: "Expert Guides",
-      description: "Professional, licensed tour guides with extensive local knowledge"
+      icon: "👑",
+      title: "Expert Local Guides",
+      description: "Licensed, professional guides with deep knowledge and genuine passion"
     },
     {
-      title: "Personalized Tours",
-      description: "Customized itineraries tailored to your interests and schedule"
+      icon: "🎯",
+      title: "Personalized Itineraries",
+      description: "Custom-designed journeys that match your interests and pace"
     }
   ];
 
   return (
     <div className="home-page">
-      {/* Hero Section - From home1.png */}
+      {/* Hero Section with Sri Lanka Image */}
       <section className="hero-section">
+        <div className="hero-background">
+          <img src={SriLanka} alt="Sri Lanka Paradise" className="hero-image" />
+          <div className="hero-overlay"></div>
+        </div>
+        
         <div className="container">
           <div className="hero-content">
-            <h1 className="hero-title">Discover Sri Lanka</h1>
+            <h1 className="hero-title">
+              Discover <span>Sri Lanka</span>
+            </h1>
             <p className="hero-subtitle">
               The Pearl of the Indian Ocean Awaits Your Exploration
             </p>
@@ -53,17 +67,26 @@ const HomePage = () => {
             </div>
           </div>
         </div>
+        
+        <div className="scroll-indicator">
+          <span></span>
+          Scroll
+        </div>
       </section>
 
-      {/* Why Choose Us Section - From home2.png */}
+      {/* Why Choose Us Section */}
       <section className="why-choose-section">
         <div className="container">
           <div className="section-header">
             <h2 className="section-title">Why Choose Ceylon Tours?</h2>
+            <p className="section-subtitle">
+              Experience Sri Lanka through the eyes of locals, with authentic tours crafted with love and expertise
+            </p>
           </div>
           <div className="features-grid">
             {whyChooseUs.map((feature, index) => (
               <div key={index} className="feature-card">
+                <div className="feature-icon">{feature.icon}</div>
                 <h3 className="feature-title">{feature.title}</h3>
                 <p className="feature-description">{feature.description}</p>
               </div>
@@ -72,11 +95,14 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Popular Destinations Section - From home3.png */}
+      {/* Popular Destinations Section */}
       <section className="destinations-section">
         <div className="container">
           <div className="section-header">
             <h2 className="section-title">Popular Destinations</h2>
+            <p className="section-subtitle">
+              Explore Sri Lanka's most beloved destinations, each with its own unique charm and story
+            </p>
           </div>
           <div className="destinations-grid">
             {popularDestinations.map((destination, index) => (
@@ -91,6 +117,15 @@ const HomePage = () => {
                 <div className="destination-content">
                   <h3 className="destination-name">{destination.name}</h3>
                   <p className="destination-description">{destination.description}</p>
+                  <div className="destination-stats">
+                    <div className="stat-item">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <circle cx="12" cy="12" r="10"></circle>
+                        <polyline points="12 6 12 12 16 14"></polyline>
+                      </svg>
+                      <span>Best in {['2023', '2024', '2024'][index]}</span>
+                    </div>
+                  </div>
                 </div>
               </div>
             ))}
@@ -102,9 +137,9 @@ const HomePage = () => {
       <section className="cta-section">
         <div className="container">
           <div className="cta-content">
-            <h2 className="cta-title">Ready for Your Adventure?</h2>
+            <h2 className="cta-title">Ready for Your Sri Lankan Adventure?</h2>
             <p className="cta-description">
-              Book your tour today and experience the best of Sri Lanka
+              Book your tour today and create memories that will last a lifetime
             </p>
             <Link to="/tours" className="btn-primary">View All Tours</Link>
           </div>

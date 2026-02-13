@@ -1,5 +1,5 @@
 // src/pages/ReviewsPage.jsx
-import React, { useState,useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import './ReviewsPage.css';
 
 const ReviewsPage = () => {
@@ -13,7 +13,7 @@ const ReviewsPage = () => {
     guide: ''
   });
 
-  const existingReviews = [
+  const [existingReviews, setExistingReviews] = useState([
     {
       id: 1,
       name: "Sarah Johnson",
@@ -23,7 +23,8 @@ const ReviewsPage = () => {
       title: "Amazing Cultural Experience",
       comment: "The Cultural Triangle tour was absolutely incredible! Our guide Rajitha was knowledgeable and made ancient history come alive. Highly recommended!",
       tour: "Cultural Triangle Explorer",
-      guide: "Rajitha Fernando"
+      guide: "Rajitha Fernando",
+      verified: true
     },
     {
       id: 2,
@@ -34,18 +35,20 @@ const ReviewsPage = () => {
       title: "Best Wildlife Safari",
       comment: "Saw leopards, elephants, and so many birds in Yala National Park. Our guide Sanduni was an expert tracker and made the experience unforgettable!",
       tour: "Wildlife Safari Experience",
-      guide: "Sanduni Perera"
+      guide: "Sanduni Perera",
+      verified: true
     },
     {
       id: 3,
-      name: "Emma Rodriguez",
+      name: "Emma Watson",
       location: "Madrid, Spain",
       rating: 5,
       date: "November 2023",
       title: "Perfect Hill Country Adventure",
       comment: "The train journey through tea plantations was breathtaking. Our guide Kamal was excellent and made the experience magical.",
       tour: "Hill Country Adventure",
-      guide: "Kamal Silva"
+      guide: "Kamal Silva",
+      verified: true
     },
     {
       id: 4,
@@ -56,7 +59,8 @@ const ReviewsPage = () => {
       title: "Great Beach Tour",
       comment: "Galle Fort was fascinating and the beaches were pristine. Our guide Chaminda was very knowledgeable about marine life.",
       tour: "Coastal Paradise Tour",
-      guide: "Chaminda Wickramasinghe"
+      guide: "Chaminda Wickramasinghe",
+      verified: true
     },
     {
       id: 5,
@@ -67,7 +71,8 @@ const ReviewsPage = () => {
       title: "Tea Plantation Excellence",
       comment: "As a tea lover, this tour was perfect! Priya's knowledge about Ceylon tea was incredible. The tasting sessions were amazing.",
       tour: "Tea Country Journey",
-      guide: "Priya Jayawardena"
+      guide: "Priya Jayawardena",
+      verified: true
     },
     {
       id: 6,
@@ -78,9 +83,10 @@ const ReviewsPage = () => {
       title: "Complete Sri Lanka Experience",
       comment: "12 days covering the entire island was worth every penny. Our guide Nilantha made every day special with his culinary insights.",
       tour: "Complete Sri Lanka Experience",
-      guide: "Nilantha De Silva"
+      guide: "Nilantha De Silva",
+      verified: true
     }
-  ];
+  ]);
 
   const tours = [
     "Cultural Triangle Explorer",
@@ -100,13 +106,9 @@ const ReviewsPage = () => {
     "Priya Jayawardena"
   ];
 
-
-  // Update the ReviewsPage.jsx handleSubmit function:
-
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    // Check if user is logged in
     const token = localStorage.getItem('token');
     if (!token) {
       alert('Please login to submit a review');
@@ -131,7 +133,6 @@ const ReviewsPage = () => {
 
       alert('Thank you for your review! It will be published after moderation.');
 
-      // Reset form
       setNewReview({
         name: '',
         email: '',
@@ -142,7 +143,6 @@ const ReviewsPage = () => {
         guide: ''
       });
 
-      // Refresh reviews list
       fetchReviews();
 
     } catch (error) {
@@ -151,7 +151,6 @@ const ReviewsPage = () => {
     }
   };
 
-  // Add useEffect to fetch reviews:
   useEffect(() => {
     fetchReviews();
   }, []);
@@ -162,11 +161,10 @@ const ReviewsPage = () => {
       const data = await response.json();
 
       if (data.status === 'success') {
-        // Transform API data to match existing format
         const apiReviews = data.data.map(review => ({
           id: review._id,
           name: review.user?.name || 'Anonymous',
-          location: '', // You might want to add location to your Review model
+          location: review.location || 'Verified Traveler',
           rating: review.rating,
           date: new Date(review.createdAt).toLocaleDateString('en-US', {
             month: 'long',
@@ -175,10 +173,9 @@ const ReviewsPage = () => {
           title: review.title,
           comment: review.comment,
           tour: review.tour,
-          guide: review.guide || ''
+          guide: review.guide || '',
+          verified: review.isApproved || false
         }));
-
-        // You can either replace or merge with existing reviews
         // setExistingReviews(apiReviews);
       }
     } catch (error) {
@@ -200,6 +197,11 @@ const ReviewsPage = () => {
       rating
     }));
   };
+
+  // Calculate stats
+  const averageRating = (existingReviews.reduce((acc, review) => acc + review.rating, 0) / existingReviews.length).toFixed(1);
+  const totalReviews = existingReviews.length;
+  const recommendationRate = ((existingReviews.filter(r => r.rating >= 4).length / totalReviews) * 100).toFixed(0);
 
   return (
     <div className="reviews-page">
@@ -229,7 +231,7 @@ const ReviewsPage = () => {
             <form onSubmit={handleSubmit} className="review-form">
               <div className="form-row">
                 <div className="form-group">
-                  <label htmlFor="name" className="form-label">Your Name *</label>
+                  <label htmlFor="name" className="form-label">Your Name</label>
                   <input
                     type="text"
                     id="name"
@@ -243,7 +245,7 @@ const ReviewsPage = () => {
                 </div>
 
                 <div className="form-group">
-                  <label htmlFor="email" className="form-label">Email Address *</label>
+                  <label htmlFor="email" className="form-label">Email Address</label>
                   <input
                     type="email"
                     id="email"
@@ -259,7 +261,7 @@ const ReviewsPage = () => {
 
               <div className="form-row">
                 <div className="form-group">
-                  <label htmlFor="tour" className="form-label">Tour Package *</label>
+                  <label htmlFor="tour" className="form-label">Tour Package</label>
                   <select
                     id="tour"
                     name="tour"
@@ -293,7 +295,7 @@ const ReviewsPage = () => {
               </div>
 
               <div className="form-group">
-                <label className="form-label">Rating *</label>
+                <label className="form-label">Rating</label>
                 <div className="rating-selector">
                   {[1, 2, 3, 4, 5].map((star) => (
                     <button
@@ -311,7 +313,7 @@ const ReviewsPage = () => {
               </div>
 
               <div className="form-group">
-                <label htmlFor="title" className="form-label">Review Title *</label>
+                <label htmlFor="title" className="form-label">Review Title</label>
                 <input
                   type="text"
                   id="title"
@@ -325,7 +327,7 @@ const ReviewsPage = () => {
               </div>
 
               <div className="form-group">
-                <label htmlFor="comment" className="form-label">Your Review *</label>
+                <label htmlFor="comment" className="form-label">Your Review</label>
                 <textarea
                   id="comment"
                   name="comment"
@@ -359,15 +361,15 @@ const ReviewsPage = () => {
 
             <div className="reviews-stats">
               <div className="stat">
-                <div className="stat-value">4.8</div>
+                <div className="stat-value">{averageRating}</div>
                 <div className="stat-label">Average Rating</div>
               </div>
               <div className="stat">
-                <div className="stat-value">156</div>
+                <div className="stat-value">{totalReviews}</div>
                 <div className="stat-label">Total Reviews</div>
               </div>
               <div className="stat">
-                <div className="stat-value">98%</div>
+                <div className="stat-value">{recommendationRate}%</div>
                 <div className="stat-label">Would Recommend</div>
               </div>
             </div>
@@ -377,7 +379,12 @@ const ReviewsPage = () => {
                 <div key={review.id} className="review-card">
                   <div className="review-header">
                     <div className="reviewer-info">
-                      <h4 className="reviewer-name">{review.name}</h4>
+                      <h4 className="reviewer-name">
+                        {review.name}
+                        {review.verified && (
+                          <span className="verified-badge">Verified Trip</span>
+                        )}
+                      </h4>
                       <div className="reviewer-details">
                         <span className="reviewer-location">{review.location}</span>
                         <span className="review-date">{review.date}</span>
@@ -391,9 +398,9 @@ const ReviewsPage = () => {
 
                   <div className="review-content">
                     <h3 className="review-title">{review.title}</h3>
-                    <p className="review-tour">Tour: {review.tour}</p>
+                    <span className="review-tour">{review.tour}</span>
                     {review.guide && (
-                      <p className="review-guide">Guide: {review.guide}</p>
+                      <span className="review-guide">Guide: {review.guide}</span>
                     )}
                     <p className="review-comment">{review.comment}</p>
                   </div>

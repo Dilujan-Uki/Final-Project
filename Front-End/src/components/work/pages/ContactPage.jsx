@@ -20,8 +20,7 @@ const ContactPage = () => {
     setSuccess(false);
 
     try {
-      // Call backend API
-      const response = await fetch('http://localhost:5000/api/contact',{
+      const response = await fetch('http://localhost:5000/api/contact', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -35,14 +34,11 @@ const ContactPage = () => {
         throw new Error(data.message || 'Failed to send message');
       }
 
-      // Success
       setSuccess(true);
       setFormData({ name: '', email: '', subject: '', message: '' });
       
-      // Reset success message after 5 seconds
       setTimeout(() => setSuccess(false), 5000);
       
-      // Log to console for debugging
       console.log('Contact form submitted successfully:', data);
     } catch (err) {
       setError(err.message || 'Failed to send message. Please try again.');
@@ -60,6 +56,10 @@ const ContactPage = () => {
     }));
   };
 
+  const handleMapClick = () => {
+    window.open('https://maps.google.com/?q=Colombo+Sri+Lanka', '_blank');
+  };
+
   return (
     <div className="contact-page">
       {/* Hero Section */}
@@ -67,7 +67,9 @@ const ContactPage = () => {
         <div className="container">
           <div className="hero-content">
             <h1 className="hero-title">Contact Us</h1>
-            <p className="hero-subtitle">Get in touch for inquiries and bookings</p>
+            <p className="hero-subtitle">
+              Get in touch with our team for inquiries, bookings, and custom tour requests
+            </p>
           </div>
         </div>
       </section>
@@ -78,25 +80,26 @@ const ContactPage = () => {
           <div className="contact-form-section">
             <div className="form-header">
               <h2 className="form-title">Send Us a Message</h2>
+              <p className="section-subtitle">
+                We'll get back to you within 24 hours
+              </p>
             </div>
             
-            {/* Success Message */}
             {success && (
               <div className="success-message">
-                ✅ Thank you! Your message has been sent. We'll contact you soon.
+                <span>✅</span> Thank you! Your message has been sent. We'll contact you soon.
               </div>
             )}
             
-            {/* Error Message */}
             {error && (
               <div className="error-message">
-                ❌ {error}
+                <span>❌</span> {error}
               </div>
             )}
             
             <form onSubmit={handleSubmit} className="contact-form">
               <div className="form-group">
-                <label htmlFor="name" className="form-label">Full Name *</label>
+                <label htmlFor="name" className="form-label">Full Name</label>
                 <input
                   type="text"
                   id="name"
@@ -105,13 +108,13 @@ const ContactPage = () => {
                   onChange={handleChange}
                   className="form-input"
                   required
-                  placeholder="Enter your full name"
+                  placeholder="John Doe"
                   disabled={loading}
                 />
               </div>
               
               <div className="form-group">
-                <label htmlFor="email" className="form-label">Email Address *</label>
+                <label htmlFor="email" className="form-label">Email Address</label>
                 <input
                   type="email"
                   id="email"
@@ -120,13 +123,13 @@ const ContactPage = () => {
                   onChange={handleChange}
                   className="form-input"
                   required
-                  placeholder="Enter your email address"
+                  placeholder="john@example.com"
                   disabled={loading}
                 />
               </div>
               
               <div className="form-group">
-                <label htmlFor="subject" className="form-label">Subject *</label>
+                <label htmlFor="subject" className="form-label">Subject</label>
                 <select
                   id="subject"
                   name="subject"
@@ -138,15 +141,15 @@ const ContactPage = () => {
                 >
                   <option value="">Select a subject</option>
                   <option value="tour-inquiry">Tour Inquiry</option>
-                  <option value="booking">Booking</option>
+                  <option value="booking">Booking Assistance</option>
                   <option value="custom-tour">Custom Tour Request</option>
                   <option value="general">General Question</option>
-                  <option value="feedback">Feedback</option>
+                  <option value="feedback">Feedback & Suggestions</option>
                 </select>
               </div>
               
               <div className="form-group">
-                <label htmlFor="message" className="form-label">Message *</label>
+                <label htmlFor="message" className="form-label">Message</label>
                 <textarea
                   id="message"
                   name="message"
@@ -154,7 +157,7 @@ const ContactPage = () => {
                   onChange={handleChange}
                   className="form-textarea"
                   required
-                  placeholder="Tell us about your travel plans..."
+                  placeholder="Tell us about your travel plans, questions, or requirements..."
                   rows="5"
                   disabled={loading}
                 />
@@ -174,6 +177,9 @@ const ContactPage = () => {
           <div className="contact-info-section">
             <div className="info-header">
               <h2 className="info-title">Contact Information</h2>
+              <p className="section-subtitle">
+                Reach out to us through any of these channels
+              </p>
             </div>
             
             <div className="contact-details">
@@ -183,6 +189,7 @@ const ContactPage = () => {
                   <h3 className="method-title">Phone Number</h3>
                 </div>
                 <p className="method-detail">+94 11 234 5678</p>
+                <p className="method-detail">+94 77 123 4567 (Emergency)</p>
               </div>
               
               <div className="contact-method">
@@ -192,6 +199,7 @@ const ContactPage = () => {
                 </div>
                 <p className="method-detail">info@ceylontours.lk</p>
                 <p className="method-detail">booking@ceylontours.lk</p>
+                <p className="method-detail">support@ceylontours.lk</p>
               </div>
               
               <div className="contact-method">
@@ -200,12 +208,29 @@ const ContactPage = () => {
                   <h3 className="method-title">Office Hours</h3>
                 </div>
                 <div className="office-hours">
-                  <p className="hours-detail"><strong>Monday - Friday:</strong> 9:00 AM - 6:00 PM</p>
-                  <p className="hours-detail"><strong>Saturday:</strong> 9:00 AM - 2:00 PM</p>
-                  <p className="hours-detail"><strong>Sunday:</strong> Closed</p>
-                  <p className="hours-note">Emergency support available 24/7 for active tour participants</p>
+                  <div className="hours-detail">
+                    <strong>Monday - Friday:</strong> 9:00 AM - 6:00 PM
+                  </div>
+                  <div className="hours-detail">
+                    <strong>Saturday:</strong> 9:00 AM - 2:00 PM
+                  </div>
+                  <div className="hours-detail">
+                    <strong>Sunday:</strong> Closed
+                  </div>
+                  <p className="hours-note">
+                    Emergency support available 24/7 for active tour participants
+                  </p>
                 </div>
               </div>
+            </div>
+
+            {/* Map Placeholder */}
+            <div className="map-placeholder">
+              <h4>📍 Our Location</h4>
+              <p>42, Galle Road, Colombo 03, Sri Lanka</p>
+              <button onClick={handleMapClick} className="map-button">
+                View on Google Maps
+              </button>
             </div>
           </div>
         </div>

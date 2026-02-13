@@ -1,108 +1,171 @@
 /* src/pages/BookingPage.css */
 .booking-page {
   min-height: 100vh;
-  padding: var(--spacing-xl) 0;
-  background-color: var(--light-bg);
+  background: linear-gradient(135deg, #f8fafc, #ffffff);
+  padding: 3rem 0;
+  position: relative;
 }
 
+.booking-page::before {
+  content: '🎫';
+  position: fixed;
+  right: 30px;
+  bottom: 30px;
+  font-size: 120px;
+  opacity: 0.03;
+  pointer-events: none;
+  z-index: 0;
+}
+
+/* Header */
 .booking-header {
   text-align: center;
-  margin-bottom: var(--spacing-xl);
+  margin-bottom: 3rem;
+  position: relative;
+  z-index: 1;
 }
 
 .page-title {
-  font-size: var(--font-xxl);
-  color: var(--primary-green);
-  margin-bottom: var(--spacing-sm);
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #1e4c24;
+  margin-bottom: 0.75rem;
+  letter-spacing: -0.02em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+}
+
+.page-title::before {
+  content: '📅';
+  font-size: 2.5rem;
 }
 
 .page-subtitle {
-  color: var(--text-light);
-  font-size: var(--font-md);
+  color: #6c757d;
+  font-size: 1.1rem;
   max-width: 600px;
   margin: 0 auto;
+  line-height: 1.6;
 }
 
+/* Booking Container */
 .booking-container {
   display: grid;
   grid-template-columns: 1.2fr 0.8fr;
-  gap: var(--spacing-xl);
-  max-width: 1200px;
+  gap: 2rem;
+  max-width: 1300px;
   margin: 0 auto;
+  position: relative;
+  z-index: 1;
 }
 
 @media (max-width: 992px) {
   .booking-container {
     grid-template-columns: 1fr;
-    gap: var(--spacing-lg);
+    gap: 1.5rem;
+    padding: 0 1rem;
   }
 }
 
-/* Booking Form */
+/* Booking Form Section */
 .booking-form-section {
-  background: var(--white);
-  border-radius: 16px;
-  padding: var(--spacing-xl);
-  box-shadow: var(--shadow-md);
+  background: white;
+  border-radius: 28px;
+  padding: 2.5rem;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
+  position: relative;
+  overflow: hidden;
+}
+
+.booking-form-section::before {
+  content: '✍️';
+  position: absolute;
+  right: 20px;
+  bottom: 20px;
+  font-size: 80px;
+  opacity: 0.03;
+  transform: rotate(10deg);
 }
 
 .form-section-title {
-  font-size: var(--font-lg);
-  color: var(--primary-green);
-  margin-bottom: var(--spacing-lg);
-  padding-bottom: var(--spacing-md);
-  border-bottom: 2px solid var(--gray-light);
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #1e4c24;
+  margin-bottom: 1.5rem;
+  position: relative;
+  display: inline-block;
+}
+
+.form-section-title::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 0;
+  width: 60px;
+  height: 3px;
+  background: linear-gradient(90deg, #1e4c24, #ffb400);
+  border-radius: 3px;
+}
+
+/* Booking Form */
+.booking-form {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
 }
 
 .form-section {
-  margin-bottom: var(--spacing-xl);
-  padding-bottom: var(--spacing-lg);
-  border-bottom: 1px solid var(--gray-light);
-}
-
-.form-section:last-child {
-  margin-bottom: 0;
-  border-bottom: none;
+  background: linear-gradient(135deg, rgba(30, 76, 36, 0.02), rgba(255, 180, 0, 0.01));
+  border-radius: 20px;
+  padding: 1.75rem;
+  border: 1px solid rgba(30, 76, 36, 0.08);
 }
 
 .section-header {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  margin-bottom: var(--spacing-md);
-  color: var(--text-dark);
+  margin-bottom: 1.5rem;
+  color: #1e4c24;
 }
 
 .section-header svg {
-  color: var(--primary-green);
+  width: 24px;
+  height: 24px;
+  color: #ffb400;
 }
 
 .section-header h3 {
-  font-size: var(--font-md);
+  font-size: 1.2rem;
+  font-weight: 700;
   margin: 0;
-  font-weight: 600;
+  color: #1e4c24;
 }
 
-.booking-form {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-xl);
-}
-
+/* Form Groups */
 .form-row {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: var(--spacing-md);
+  gap: 1.25rem;
+  margin-bottom: 1rem;
 }
 
 @media (max-width: 768px) {
   .form-row {
     grid-template-columns: 1fr;
+    gap: 1rem;
   }
 }
 
 .form-group {
-  margin-bottom: var(--spacing-md);
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+  margin-bottom: 1rem;
 }
 
 .form-group:last-child {
@@ -110,71 +173,104 @@
 }
 
 .form-label {
-  display: block;
-  margin-bottom: 0.5rem;
-  font-size: var(--font-sm);
-  color: var(--text-dark);
-  font-weight: 500;
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: #1e4c24;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.form-label::after {
+  content: ' *';
+  color: #ff6b35;
 }
 
 .form-input,
+.form-select,
 .form-textarea {
   width: 100%;
-  padding: 0.875rem 1rem;
-  border: 2px solid var(--gray-light);
-  border-radius: 8px;
-  font-size: var(--font-sm);
+  padding: 1rem 1.25rem;
+  border: 2px solid #e9ecef;
+  border-radius: 16px;
+  font-size: 0.95rem;
   transition: all 0.3s ease;
-  outline: none;
-  background: var(--white);
+  background: white;
+  font-family: inherit;
 }
 
 .form-input:focus,
+.form-select:focus,
 .form-textarea:focus {
-  border-color: var(--primary-green);
-  box-shadow: 0 0 0 3px rgba(44, 95, 45, 0.1);
+  outline: none;
+  border-color: #1e4c24;
+  box-shadow: 0 0 0 4px rgba(30, 76, 36, 0.1);
 }
 
 .form-textarea {
   resize: vertical;
-  min-height: 100px;
+  min-height: 120px;
 }
 
-/* Services */
+/* Date Input Styling */
+input[type="date"] {
+  position: relative;
+  color: #495057;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 20px;
+  height: 20px;
+  cursor: pointer;
+  opacity: 0.6;
+  transition: opacity 0.3s ease;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator:hover {
+  opacity: 1;
+}
+
+/* Services List */
 .services-list {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 0.75rem;
+  gap: 1rem;
 }
 
 .service-item {
   display: flex;
   align-items: flex-start;
-  gap: 0.75rem;
-  padding: 1rem;
-  background: var(--white);
-  border: 2px solid var(--gray-light);
-  border-radius: 8px;
+  gap: 1rem;
+  padding: 1.25rem;
+  background: white;
+  border: 2px solid #e9ecef;
+  border-radius: 16px;
   transition: all 0.3s ease;
   cursor: pointer;
 }
 
 .service-item:hover {
-  border-color: var(--primary-green);
-  background: rgba(44, 95, 45, 0.03);
+  border-color: rgba(30, 76, 36, 0.3);
+  background: rgba(30, 76, 36, 0.02);
+  transform: translateX(5px);
 }
 
 .service-item.selected {
-  border-color: var(--primary-green);
-  background: rgba(44, 95, 45, 0.05);
+  border-color: #1e4c24;
+  background: rgba(30, 76, 36, 0.04);
+  box-shadow: 0 8px 20px rgba(30, 76, 36, 0.08);
 }
 
 .service-checkbox {
-  width: 18px;
-  height: 18px;
-  accent-color: var(--primary-green);
-  margin-top: 0.25rem;
-  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  accent-color: #1e4c24;
+  border-radius: 6px;
+  cursor: pointer;
+  margin-top: 0.15rem;
 }
 
 .service-info {
@@ -182,150 +278,164 @@
 }
 
 .service-name {
-  font-size: var(--font-sm);
-  color: var(--text-dark);
-  font-weight: 600;
-  margin-bottom: 0.25rem;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #212529;
+  margin-bottom: 0.35rem;
 }
 
 .service-price {
-  font-size: var(--font-sm);
-  color: var(--primary-green);
-  font-weight: 600;
-  margin-bottom: 0.25rem;
+  font-size: 0.9rem;
+  color: #1e4c24;
+  font-weight: 700;
+  margin-bottom: 0.35rem;
 }
 
 .service-description {
-  font-size: var(--font-xs);
-  color: var(--text-light);
+  font-size: 0.8rem;
+  color: #6c757d;
+  line-height: 1.5;
 }
 
-.submit-btn {
+/* Submit Button */
+.booking-form .submit-btn {
   width: 100%;
-  background: var(--primary-green);
-  color: var(--white);
+  background: linear-gradient(135deg, #1e4c24, #2c5f2d);
+  color: white;
   border: none;
-  padding: 1rem;
-  border-radius: 8px;
-  font-size: var(--font-md);
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  text-align: center;
-  margin-top: var(--spacing-md);
-}
-
-.submit-btn:hover {
-  background: var(--primary-dark);
-  transform: translateY(-2px);
-}
-
-.submit-btn:disabled {
-  background-color: #cccccc;
-  cursor: not-allowed;
-  opacity: 0.7;
-}
-
-/* Terms Section */
-.terms-section {
-  margin-top: var(--spacing-lg);
-  padding: var(--spacing-md);
-  background: rgba(44, 95, 45, 0.05);
-  border-radius: 12px;
-}
-
-.terms-content {
-  font-size: var(--font-xs);
-  color: var(--text-dark);
-  line-height: 1.6;
-}
-
-.terms-content p {
-  margin-bottom: 0.5rem;
-  padding-left: 1rem;
-  position: relative;
-}
-
-.terms-content p::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0.5rem;
-  width: 6px;
-  height: 6px;
-  background-color: var(--primary-green);
-  border-radius: 50%;
-}
-
-/* Use styles from PaymentPage.css for consistent look */
-
-.error-message {
-  background: #ffeaea;
-  color: #d32f2f;
-  padding: 12px;
-  border-radius: 8px;
-  border: 1px solid #ffcdd2;
-  margin-bottom: 20px;
-  text-align: center;
-  font-size: var(--font-sm);
-}
-
-@media (max-width: 768px) {
-  .booking-page {
-    padding: var(--spacing-lg);
-  }
-  
-  .booking-form-section,
-  .order-summary-section {
-    padding: var(--spacing-lg);
-  }
-  
-  .form-section-title {
-    font-size: var(--font-md);
-  }
-}
-
-/* Add to the end of BookingPage.css */
-.tour-info-card {
-  background: white;
-  border-radius: 12px;
   padding: 1.25rem;
-  border: 1px solid var(--gray-light);
-  margin-bottom: 1rem;
+  border-radius: 16px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.2, 0, 0, 1);
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-top: 1rem;
 }
 
+.booking-form .submit-btn::before {
+  content: '✓';
+  font-size: 1.2rem;
+  font-weight: 700;
+  transition: transform 0.3s ease;
+}
+
+.booking-form .submit-btn:hover {
+  background: linear-gradient(135deg, #ffb400, #ff6b35);
+  color: #1e2e1e;
+  transform: translateY(-3px);
+  box-shadow: 0 20px 40px rgba(255, 180, 0, 0.3);
+}
+
+.booking-form .submit-btn:hover::before {
+  transform: scale(1.2);
+}
+
+.booking-form .submit-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+/* Order Summary Section */
 .order-summary-section {
   background: white;
-  border-radius: 16px;
-  padding: var(--spacing-xl);
-  box-shadow: var(--shadow-md);
-  align-self: flex-start;
+  border-radius: 28px;
+  padding: 2rem;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(10px);
   position: sticky;
-  top: 2rem;
+  top: 100px;
+  height: fit-content;
+}
+
+@media (max-width: 992px) {
+  .order-summary-section {
+    position: static;
+    margin-top: 1rem;
+  }
 }
 
 .summary-title {
-  font-size: var(--font-lg);
-  color: var(--primary-green);
-  margin-bottom: var(--spacing-lg);
-  padding-bottom: var(--spacing-md);
-  border-bottom: 2px solid var(--gray-light);
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #1e4c24;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid rgba(30, 76, 36, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.summary-title::before {
+  content: '📊';
+  font-size: 1.5rem;
+}
+
+/* Tour Info Card - Reuse from PaymentPage.css */
+.tour-info-card {
+  background: linear-gradient(135deg, rgba(30, 76, 36, 0.04), rgba(255, 180, 0, 0.02));
+  border-radius: 20px;
+  padding: 1.5rem;
+  margin-bottom: 1.25rem;
+  border: 1px solid rgba(30, 76, 36, 0.08);
+  transition: all 0.3s ease;
+}
+
+.tour-info-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 15px 30px rgba(30, 76, 36, 0.08);
+  border-color: rgba(30, 76, 36, 0.15);
 }
 
 .tour-header {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: var(--spacing-md);
+  margin-bottom: 1rem;
 }
 
 .tour-name {
-  font-size: var(--font-md);
-  color: var(--primary-green);
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #1e4c24;
   margin: 0;
   display: flex;
   align-items: center;
   gap: 0.5rem;
+}
+
+.tour-name svg {
+  width: 20px;
+  height: 20px;
+  color: #ffb400;
+}
+
+.change-btn {
+  background: none;
+  border: none;
+  color: #1e4c24;
+  font-size: 0.85rem;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0.35rem 0.75rem;
+  border-radius: 50px;
+  transition: all 0.3s ease;
+}
+
+.change-btn:hover {
+  background: rgba(30, 76, 36, 0.1);
+  color: #ff8c42;
+  text-decoration: none;
 }
 
 .tour-details {
@@ -334,58 +444,297 @@
   gap: 0.5rem;
 }
 
+.tour-detail-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.35rem 0;
+}
+
 .detail-label {
-  font-size: var(--font-xs);
-  color: var(--text-light);
+  font-size: 0.85rem;
+  color: #6c757d;
+  font-weight: 500;
 }
 
 .detail-value {
-  font-size: var(--font-sm);
-  color: var(--primary-green);
-  font-weight: 600;
+  font-size: 0.95rem;
+  color: #1e4c24;
+  font-weight: 700;
 }
 
-.change-btn {
-  background: none;
-  border: none;
-  color: var(--primary-green);
-  font-size: var(--font-sm);
-  font-weight: 500;
-  cursor: pointer;
-  text-decoration: underline;
-  padding: 0;
-}
-
-.change-btn:hover {
-  color: var(--primary-dark);
-}
-
+/* Price Breakdown - Reuse from PaymentPage.css */
 .price-breakdown {
-  border-top: 1px solid var(--gray-light);
-  padding-top: var(--spacing-md);
-  margin-top: var(--spacing-md);
+  background: linear-gradient(135deg, rgba(30, 76, 36, 0.04), rgba(255, 180, 0, 0.02));
+  border-radius: 20px;
+  padding: 1.5rem;
+  margin: 1.5rem 0;
 }
 
 .price-row {
   display: flex;
   justify-content: space-between;
-  padding: 0.5rem 0;
-  font-size: var(--font-sm);
-  color: var(--text-dark);
+  align-items: center;
+  padding: 0.75rem 0;
+  font-size: 0.95rem;
+  color: #495057;
+  border-bottom: 1px solid rgba(30, 76, 36, 0.08);
+}
+
+.price-row:last-child {
+  border-bottom: none;
 }
 
 .price-row.total {
-  border-top: 2px solid var(--gray-light);
-  margin-top: 0.5rem;
-  padding-top: 0.75rem;
-  font-weight: 700;
-  color: var(--primary-green);
+  border-top: 2px solid rgba(30, 76, 36, 0.15);
+  margin-top: 0.75rem;
+  padding-top: 1.25rem;
+  font-size: 1.2rem;
+  font-weight: 800;
+  color: #1e4c24;
 }
 
 .price-amount {
-  font-weight: 600;
+  font-weight: 700;
+  color: #1e4c24;
 }
 
 .price-amount.total {
-  font-size: var(--font-lg);
+  font-size: 1.4rem;
+  color: #ff8c42;
+}
+
+/* Terms Section */
+.terms-section {
+  margin-top: 1.5rem;
+  padding: 1.5rem;
+  background: rgba(30, 76, 36, 0.02);
+  border-radius: 16px;
+  border: 1px solid rgba(30, 76, 36, 0.08);
+}
+
+.terms-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: #1e4c24;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.terms-title::before {
+  content: '📜';
+  font-size: 1.1rem;
+}
+
+.terms-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.terms-content p {
+  font-size: 0.85rem;
+  color: #6c757d;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.terms-content p::before {
+  content: '•';
+  color: #ffb400;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.terms-content strong {
+  color: #1e4c24;
+}
+
+/* Error Message */
+.error-message {
+  background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+  color: #721c24;
+  padding: 1rem 1.5rem;
+  border-radius: 16px;
+  border: 1px solid #f5c6cb;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-weight: 600;
+  animation: slideIn 0.3s ease;
+}
+
+.error-message::before {
+  content: '⚠️';
+  font-size: 1.2rem;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Selected Tour Badge */
+.selected-tour-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1.25rem;
+  background: linear-gradient(135deg, #1e4c24, #2c5f2d);
+  color: white;
+  border-radius: 50px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 1.5rem;
+}
+
+.selected-tour-badge::before {
+  content: '🎫';
+  font-size: 1rem;
+}
+
+/* Guide Badge */
+.guide-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 1rem;
+  background: rgba(255, 180, 0, 0.15);
+  color: #b45f1b;
+  border-radius: 50px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  margin-top: 0.5rem;
+}
+
+.guide-badge::before {
+  content: '👤';
+  font-size: 0.9rem;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .booking-page {
+    padding: 2rem 0;
+  }
+  
+  .page-title {
+    font-size: 2rem;
+  }
+  
+  .page-title::before {
+    font-size: 2rem;
+  }
+  
+  .booking-form-section,
+  .order-summary-section {
+    padding: 1.75rem;
+  }
+  
+  .form-section-title {
+    font-size: 1.5rem;
+  }
+  
+  .service-item {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .service-checkbox {
+    margin: 0 auto;
+  }
+  
+  .tour-header {
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: flex-start;
+  }
+  
+  .change-btn {
+    align-self: flex-start;
+  }
+}
+
+@media (max-width: 480px) {
+  .page-title {
+    font-size: 1.75rem;
+    flex-direction: column;
+  }
+  
+  .form-section {
+    padding: 1.25rem;
+  }
+  
+  .price-row.total {
+    font-size: 1.1rem;
+  }
+  
+  .price-amount.total {
+    font-size: 1.2rem;
+  }
+  
+  .terms-content p {
+    font-size: 0.8rem;
+  }
+}
+
+/* Loading State */
+.booking-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: 400px;
+}
+
+.booking-loading .spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(30, 76, 36, 0.1);
+  border-top-color: #1e4c24;
+  border-right-color: #ffb400;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-bottom: 1.5rem;
+}
+
+/* Tooltip */
+.tooltip {
+  position: relative;
+  display: inline-block;
+}
+
+.tooltip .tooltip-text {
+  visibility: hidden;
+  width: 200px;
+  background: #1e4c24;
+  color: white;
+  text-align: center;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  position: absolute;
+  z-index: 1;
+  bottom: 125%;
+  left: 50%;
+  transform: translateX(-50%);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  font-size: 0.8rem;
+  pointer-events: none;
+}
+
+.tooltip:hover .tooltip-text {
+  visibility: visible;
+  opacity: 1;
 }
