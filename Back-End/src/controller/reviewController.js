@@ -118,6 +118,8 @@ const getMyReviews = async (req, res) => {
   }
 };
 
+// src/controller/reviewController.js (UPDATED)
+
 // @desc    Update review approval status (Admin only)
 // @route   PATCH /api/reviews/:id/approve
 // @access  Private/Admin
@@ -125,12 +127,16 @@ const updateReviewApproval = async (req, res) => {
   try {
     const { isApproved } = req.body;
 
-    const review = await Review.findByIdAndUpdate(
-      req.params.id,
-      { isApproved },
-      { new: true, runValidators: true }
-    ).populate('user', 'name');
+    // Validate input
+    if (typeof isApproved !== 'boolean') {
+      return res.status(400).json({
+        status: 'error',
+        message: 'isApproved must be a boolean value'
+      });
+    }
 
+    const review = await Review.findById(req.params.id);
+    
     if (!review) {
       return res.status(404).json({
         status: 'error',
@@ -138,20 +144,26 @@ const updateReviewApproval = async (req, res) => {
       });
     }
 
+    // Update the review
+    review.isApproved = isApproved;
+    await review.save();
+
+    // Populate user data for response
+    await review.populate('user', 'name email');
+
     res.status(200).json({
       status: 'success',
-      message: `Review ${isApproved ? 'approved' : 'rejected'}`,
+      message: `Review ${isApproved ? 'approved' : 'rejected'} successfully`,
       data: review
     });
   } catch (error) {
     console.error('Update review error:', error);
     res.status(500).json({
       status: 'error',
-      message: 'Server error while updating review'
+      message: error.message || 'Server error while updating review'
     });
   }
 };
-
 // @desc    Delete review (Admin or owner)
 // @route   DELETE /api/reviews/:id
 // @access  Private
@@ -189,10 +201,54 @@ const deleteReview = async (req, res) => {
   }
 };
 
+
+// @desc    Get all reviews with user details (Admin only)
+// @route   GET /api/reviews/all
+// @access  Private/Admin
+const getAllReviewsAdmin = async (req, res) => {
+  try {
+    const { limit } = req.query;
+    
+    let query = Review.find({})
+      .populate('user', 'name email phone')
+      .sort({ createdAt: -1 });
+    
+    // Apply limit if provided (for random/recent reviews)
+    if (limit) {
+      query = query.limit(parseInt(limit));
+    }
+
+    const reviews = await query;
+
+    // Calculate statistics
+    const stats = {
+      totalReviews: reviews.length,
+      approvedReviews: reviews.filter(r => r.isApproved).length,
+      pendingReviews: reviews.filter(r => !r.isApproved).length,
+      averageRating: reviews.length > 0 
+        ? (reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length).toFixed(1)
+        : 0
+    };
+
+    res.status(200).json({
+      status: 'success',
+      count: reviews.length,
+      stats,
+      data: reviews
+    });
+  } catch (error) {
+    console.error('Get all reviews admin error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Server error while fetching reviews'
+    });
+  }
+};
 module.exports = {
   submitReview,
   getAllReviews,
   getMyReviews,
   updateReviewApproval,
-  deleteReview
+  deleteReview,
+  getAllReviewsAdmin
 };

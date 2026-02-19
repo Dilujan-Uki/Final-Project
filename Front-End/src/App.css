@@ -136,9 +136,17 @@ body {
 
 /* Utility Classes */
 .container {
-  max-width: 1200px;
+  width: 100%;
+  max-width: 1400px;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 0 2rem;
+}
+
+/* Fix for header container - more specific rule */
+header .container,
+.header .container {
+  max-width: 1400px;
+  padding: 0 2rem;
 }
 
 .section-padding {

@@ -28,7 +28,7 @@ const Footer = () => {
               <li><Link to="/">Home</Link></li>
               <li><Link to="/tours">Tours</Link></li>
               <li><Link to="/tour-guides">Tour Guides</Link></li>
-              <li><Link to="/reviews">Reviews</Link></li> {/* Added Reviews */}
+              <li><Link to="/reviews">Reviews</Link></li>
               <li><Link to="/contact">Contact</Link></li>
               <li><Link to="/login">Login</Link></li>
             </ul>
@@ -54,11 +54,16 @@ const Footer = () => {
           </div>
         </div>
         
-        {/* Footer Bottom */}
+        {/* Footer Bottom with Legal Links */}
         <div className="footer-bottom">
           <p className="copyright">
             © {currentYear} Ceylon Tours. All rights reserved.
           </p>
+          <div className="legal-links">
+            <Link to="/privacy" className="legal-link">Privacy Policy</Link>
+            <Link to="/terms" className="legal-link">Terms of Service</Link>
+            <Link to="/sitemap" className="legal-link">Sitemap</Link>
+          </div>
         </div>
       </div>
     </footer>

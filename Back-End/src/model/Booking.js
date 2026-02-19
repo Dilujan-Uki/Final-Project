@@ -2,17 +2,21 @@
 const mongoose = require('mongoose');
 
 const bookingSchema = new mongoose.Schema({
-  user: {
+  userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
     required: true
   },
-  tour: {
+  tourId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Tour',
     required: true
   },
-  guide: {
+  tourName: {
+    type: String,
+    required: true
+  },
+  guideName: {
     type: String,
     default: ''
   },
@@ -37,6 +41,14 @@ const bookingSchema = new mongoose.Schema({
     transport: { type: Boolean, default: false },
     meals: { type: Boolean, default: false }
   },
+  bookingDate: {
+    type: Date,
+    required: true
+  },
+  specialRequests: {
+    type: String,
+    default: ''
+  },
   status: {
     type: String,
     enum: ['pending', 'confirmed', 'completed', 'cancelled'],
@@ -47,18 +59,20 @@ const bookingSchema = new mongoose.Schema({
     enum: ['pending', 'paid', 'refunded'],
     default: 'pending'
   },
-  bookingDate: {
-    type: Date,
-    required: true
-  },
-  specialRequests: {
-    type: String,
-    default: ''
-  },
   createdAt: {
     type: Date,
     default: Date.now
+  },
+  updatedAt: {
+    type: Date,
+    default: Date.now
   }
+});
+
+// Update the updatedAt timestamp on save
+bookingSchema.pre('save', function(next) {
+  this.updatedAt = Date.now();
+  next();
 });
 
 const Booking = mongoose.model('Booking', bookingSchema);

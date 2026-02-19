@@ -53,7 +53,7 @@ const PaymentPage = () => {
     }
   }, [tourId, guideId]);
 
-  // Calculate prices based on customization
+  // Calculate prices based on customization - UPDATED: service fee is now 15% of subtotal
   const calculatePrices = () => {
     const baseTourPrice = customization.selectedDuration * pricePerDay * customization.participants;
     const guideCost = guideDailyRate * customization.selectedDuration;
@@ -63,7 +63,7 @@ const PaymentPage = () => {
     if (customization.extraServices.meals) extraServicesCost += 30 * customization.participants * customization.selectedDuration;
     
     const subtotal = baseTourPrice + guideCost + extraServicesCost;
-    const serviceFee = 15;
+    const serviceFee = Math.round(subtotal * 0.15 * 100) / 100; // 15% of subtotal, rounded to 2 decimal places
     const total = subtotal + serviceFee;
     
     return { 
@@ -475,8 +475,13 @@ const PaymentPage = () => {
                 </div>
               )}
               
+              <div className="price-row subtotal">
+                <span>Subtotal</span>
+                <span className="price-amount">${prices.subtotal}</span>
+              </div>
+
               <div className="price-row">
-                <span>Service Fee</span>
+                <span>Service Fee (15%)</span>
                 <span className="price-amount">${prices.serviceFee}</span>
               </div>
               

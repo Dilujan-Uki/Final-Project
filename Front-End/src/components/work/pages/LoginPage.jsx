@@ -1,3 +1,4 @@
+// src/pages/LoginPage.jsx
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './AuthPages.css';
@@ -9,6 +10,7 @@ const LoginPage = () => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [rememberMe, setRememberMe] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -17,7 +19,6 @@ const LoginPage = () => {
     setError('');
 
     try {
-      // Call backend API
       const response = await fetch('http://localhost:5000/api/auth/login', {
         method: 'POST',
         headers: {
@@ -28,52 +29,39 @@ const LoginPage = () => {
 
       const data = await response.json();
       
-      console.log('Login response data:', data); // Debug log
-      
       if (!response.ok) {
         throw new Error(data.message || 'Login failed');
       }
 
-      // Login successful - save token and user data
       if (data.data) {
-        // Handle different response structures
         let userData, token;
         
         if (data.data.user && data.data.token) {
-          // Structure: { data: { user: {...}, token: '...' } }
           userData = data.data.user;
           token = data.data.token;
         } else if (data.data._id && data.data.token) {
-          // Structure: { data: { _id: ..., name: ..., token: '...' } }
           userData = data.data;
           token = data.data.token;
-          // Remove token from userData if it's mixed in
           delete userData.token;
         } else {
-          // Unexpected structure
           throw new Error('Invalid response format from server');
         }
-
-        console.log('Storing user data:', userData); // Debug log
-        console.log('User role:', userData.role); // Debug log
         
         localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify(userData));
         
-        // Redirect based on role
+        if (rememberMe) {
+          // Extend session if needed
+        }
+        
         if (userData.role === 'admin') {
           navigate('/admin');
-          alert('Login successful! Welcome Administrator.');
         } else {
           navigate('/');
-          alert('Login successful! Welcome back to Ceylon Tours.');
         }
-      } else {
-        throw new Error('Invalid response from server');
       }
     } catch (err) {
       setError(err.message || 'Login failed. Please check your credentials.');
-      console.error('Login error:', err);
     } finally {
       setLoading(false);
     }
@@ -98,6 +86,22 @@ const LoginPage = () => {
               <p className="brand-subtitle">
                 Your gateway to unforgettable Sri Lankan adventures.
               </p>
+              
+              <div className="brand-features">
+                <div className="brand-feature">
+                  <span className="brand-feature-icon">🏆</span>
+                  <span>Expert Local Guides</span>
+                </div>
+                <div className="brand-feature">
+                  <span className="brand-feature-icon">🌿</span>
+                  <span>Authentic Experiences</span>
+                </div>
+                <div className="brand-feature">
+                  <span className="brand-feature-icon">⭐</span>
+                  <span>5-Star Rated Tours</span>
+                </div>
+              </div>
+
               <div className="brand-image">
                 <img 
                   src="https://images.unsplash.com/photo-1551632811-561732d1e306?w=600&h=400&fit=crop" 
@@ -112,13 +116,12 @@ const LoginPage = () => {
           <div className="auth-form-section">
             <div className="form-header">
               <h2 className="form-title">Welcome Back</h2>
-              <p className="form-subtitle">Login to manage your bookings and preferences</p>
+              <p className="form-subtitle">Sign in to continue your journey</p>
             </div>
 
-            {/* Error Message */}
             {error && (
               <div className="error-message">
-                ❌ {error}
+                <span>❌</span> {error}
               </div>
             )}
 
@@ -133,7 +136,7 @@ const LoginPage = () => {
                   onChange={handleChange}
                   className="form-input"
                   required
-                  placeholder="john@example.com"
+                  placeholder="your@email.com"
                   disabled={loading}
                 />
               </div>
@@ -148,18 +151,22 @@ const LoginPage = () => {
                   onChange={handleChange}
                   className="form-input"
                   required
-                  placeholder="Enter your password"
+                  placeholder="••••••••"
                   disabled={loading}
                 />
               </div>
 
               <div className="form-options">
                 <label className="checkbox">
-                  <input type="checkbox" />
+                  <input 
+                    type="checkbox" 
+                    checked={rememberMe}
+                    onChange={(e) => setRememberMe(e.target.checked)}
+                  />
                   <span>Remember me</span>
                 </label>
                 <Link to="/forgot-password" className="forgot-link">
-                  Forget password?
+                  Forgot password?
                 </Link>
               </div>
 
@@ -168,14 +175,14 @@ const LoginPage = () => {
                 className="submit-btn"
                 disabled={loading}
               >
-                {loading ? 'Logging in...' : 'Sign In'}
+                {loading ? 'Signing in...' : 'Sign In'}
               </button>
 
               <div className="auth-footer">
                 <p>
                   Don't have an account?{' '}
                   <Link to="/register" className="auth-link">
-                    Sign up
+                    Create account
                   </Link>
                 </p>
               </div>

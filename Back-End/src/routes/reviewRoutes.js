@@ -1,4 +1,4 @@
-// src/routes/reviewRoutes.js
+// src/routes/reviewRoutes.js (updated)
 const express = require('express');
 const { body } = require('express-validator');
 const {
@@ -6,7 +6,8 @@ const {
   getAllReviews,
   getMyReviews,
   updateReviewApproval,
-  deleteReview
+  deleteReview,
+  getAllReviewsAdmin  // Import the new function
 } = require('../controller/reviewController');
 const { protect, adminOnly } = require('../middleware/authMiddleware');
 
@@ -29,6 +30,7 @@ router.get('/my-reviews', protect, getMyReviews);
 router.delete('/:id', protect, deleteReview);
 
 // Admin routes
+router.get('/all', protect, adminOnly, getAllReviewsAdmin);  // New admin route
 router.patch('/:id/approve', protect, adminOnly, updateReviewApproval);
 
 module.exports = router;

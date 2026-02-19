@@ -9,41 +9,44 @@ const MyBookingsPage = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const fetchBookings = async () => {
-      const token = localStorage.getItem('token');
+// In myBookingsPage.jsx - Replace the fetchBookings function
+
+useEffect(() => {
+  const fetchBookings = async () => {
+    const token = localStorage.getItem('token');
+    
+    if (!token) {
+      navigate('/login');
+      return;
+    }
+
+    try {
+      const response = await fetch('http://localhost:5000/api/new-bookings/my-bookings', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      const data = await response.json();
       
-      if (!token) {
-        navigate('/login');
-        return;
+      if (!response.ok) {
+        throw new Error(data.message || 'Failed to fetch bookings');
       }
 
-      try {
-        const response = await fetch('http://localhost:5000/api/bookings/my-bookings', {
-          headers: {
-            'Authorization': `Bearer ${token}`
-          }
-        });
-
-        const data = await response.json();
-        
-        if (!response.ok) {
-          throw new Error(data.message || 'Failed to fetch bookings');
-        }
-
-        if (data.status === 'success') {
-          setBookings(data.data);
-        }
-      } catch (err) {
-        setError(err.message || 'Failed to load bookings');
-        console.error('Error fetching bookings:', err);
-      } finally {
-        setLoading(false);
+      if (data.success) {
+        setBookings(data.data);
       }
-    };
+    } catch (err) {
+      setError(err.message || 'Failed to load bookings');
+      console.error('Error fetching bookings:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    fetchBookings();
-  }, [navigate]);
+  fetchBookings();
+}, [navigate]);
+
 
   const getStatusBadgeClass = (status) => {
     switch (status) {

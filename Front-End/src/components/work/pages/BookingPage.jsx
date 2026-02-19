@@ -7,13 +7,13 @@ const BookingPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const queryParams = new URLSearchParams(location.search);
-  
+
   // Get tour and guide details from URL parameters
   const tourId = queryParams.get('tour');
   const tourName = queryParams.get('name') || "Cultural Triangle Explorer";
   const duration = parseInt(queryParams.get('duration')) || 3;
   const pricePerDay = parseInt(queryParams.get('pricePerDay')) || 80;
-  
+
   const guideId = queryParams.get('guide');
   const guideName = queryParams.get('guideName') || "";
   const guideDailyRate = parseInt(queryParams.get('guideDailyRate')) || 0;
@@ -39,7 +39,7 @@ const BookingPage = () => {
   useEffect(() => {
     const savedTour = localStorage.getItem('selectedTour');
     const savedGuide = localStorage.getItem('selectedGuide');
-    
+
     if (savedTour && !tourId) {
       const tourData = JSON.parse(savedTour);
       setBookingData(prev => ({
@@ -49,7 +49,7 @@ const BookingPage = () => {
         selectedDuration: tourData.duration || duration
       }));
     }
-    
+
     if (savedGuide && !guideId) {
       const guideData = JSON.parse(savedGuide);
       setBookingData(prev => ({
@@ -71,88 +71,122 @@ const BookingPage = () => {
   const calculatePrices = () => {
     const baseTourPrice = bookingData.selectedDuration * pricePerDay * bookingData.participants;
     const guideCost = guideDailyRate * bookingData.selectedDuration;
-    
+
     let extraServicesCost = 0;
     if (bookingData.extraServices.transport) extraServicesCost += 100;
     if (bookingData.extraServices.meals) extraServicesCost += 30 * bookingData.participants * bookingData.selectedDuration;
-    
+
     const subtotal = baseTourPrice + guideCost + extraServicesCost;
-    const serviceFee = 15;
+    const serviceFee = Math.round(subtotal * 0.15);
     const total = subtotal + serviceFee;
-    
-    return { 
-      baseTourPrice, 
-      guideCost, 
-      extraServicesCost, 
-      subtotal, 
-      serviceFee, 
-      total 
+
+    return {
+      baseTourPrice,
+      guideCost,
+      extraServicesCost,
+      subtotal,
+      serviceFee,
+      total
     };
   };
 
   const prices = calculatePrices();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    
-    // Check if user is logged in
-    const token = localStorage.getItem('token');
-    if (!token) {
-      alert('Please login to book a tour');
-      navigate('/login');
-      return;
+// src/pages/BookingPage.jsx - Replace the handleSubmit function
+
+// In BookingPage.jsx - Replace the handleSubmit function
+
+const handleSubmit = async (e) => {
+  e.preventDefault();
+
+  // Check if user is logged in
+  const token = localStorage.getItem('token');
+  const userData = localStorage.getItem('user');
+
+  if (!token || !userData) {
+    alert('Please login to book a tour');
+    navigate('/login');
+    return;
+  }
+
+  setLoading(true);
+  setError('');
+
+  try {
+    // First, get the actual tour ID from the database
+    const toursResponse = await fetch('http://localhost:5000/api/tours');
+    const toursData = await toursResponse.json();
+
+    if (!toursResponse.ok) {
+      throw new Error('Failed to fetch tours');
     }
 
-    setLoading(true);
-    setError('');
+    // Find the tour that matches the name
+    const selectedTour = toursData.data.find(t =>
+      t.name.toLowerCase() === bookingData.tourName.toLowerCase() ||
+      t.name.toLowerCase().includes(bookingData.tourName.toLowerCase().split(' ')[0])
+    );
 
-    try {
-      const bookingPayload = {
-        tourId: bookingData.tourId,
-        guide: bookingData.guideName,
-        participants: bookingData.participants,
-        duration: bookingData.selectedDuration,
-        totalPrice: prices.total,
-        extraServices: bookingData.extraServices,
-        bookingDate: bookingData.bookingDate,
-        specialRequests: bookingData.specialRequests
-      };
+    if (!selectedTour) {
+      throw new Error('Tour not found in database');
+    }
 
-      const response = await fetch('http://localhost:5000/api/bookings', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify(bookingPayload)
-      });
+    // Create booking payload for NEW API
+    const bookingPayload = {
+      tourId: selectedTour._id,
+      tourName: selectedTour.name,
+      guideName: bookingData.guideName || '',
+      participants: parseInt(bookingData.participants),
+      duration: parseInt(bookingData.selectedDuration),
+      totalPrice: prices.total,
+      extraServices: {
+        transport: bookingData.extraServices.transport || false,
+        meals: bookingData.extraServices.meals || false
+      },
+      bookingDate: bookingData.bookingDate,
+      specialRequests: bookingData.specialRequests || ''
+    };
 
-      const data = await response.json();
+    console.log('Sending to NEW booking API:', bookingPayload);
 
-      if (!response.ok) {
-        throw new Error(data.message || 'Booking failed');
-      }
+    // Use the NEW API endpoint
+    const response = await fetch('http://localhost:5000/api/new-bookings', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(bookingPayload)
+    });
 
+    const data = await response.json();
+    console.log('Server response:', data);
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Booking failed');
+    }
+
+    if (data.success) {
       // Clear selections after successful booking
       localStorage.removeItem('selectedTour');
       localStorage.removeItem('selectedGuide');
 
-      alert('Booking Successful! Redirecting to payment...');
-      
-      // Navigate to payment page with booking ID
-      navigate(`/payment?booking=${data.data._id}&amount=${prices.total}`);
-      
-    } catch (err) {
-      setError(err.message || 'Booking failed. Please try again.');
-      console.error('Booking error:', err);
-    } finally {
-      setLoading(false);
-    }
-  };
+      alert('✅ Booking Successful!');
 
+      // Navigate to my bookings page
+      navigate('/my-bookings');
+    }
+
+  } catch (err) {
+    console.error('Booking error:', err);
+    setError(err.message || 'Booking failed. Please try again.');
+  } finally {
+    setLoading(false);
+  }
+};
   const handleChange = (e) => {
     const { name, value, type } = e.target;
-    
+
     if (name.includes('.')) {
       const [parent, child] = name.split('.');
       setBookingData(prev => ({
@@ -206,7 +240,7 @@ const BookingPage = () => {
           {/* Left Column - Booking Form */}
           <div className="booking-form-section">
             <h2 className="form-section-title">Booking Details</h2>
-            
+
             <form onSubmit={handleSubmit} className="booking-form">
               {/* Date & Participants */}
               <div className="form-section">
@@ -224,7 +258,7 @@ const BookingPage = () => {
                       min={new Date().toISOString().split('T')[0]}
                     />
                   </div>
-                  
+
                   <div className="form-group">
                     <label htmlFor="participants" className="form-label">Participants *</label>
                     <input
@@ -265,7 +299,7 @@ const BookingPage = () => {
                   </svg>
                   <h3>Special Requests</h3>
                 </div>
-                
+
                 <div className="form-group">
                   <textarea
                     id="specialRequests"
@@ -287,9 +321,9 @@ const BookingPage = () => {
                   </svg>
                   <h3>Extra Services</h3>
                 </div>
-                
+
                 <div className="services-list">
-                  <div 
+                  <div
                     className={`service-item ${bookingData.extraServices.transport ? 'selected' : ''}`}
                     onClick={() => handleServiceToggle('transport')}
                   >
@@ -306,8 +340,8 @@ const BookingPage = () => {
                       <div className="service-description">Comfortable private vehicle with driver</div>
                     </div>
                   </div>
-                  
-                  <div 
+
+                  <div
                     className={`service-item ${bookingData.extraServices.meals ? 'selected' : ''}`}
                     onClick={() => handleServiceToggle('meals')}
                   >
@@ -336,7 +370,7 @@ const BookingPage = () => {
                   </svg>
                   <h3>Contact Information</h3>
                 </div>
-                
+
                 <div className="form-group">
                   <label htmlFor="contactEmail" className="form-label">Email for confirmation *</label>
                   <input
@@ -349,7 +383,7 @@ const BookingPage = () => {
                     defaultValue={JSON.parse(localStorage.getItem('user'))?.email || ''}
                   />
                 </div>
-                
+
                 <div className="form-group">
                   <label htmlFor="contactPhone" className="form-label">Phone Number *</label>
                   <input
@@ -364,8 +398,8 @@ const BookingPage = () => {
                 </div>
               </div>
 
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 className="submit-btn"
                 disabled={loading}
               >
@@ -377,7 +411,7 @@ const BookingPage = () => {
           {/* Right Column - Order Summary */}
           <div className="order-summary-section">
             <h2 className="summary-title">Order Summary</h2>
-            
+
             {/* Tour Info */}
             <div className="tour-info-card">
               <div className="tour-header">
@@ -391,7 +425,7 @@ const BookingPage = () => {
                   Change
                 </button>
               </div>
-              
+
               <div className="tour-details">
                 <div className="tour-detail-item">
                   <span className="detail-label">Price per day</span>
@@ -419,7 +453,7 @@ const BookingPage = () => {
                     Change
                   </button>
                 </div>
-                
+
                 <div className="tour-details">
                   <div className="tour-detail-item">
                     <span className="detail-label">Daily Rate</span>
@@ -432,38 +466,43 @@ const BookingPage = () => {
             {/* Price Breakdown */}
             <div className="price-breakdown">
               <h4 className="services-title">Price Breakdown</h4>
-              
+
               <div className="price-row">
                 <span>Base Tour Price ({bookingData.participants} x {bookingData.selectedDuration} days)</span>
                 <span className="price-amount">${prices.baseTourPrice}</span>
               </div>
-              
+
               {bookingData.guideName && (
                 <div className="price-row">
                   <span>Tour Guide ({bookingData.selectedDuration} days)</span>
                   <span className="price-amount">${prices.guideCost}</span>
                 </div>
               )}
-              
+
               {bookingData.extraServices.transport && (
                 <div className="price-row">
                   <span>Private Transport</span>
                   <span className="price-amount">$100</span>
                 </div>
               )}
-              
+
               {bookingData.extraServices.meals && (
                 <div className="price-row">
                   <span>Meals ({bookingData.participants} x {bookingData.selectedDuration} days)</span>
                   <span className="price-amount">${30 * bookingData.participants * bookingData.selectedDuration}</span>
                 </div>
               )}
-              
+
+              <div className="price-row subtotal">
+                <span>Subtotal</span>
+                <span className="price-amount">${prices.subtotal}</span>
+              </div>
+
               <div className="price-row">
-                <span>Service Fee</span>
+                <span>Service Fee (15%)</span>
                 <span className="price-amount">${prices.serviceFee}</span>
               </div>
-              
+
               <div className="price-row total">
                 <span>Total Amount</span>
                 <span className="price-amount total">${prices.total}</span>

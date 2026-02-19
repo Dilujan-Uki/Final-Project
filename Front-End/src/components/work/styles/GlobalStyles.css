@@ -22,15 +22,15 @@
   --black: #212529;
   
   /* Typography */
-  --font-xxs: 0.75rem;   /* 12px */
-  --font-xs: 0.875rem;   /* 14px */
-  --font-sm: 1rem;       /* 16px */
-  --font-md: 1.125rem;   /* 18px */
-  --font-lg: 1.5rem;     /* 24px */
-  --font-xl: 2rem;       /* 32px */
-  --font-xxl: 2.5rem;    /* 40px */
-  --font-xxxl: 3rem;     /* 48px */
-  --font-xxxxl: 4rem;    /* 64px - for hero sections */
+  --font-xxs: 0.75rem;
+  --font-xs: 0.875rem;
+  --font-sm: 1rem;
+  --font-md: 1.125rem;
+  --font-lg: 1.5rem;
+  --font-xl: 2rem;
+  --font-xxl: 2.5rem;
+  --font-xxxl: 3rem;
+  --font-xxxxl: 4rem;
   
   /* Spacing */
   --spacing-xxs: 0.25rem;
@@ -47,7 +47,7 @@
   --shadow-soft: 0 8px 20px rgba(0, 0, 0, 0.06);
   --shadow-elevation: 0 12px 30px rgba(0, 0, 0, 0.1);
   --shadow-heavy: 0 20px 40px rgba(0, 0, 0, 0.15);
-  --shadow-glow: 0 0 20px rgba(44, 95, 45, 0.3);
+  --shadow-glow: 0 0 20px rgba(30, 76, 36, 0.3);
   --shadow-gold-glow: 0 0 25px rgba(255, 180, 0, 0.3);
   
   /* Border Radius */
@@ -64,7 +64,7 @@
   --transition-slow: 0.5s cubic-bezier(0.2, 0, 0, 1);
   --transition-bounce: 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
   
-  /* Container Widths - FIXED */
+  /* Container Widths */
   --container-max-width: 1400px;
   --container-padding: 2rem;
   --container-padding-mobile: 1rem;
@@ -86,7 +86,7 @@ body {
   width: 100%;
 }
 
-/* FIXED: Container with proper max-width and padding */
+/* Container with proper max-width and padding */
 .container {
   width: 100%;
   max-width: var(--container-max-width);
@@ -94,7 +94,14 @@ body {
   padding: 0 var(--container-padding);
 }
 
-/* FIXED: Full width container for hero sections */
+/* Header container - specific override for header only */
+header .container,
+.header .container {
+  max-width: var(--container-max-width);
+  padding: 0 var(--container-padding);
+}
+
+/* Full width container for hero sections */
 .container-fluid {
   width: 100%;
   max-width: 100%;
@@ -102,7 +109,7 @@ body {
   padding: 0;
 }
 
-/* FIXED: Hero content container - full width with centered content */
+/* Hero content container */
 .hero-container {
   width: 100%;
   max-width: 100%;
@@ -115,14 +122,15 @@ body {
   z-index: 10;
 }
 
-/* Modern Button Styles - Equal Size */
-.btn-primary,
-.btn-secondary,
-.btn-outline,
-.btn-ghost,
-.cta-button,
-.submit-btn,
-button[type="submit"] {
+/* Modern Button Styles - EXCLUDING header buttons */
+/* Only apply these styles to buttons not in header */
+main .btn-primary,
+main .btn-secondary,
+main .btn-outline,
+main .btn-ghost,
+main .cta-button,
+main .submit-btn,
+main button[type="submit"]:not(.user-avatar-btn):not(.dropdown-item) {
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -145,8 +153,8 @@ button[type="submit"] {
   white-space: nowrap;
 }
 
-/* Primary Button - Sri Lanka Green with Gold Accent */
-.btn-primary {
+/* Primary Button */
+main .btn-primary {
   background: linear-gradient(135deg, var(--sri-lanka-green), var(--sri-lanka-dark-green));
   color: var(--white);
   box-shadow: 0 8px 20px rgba(30, 76, 36, 0.25);
@@ -154,7 +162,7 @@ button[type="submit"] {
   z-index: 1;
 }
 
-.btn-primary::before {
+main .btn-primary::before {
   content: '';
   position: absolute;
   top: 0;
@@ -168,23 +176,18 @@ button[type="submit"] {
   border-radius: 50px;
 }
 
-.btn-primary:hover::before {
+main .btn-primary:hover::before {
   opacity: 1;
 }
 
-.btn-primary:hover {
+main .btn-primary:hover {
   transform: translateY(-3px);
   box-shadow: 0 12px 30px rgba(255, 180, 0, 0.35);
   color: var(--white);
 }
 
-.btn-primary:active {
-  transform: translateY(-1px);
-  box-shadow: 0 8px 20px rgba(255, 180, 0, 0.4);
-}
-
-/* Secondary Button - Gold with Green Accent */
-.btn-secondary {
+/* Secondary Button */
+main .btn-secondary {
   background: linear-gradient(135deg, var(--sri-lanka-gold), var(--sri-lanka-orange));
   color: var(--charcoal);
   box-shadow: 0 8px 20px rgba(255, 180, 0, 0.25);
@@ -192,7 +195,7 @@ button[type="submit"] {
   z-index: 1;
 }
 
-.btn-secondary::before {
+main .btn-secondary::before {
   content: '';
   position: absolute;
   top: 0;
@@ -206,18 +209,18 @@ button[type="submit"] {
   border-radius: 50px;
 }
 
-.btn-secondary:hover::before {
+main .btn-secondary:hover::before {
   opacity: 1;
 }
 
-.btn-secondary:hover {
+main .btn-secondary:hover {
   transform: translateY(-3px);
   box-shadow: 0 12px 30px rgba(30, 76, 36, 0.3);
   color: var(--white);
 }
 
 /* Outline Button */
-.btn-outline {
+main .btn-outline {
   background: transparent;
   color: var(--sri-lanka-green);
   border: 2px solid var(--sri-lanka-green);
@@ -225,7 +228,7 @@ button[type="submit"] {
   padding: calc(0.85rem - 2px) calc(2rem - 2px);
 }
 
-.btn-outline:hover {
+main .btn-outline:hover {
   background: var(--sri-lanka-green);
   color: var(--white);
   transform: translateY(-3px);
@@ -233,7 +236,7 @@ button[type="submit"] {
 }
 
 /* Ghost Button */
-.btn-ghost {
+main .btn-ghost {
   background: transparent;
   color: var(--sri-lanka-green);
   box-shadow: none;
@@ -241,13 +244,13 @@ button[type="submit"] {
   border: none;
 }
 
-.btn-ghost:hover {
+main .btn-ghost:hover {
   background: rgba(30, 76, 36, 0.08);
   transform: translateY(-2px);
 }
 
-/* CTA Button - Special Style */
-.cta-button {
+/* CTA Button */
+main .cta-button {
   background: linear-gradient(135deg, var(--sri-lanka-gold), var(--sri-lanka-orange));
   color: var(--charcoal);
   font-size: 1.1rem;
@@ -255,50 +258,45 @@ button[type="submit"] {
   box-shadow: 0 10px 25px rgba(255, 180, 0, 0.3);
 }
 
-.cta-button:hover {
+main .cta-button:hover {
   transform: translateY(-4px);
   box-shadow: 0 18px 35px rgba(255, 180, 0, 0.4);
 }
 
 /* Submit Button */
-.submit-btn {
+main .submit-btn {
   background: linear-gradient(135deg, var(--sri-lanka-green), var(--sri-lanka-dark-green));
   color: var(--white);
   width: 100%;
   min-width: auto;
 }
 
-.submit-btn:hover {
+main .submit-btn:hover {
   background: linear-gradient(135deg, var(--sri-lanka-dark-green), var(--sri-lanka-green));
   transform: translateY(-3px);
   box-shadow: 0 12px 25px rgba(30, 76, 36, 0.3);
 }
 
 /* Disabled State */
-.btn-primary:disabled,
-.btn-secondary:disabled,
-.btn-outline:disabled,
-.submit-btn:disabled {
+main .btn-primary:disabled,
+main .btn-secondary:disabled,
+main .btn-outline:disabled,
+main .submit-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
   transform: none;
   box-shadow: none;
 }
 
-.btn-primary:disabled:hover::before,
-.btn-secondary:disabled:hover::before {
-  opacity: 0;
-}
-
 /* Small Button Variant */
-.btn-sm {
+main .btn-sm {
   padding: 0.6rem 1.5rem;
   font-size: 0.9rem;
   min-width: 130px;
 }
 
 /* Large Button Variant */
-.btn-lg {
+main .btn-lg {
   padding: 1rem 2.5rem;
   font-size: 1.1rem;
   min-width: 200px;
@@ -414,23 +412,23 @@ h4 {
     --container-padding: 1rem;
   }
   
-  .btn-primary,
-  .btn-secondary,
-  .btn-outline,
-  .btn-ghost,
-  .cta-button,
-  .submit-btn {
+  main .btn-primary,
+  main .btn-secondary,
+  main .btn-outline,
+  main .btn-ghost,
+  main .cta-button,
+  main .submit-btn {
     padding: 0.75rem 1.5rem;
     min-width: 140px;
     font-size: 0.95rem;
   }
   
-  .btn-sm {
+  main .btn-sm {
     padding: 0.5rem 1.25rem;
     min-width: 120px;
   }
   
-  .btn-lg {
+  main .btn-lg {
     padding: 0.9rem 2rem;
     min-width: 180px;
   }
@@ -441,12 +439,12 @@ h4 {
     --container-padding: 0.75rem;
   }
   
-  .btn-primary,
-  .btn-secondary,
-  .btn-outline,
-  .btn-ghost,
-  .cta-button,
-  .submit-btn {
+  main .btn-primary,
+  main .btn-secondary,
+  main .btn-outline,
+  main .btn-ghost,
+  main .cta-button,
+  main .submit-btn {
     padding: 0.7rem 1.25rem;
     min-width: 130px;
     font-size: 0.9rem;
