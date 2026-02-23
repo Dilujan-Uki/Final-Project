@@ -106,6 +106,24 @@ const ReviewsPage = () => {
     "Priya Jayawardena"
   ];
 
+  //Auto filling the user data in review form 
+  useEffect(() => {
+    const userData = localStorage.getItem('user');
+    if (userData) {
+      try {
+        const user = JSON.parse(userData);
+        setNewReview(prev => ({
+          ...prev,
+          name: user.name || '',
+          email: user.email || ''
+        }));
+      }catch (err){
+        console.log('Error passing Data',err)
+      }
+    }
+  }, []);
+  
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -133,9 +151,13 @@ const ReviewsPage = () => {
 
       alert('Thank you for your review! It will be published after moderation.');
 
+      // Reset form but keep user data
+      const userData = localStorage.getItem('user');
+      const user = userData ? JSON.parse(userData) : null;
+      
       setNewReview({
-        name: '',
-        email: '',
+        name: user?.name || '',
+        email: user?.email || '',
         rating: 5,
         title: '',
         comment: '',

@@ -1,16 +1,26 @@
-// scripts/seedTours.js
+const path = require('path');
 const mongoose = require('mongoose');
-const Tour = require('../src/model/Tour');
-require('dotenv').config({ path: '../.env' });
+const Tour = require('../model/Tour'); // Changed from '../src/model/Tour' to '../model/Tour'
+require('dotenv').config({ path: path.join(__dirname, '..', '..', '.env') });
 
 const seedTours = async () => {
   try {
+    console.log('🔍 Current directory:', __dirname);
+    console.log('📁 Loading .env from:', path.join(__dirname, '..', '..', '.env'));
+    
+    console.log('🔄 Connecting to MongoDB...');
+    console.log('MONGODB_URI:', process.env.MONGODB_URI);
+    
+    if (!process.env.MONGODB_URI) {
+      throw new Error('MONGODB_URI is not defined in .env file');
+    }
+    
     await mongoose.connect(process.env.MONGODB_URI);
-    console.log('Connected to MongoDB');
+    console.log('✅ Connected to MongoDB\n');
 
     // Clear existing tours
     await Tour.deleteMany({});
-    console.log('Cleared existing tours');
+    console.log('🗑️ Cleared existing tours');
 
     const tours = [
       {
@@ -77,7 +87,7 @@ const seedTours = async () => {
 
     const createdTours = await Tour.insertMany(tours);
     console.log('✅ Tours seeded successfully!');
-    console.log('\nTour IDs for reference:');
+    console.log('\n📋 Tour IDs for reference:');
     createdTours.forEach((tour, index) => {
       console.log(`${index + 1}. ${tour.name}: ${tour._id}`);
     });
