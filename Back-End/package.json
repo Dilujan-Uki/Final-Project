@@ -6,7 +6,10 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "node src/server.js",
     "dev": "nodemon src/server.js",
-    "seed:admin": "node src/scripts/seedAdmin.js"
+    "seed:admin": "node src/scripts/seedAdmin.js",
+    "seed:tour": "node src/scripts/seedTour.js",
+    "seed:details": "node src/scripts/seedDetails.js",
+    "seed:all": "npm run seed:admin && npm run seed:tour && npm run seed:details"
   },
   "keywords": [],
   "author": "",

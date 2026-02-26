@@ -1,6 +1,7 @@
 // src/pages/BookingPage.jsx
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
+import { newBookingsAPI } from '/home/uki-dsa-01/LESSONS/Final-Project/Front-End/src/services/api.js';
 import './BookingPage.css';
 
 const BookingPage = () => {
@@ -92,98 +93,83 @@ const BookingPage = () => {
 
   const prices = calculatePrices();
 
-// src/pages/BookingPage.jsx - Replace the handleSubmit function
+  const handleSubmit = async (e) => {
+    e.preventDefault();
 
-// In BookingPage.jsx - Replace the handleSubmit function
+    // Check if user is logged in
+    const token = localStorage.getItem('token');
+    const userData = localStorage.getItem('user');
 
-const handleSubmit = async (e) => {
-  e.preventDefault();
-
-  // Check if user is logged in
-  const token = localStorage.getItem('token');
-  const userData = localStorage.getItem('user');
-
-  if (!token || !userData) {
-    alert('Please login to book a tour');
-    navigate('/login');
-    return;
-  }
-
-  setLoading(true);
-  setError('');
-
-  try {
-    // First, get the actual tour ID from the database
-    const toursResponse = await fetch('http://localhost:5000/api/tours');
-    const toursData = await toursResponse.json();
-
-    if (!toursResponse.ok) {
-      throw new Error('Failed to fetch tours');
+    if (!token || !userData) {
+      alert('Please login to book a tour');
+      navigate('/login');
+      return;
     }
 
-    // Find the tour that matches the name
-    const selectedTour = toursData.data.find(t =>
-      t.name.toLowerCase() === bookingData.tourName.toLowerCase() ||
-      t.name.toLowerCase().includes(bookingData.tourName.toLowerCase().split(' ')[0])
-    );
+    setLoading(true);
+    setError('');
 
-    if (!selectedTour) {
-      throw new Error('Tour not found in database');
+    try {
+      // First, get the actual tour ID from the database
+      const toursResponse = await fetch('http://localhost:5000/api/tours');
+      const toursData = await toursResponse.json();
+
+      if (!toursResponse.ok) {
+        throw new Error('Failed to fetch tours');
+      }
+
+      // Find the tour that matches the name
+      const selectedTour = toursData.data.find(t =>
+        t.name.toLowerCase() === bookingData.tourName.toLowerCase() ||
+        t.name.toLowerCase().includes(bookingData.tourName.toLowerCase().split(' ')[0])
+      );
+
+      if (!selectedTour) {
+        throw new Error('Tour not found in database');
+      }
+
+      // Create booking payload for NEW API
+      const bookingPayload = {
+        tourId: selectedTour._id,
+        tourName: selectedTour.name,
+        guideName: bookingData.guideName || '',
+        participants: parseInt(bookingData.participants),
+        duration: parseInt(bookingData.selectedDuration),
+        totalPrice: prices.total,
+        extraServices: {
+          transport: bookingData.extraServices.transport || false,
+          meals: bookingData.extraServices.meals || false
+        },
+        bookingDate: bookingData.bookingDate,
+        specialRequests: bookingData.specialRequests || ''
+      };
+
+      console.log('Sending to NEW booking API:', bookingPayload);
+
+      // USE THE NEW API HERE
+      const response = await newBookingsAPI.create(bookingPayload);
+
+      console.log('Server response:', response);
+
+      if (response.success) {
+        // Clear selections after successful booking
+        localStorage.removeItem('selectedTour');
+        localStorage.removeItem('selectedGuide');
+
+        alert('✅ Booking Successful!');
+
+        // Navigate to my bookings page
+        navigate('/my-bookings');
+      }
+
+    } catch (err) {
+      console.error('Booking error:', err);
+      setError(err.message || 'Booking failed. Please try again.');
+    } finally {
+      setLoading(false);
     }
+  };
 
-    // Create booking payload for NEW API
-    const bookingPayload = {
-      tourId: selectedTour._id,
-      tourName: selectedTour.name,
-      guideName: bookingData.guideName || '',
-      participants: parseInt(bookingData.participants),
-      duration: parseInt(bookingData.selectedDuration),
-      totalPrice: prices.total,
-      extraServices: {
-        transport: bookingData.extraServices.transport || false,
-        meals: bookingData.extraServices.meals || false
-      },
-      bookingDate: bookingData.bookingDate,
-      specialRequests: bookingData.specialRequests || ''
-    };
-
-    console.log('Sending to NEW booking API:', bookingPayload);
-
-    // Use the NEW API endpoint
-    const response = await fetch('http://localhost:5000/api/new-bookings', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify(bookingPayload)
-    });
-
-    const data = await response.json();
-    console.log('Server response:', data);
-
-    if (!response.ok) {
-      throw new Error(data.message || 'Booking failed');
-    }
-
-    if (data.success) {
-      // Clear selections after successful booking
-      localStorage.removeItem('selectedTour');
-      localStorage.removeItem('selectedGuide');
-
-      alert('✅ Booking Successful!');
-
-      // Navigate to my bookings page
-      navigate('/my-bookings');
-    }
-
-  } catch (err) {
-    console.error('Booking error:', err);
-    setError(err.message || 'Booking failed. Please try again.');
-  } finally {
-    setLoading(false);
-  }
-};
   const handleChange = (e) => {
     const { name, value, type } = e.target;
 
@@ -220,6 +206,10 @@ const handleSubmit = async (e) => {
 
   const handleChangeGuide = () => {
     navigate('/tour-guides');
+  };
+
+  const handleViewItinerary = () => {
+    navigate(`/tour-itinerary/${tourId || bookingData.tourId}`);
   };
 
   return (
@@ -421,9 +411,26 @@ const handleSubmit = async (e) => {
                   </svg>
                   {bookingData.tourName}
                 </h3>
-                <button onClick={handleChangeTour} className="change-btn">
-                  Change
-                </button>
+                <div>
+                  <button 
+                    onClick={handleViewItinerary}
+                    className="view-itinerary-link"
+                    style={{ 
+                      marginRight: '1rem', 
+                      color: '#ffb400',
+                      background: 'none',
+                      border: 'none',
+                      cursor: 'pointer',
+                      textDecoration: 'underline',
+                      fontSize: '0.85rem'
+                    }}
+                  >
+                    View Itinerary
+                  </button>
+                  <button onClick={handleChangeTour} className="change-btn">
+                    Change
+                  </button>
+                </div>
               </div>
 
               <div className="tour-details">

@@ -1,4 +1,4 @@
-// src/pages/AdminDashboard.jsx (UPDATED - Reviews View Only)
+// src/pages/AdminDashboard.jsx (UPDATED - REMOVED REVIEW APPROVAL)
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './AdminDashboard.css';
@@ -19,14 +19,6 @@ const AdminDashboard = () => {
     activeTours: 0
   });
 
-  const [reviews, setReviews] = useState([]);
-  const [reviewStats, setReviewStats] = useState({
-    totalReviews: 0,
-    approvedReviews: 0,
-    pendingReviews: 0,
-    averageRating: 0
-  });
-  const [reviewFilter, setReviewFilter] = useState('all');
   const [bookings, setBookings] = useState([]);
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
@@ -68,21 +60,17 @@ const AdminDashboard = () => {
     checkAdmin();
   }, [navigate]);
 
-  // src/pages/AdminDashboard.jsx (updated fetchDashboardData function)
-
   const fetchDashboardData = async (token) => {
     try {
       console.log('Fetching dashboard data...');
 
-      // Fetch all bookings with better error handling
+      // Fetch all bookings
       const bookingsRes = await fetch('http://localhost:5000/api/bookings/all', {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
         }
       });
-
-      console.log('Bookings response status:', bookingsRes.status);
 
       if (bookingsRes.ok) {
         const bookingsData = await bookingsRes.json();
@@ -109,9 +97,6 @@ const AdminDashboard = () => {
             activeTours: pending + confirmed
           }));
         }
-      } else {
-        const errorData = await bookingsRes.text();
-        console.error('Bookings fetch error:', errorData);
       }
 
       // Fetch users
@@ -129,21 +114,6 @@ const AdminDashboard = () => {
             ...prev,
             totalUsers: usersData.data.length
           }));
-        }
-      }
-
-      // Fetch reviews
-      const reviewsRes = await fetch('http://localhost:5000/api/reviews/all?limit=5', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      if (reviewsRes.ok) {
-        const reviewsData = await reviewsRes.json();
-        if (reviewsData.status === 'success') {
-          setReviews(reviewsData.data);
-          setReviewStats(reviewsData.stats);
         }
       }
 
@@ -170,7 +140,7 @@ const AdminDashboard = () => {
       if (data.status === 'success') {
         // Update local state
         setBookings(prev => prev.map(booking =>
-          booking._id === bookingId ? data.data : booking
+          booking._id === bookingId ? { ...booking, status: newStatus } : booking
         ));
 
         // Update stats
@@ -286,17 +256,6 @@ const AdminDashboard = () => {
     user.email?.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Filter reviews based on search and filter
-  const filteredReviews = reviews.filter(review => {
-    if (reviewFilter === 'pending') return !review.isApproved;
-    if (reviewFilter === 'approved') return review.isApproved;
-    return true;
-  }).filter(review =>
-    review.user?.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    review.tour?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    review.comment?.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
   if (loading) {
     return (
       <div className="admin-dashboard">
@@ -313,77 +272,6 @@ const AdminDashboard = () => {
   if (!isAdmin) {
     return null;
   }
-
-  // Add these functions inside your AdminDashboard component
-
-  const handleApproveReview = async (reviewId) => {
-    const token = localStorage.getItem('token');
-
-    try {
-      const response = await fetch(`http://localhost:5000/api/reviews/${reviewId}/approve`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ isApproved: true })
-      });
-
-      const data = await response.json();
-
-      if (data.status === 'success') {
-        // Update local state
-        setReviews(prev => prev.map(r =>
-          r._id === reviewId ? { ...r, isApproved: true } : r
-        ));
-
-        // Update stats
-        setReviewStats(prev => ({
-          ...prev,
-          approvedReviews: prev.approvedReviews + 1,
-          pendingReviews: prev.pendingReviews - 1
-        }));
-
-        alert('✅ Review approved successfully');
-      }
-    } catch (error) {
-      console.error('Error approving review:', error);
-      alert('Failed to approve review');
-    }
-  };
-
-  const handleRejectReview = async (reviewId) => {
-    const token = localStorage.getItem('token');
-
-    try {
-      const response = await fetch(`http://localhost:5000/api/reviews/${reviewId}/approve`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ isApproved: false })
-      });
-
-      const data = await response.json();
-
-      if (data.status === 'success') {
-        // Remove from list or mark as rejected
-        setReviews(prev => prev.filter(r => r._id !== reviewId));
-
-        // Update stats
-        setReviewStats(prev => ({
-          ...prev,
-          pendingReviews: prev.pendingReviews - 1
-        }));
-
-        alert('❌ Review rejected');
-      }
-    } catch (error) {
-      console.error('Error rejecting review:', error);
-      alert('Failed to reject review');
-    }
-  };
 
   return (
     <div className="admin-dashboard">
@@ -452,18 +340,6 @@ const AdminDashboard = () => {
                 </svg>
                 Users
                 <span className="nav-badge">{users.length}</span>
-              </button>
-
-              {/* Reviews Button */}
-              <button
-                className={`nav-item ${activeTab === 'reviews' ? 'active' : ''}`}
-                onClick={() => setActiveTab('reviews')}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                </svg>
-                Reviews
-                <span className="nav-badge">{reviewStats.pendingReviews}</span>
               </button>
 
               <button
@@ -535,71 +411,6 @@ const AdminDashboard = () => {
                   </div>
                 </div>
 
-                {/* Recent Users */}
-                <div className="dashboard-card">
-                  <div className="card-header">
-                    <h3 className="card-title">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                        <circle cx="9" cy="7" r="4"></circle>
-                        <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                        <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                      </svg>
-                      Recent Users
-                    </h3>
-                    <button
-                      className="view-all-link"
-                      onClick={() => setActiveTab('users')}
-                    >
-                      View All
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                        <polyline points="12 5 19 12 12 19"></polyline>
-                      </svg>
-                    </button>
-                  </div>
-
-                  <div className="users-table">
-                    <div className="table-header">
-                      <div>Name</div>
-                      <div>Email</div>
-                      <div>Phone</div>
-                      <div>Bookings</div>
-                      <div>Total Spent</div>
-                      <div>Joined</div>
-                    </div>
-
-                    <div className="table-body">
-                      {users.slice(0, 5).map((userItem) => (
-                        <div
-                          key={userItem._id}
-                          className="table-row clickable"
-                          onClick={() => handleViewUserDetails(userItem._id)}
-                        >
-                          <div className="table-col" data-label="Name">
-                            <p className="customer-name">{userItem.name}</p>
-                          </div>
-                          <div className="table-col" data-label="Email">
-                            <p className="customer-email">{userItem.email}</p>
-                          </div>
-                          <div className="table-col" data-label="Phone">
-                            <p>{userItem.phone || 'N/A'}</p>
-                          </div>
-                          <div className="table-col" data-label="Bookings">
-                            <span className="nav-badge">{userItem.totalBookings || 0}</span>
-                          </div>
-                          <div className="table-col" data-label="Total Spent">
-                            <p className="booking-amount">{formatCurrency(userItem.totalSpent || 0)}</p>
-                          </div>
-                          <div className="table-col" data-label="Joined">
-                            <p>{formatDate(userItem.createdAt)}</p>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-
                 {/* Recent Bookings */}
                 <div className="dashboard-card">
                   <div className="card-header">
@@ -660,51 +471,6 @@ const AdminDashboard = () => {
                         </div>
                       ))}
                     </div>
-                  </div>
-                </div>
-
-                {/* Recent Reviews */}
-                <div className="dashboard-card">
-                  <div className="card-header">
-                    <h3 className="card-title">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                      </svg>
-                      Recent Reviews
-                    </h3>
-                    <button
-                      className="view-all-link"
-                      onClick={() => setActiveTab('reviews')}
-                    >
-                      View All
-                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                        <polyline points="12 5 19 12 12 19"></polyline>
-                      </svg>
-                    </button>
-                  </div>
-
-                  <div className="reviews-grid mini">
-                    {reviews.slice(0, 3).map((review) => (
-                      <div key={review._id} className="review-card mini">
-                        <div className="review-header">
-                          <div className="reviewer-info">
-                            <h4 className="reviewer-name">{review.user?.name || 'Anonymous'}</h4>
-                            <div className="review-rating">
-                              {'★'.repeat(review.rating)}
-                              {'☆'.repeat(5 - review.rating)}
-                            </div>
-                          </div>
-                        </div>
-                        <p className="review-comment">"{review.comment?.substring(0, 60)}..."</p>
-                        <div className="review-footer">
-                          <span className="review-tour">{review.tour}</span>
-                          <span className={`review-status ${review.isApproved ? 'approved' : 'pending'}`}>
-                            {review.isApproved ? 'Approved' : 'Pending'}
-                          </span>
-                        </div>
-                      </div>
-                    ))}
                   </div>
                 </div>
               </div>
@@ -775,7 +541,7 @@ const AdminDashboard = () => {
                         <div className="table-col" data-label="Details">
                           <p>👥 {booking.participants} people</p>
                           <p>⏱️ {booking.duration} days</p>
-                          {booking.guide && <p>👤 Guide: {booking.guide}</p>}
+                          {booking.guideName && <p>👤 Guide: {booking.guideName}</p>}
                         </div>
                         <div className="table-col" data-label="Amount">
                           <p className="booking-amount">{formatCurrency(booking.totalPrice || 0)}</p>
@@ -996,202 +762,6 @@ const AdminDashboard = () => {
                     </div>
                   </div>
                 )}
-              </div>
-            )}
-
-          
-
-            {/* Reviews Tab - With Approve/Reject */}
-            {activeTab === 'reviews' && (
-              <div className="reviews-tab">
-                <div className="tab-header">
-                  <h3 className="tab-title">Review Moderation</h3>
-                </div>
-
-                {/* Review Stats */}
-                <div className="stats-grid small">
-                  <div className="stat-card">
-                    <div className="stat-icon">⭐</div>
-                    <div className="stat-content">
-                      <h3 className="stat-value">{reviewStats.totalReviews}</h3>
-                      <p className="stat-label">Total Reviews</p>
-                    </div>
-                  </div>
-                  <div className="stat-card">
-                    <div className="stat-icon">✅</div>
-                    <div className="stat-content">
-                      <h3 className="stat-value">{reviewStats.approvedReviews}</h3>
-                      <p className="stat-label">Approved</p>
-                    </div>
-                  </div>
-                  <div className="stat-card">
-                    <div className="stat-icon">⏳</div>
-                    <div className="stat-content">
-                      <h3 className="stat-value">{reviewStats.pendingReviews}</h3>
-                      <p className="stat-label">Pending</p>
-                    </div>
-                  </div>
-                  <div className="stat-card">
-                    <div className="stat-icon">📊</div>
-                    <div className="stat-content">
-                      <h3 className="stat-value">{reviewStats.averageRating}</h3>
-                      <p className="stat-label">Avg Rating</p>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Filter Tabs */}
-                <div className="filter-section">
-                  <div className="filter-tabs">
-                    <button
-                      className={`filter-tab ${reviewFilter === 'all' ? 'active' : ''}`}
-                      onClick={() => setReviewFilter('all')}
-                    >
-                      All Reviews ({reviewStats.totalReviews})
-                    </button>
-                    <button
-                      className={`filter-tab ${reviewFilter === 'pending' ? 'active' : ''}`}
-                      onClick={() => setReviewFilter('pending')}
-                    >
-                      Pending ({reviewStats.pendingReviews})
-                    </button>
-                    <button
-                      className={`filter-tab ${reviewFilter === 'approved' ? 'active' : ''}`}
-                      onClick={() => setReviewFilter('approved')}
-                    >
-                      Approved ({reviewStats.approvedReviews})
-                    </button>
-                  </div>
-                  <input
-                    type="text"
-                    placeholder="Search reviews..."
-                    className="search-input"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
-                </div>
-
-                {/* Reviews Grid with Approve/Reject Buttons */}
-                <div className="reviews-grid">
-                  {filteredReviews.map((review) => (
-                    <div key={review._id} className={`review-card ${!review.isApproved ? 'pending' : ''}`}>
-                      <div className="review-header">
-                        <div className="reviewer-info">
-                          <h4 className="reviewer-name">
-                            {review.user?.name || 'Anonymous'}
-                            {!review.isApproved && (
-                              <span className="pending-badge" style={{
-                                background: '#ffc107',
-                                color: '#000',
-                                padding: '0.25rem 0.75rem',
-                                borderRadius: '50px',
-                                fontSize: '0.7rem',
-                                marginLeft: '0.75rem'
-                              }}>Pending</span>
-                            )}
-                          </h4>
-                          <p className="reviewer-email" style={{ fontSize: '0.8rem', color: '#6c757d' }}>
-                            {review.user?.email}
-                          </p>
-                        </div>
-                        <div className="review-rating">
-                          {'★'.repeat(review.rating)}
-                          {'☆'.repeat(5 - review.rating)}
-                          <span style={{ marginLeft: '0.5rem', fontSize: '0.8rem' }}>{review.rating}.0</span>
-                        </div>
-                      </div>
-
-                      <div className="review-tour-badge" style={{
-                        background: '#e9ecef',
-                        padding: '0.5rem 1rem',
-                        borderRadius: '50px',
-                        fontSize: '0.8rem',
-                        marginBottom: '1rem'
-                      }}>
-                        🎫 {review.tour}
-                        {review.guide && <span style={{ marginLeft: '1rem' }}>👤 {review.guide}</span>}
-                      </div>
-
-                      <div className="review-content">
-                        <h5 className="review-title" style={{ fontSize: '1.1rem', fontWeight: 600 }}>
-                          {review.title}
-                        </h5>
-                        <p className="review-comment" style={{ fontSize: '0.9rem', color: '#495057' }}>
-                          "{review.comment}"
-                        </p>
-                        <p className="review-date" style={{ fontSize: '0.75rem', color: '#6c757d' }}>
-                          📅 {new Date(review.createdAt).toLocaleDateString()}
-                        </p>
-                      </div>
-
-                      {/* Approve/Reject Buttons - Only show for pending reviews */}
-                      <div className="review-actions" style={{
-                        display: 'flex',
-                        gap: '0.75rem',
-                        marginTop: '1.25rem'
-                      }}>
-                        {!review.isApproved ? (
-                          <>
-                            <button
-                              className="btn-success"
-                              onClick={() => handleApproveReview(review._id)}
-                              style={{
-                                flex: 1,
-                                background: 'linear-gradient(135deg, #17b794, #0f8a6d)',
-                                color: 'white',
-                                border: 'none',
-                                padding: '0.6rem',
-                                borderRadius: '12px',
-                                fontWeight: 600,
-                                cursor: 'pointer'
-                              }}
-                            >
-                              ✅ Approve
-                            </button>
-                            <button
-                              className="btn-danger"
-                              onClick={() => handleRejectReview(review._id)}
-                              style={{
-                                flex: 1,
-                                background: 'linear-gradient(135deg, #ff6b35, #e8594c)',
-                                color: 'white',
-                                border: 'none',
-                                padding: '0.6rem',
-                                borderRadius: '12px',
-                                fontWeight: 600,
-                                cursor: 'pointer'
-                              }}
-                            >
-                              ❌ Reject
-                            </button>
-                          </>
-                        ) : (
-                          <span style={{
-                            width: '100%',
-                            textAlign: 'center',
-                            padding: '0.6rem',
-                            background: '#d4edda',
-                            color: '#155724',
-                            borderRadius: '12px',
-                            fontWeight: 600
-                          }}>
-                            ✓ Approved
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  ))}
-
-                  {filteredReviews.length === 0 && (
-                    <div className="empty-state">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                      </svg>
-                      <h3>No reviews found</h3>
-                      <p>There are no {reviewFilter !== 'all' ? reviewFilter : ''} reviews to display.</p>
-                    </div>
-                  )}
-                </div>
               </div>
             )}
           </main>

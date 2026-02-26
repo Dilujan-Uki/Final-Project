@@ -12,6 +12,7 @@
   padding: 3rem 0;
   border-radius: 0 0 50px 50px;
   margin-bottom: 3rem;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
 }
 
 .guide-hero-content {
@@ -28,6 +29,7 @@
   .guide-hero-content {
     grid-template-columns: 1fr;
     text-align: center;
+    gap: 2rem;
   }
 }
 
@@ -38,6 +40,11 @@
   overflow: hidden;
   border: 4px solid #ffb400;
   box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+  transition: transform 0.5s ease;
+}
+
+.guide-hero-image:hover {
+  transform: scale(1.02);
 }
 
 .guide-hero-image img {
@@ -51,6 +58,13 @@
   font-weight: 700;
   margin-bottom: 0.5rem;
   color: white;
+  line-height: 1.2;
+}
+
+@media (max-width: 768px) {
+  .guide-name {
+    font-size: 2rem;
+  }
 }
 
 .guide-title {
@@ -65,6 +79,13 @@
   align-items: center;
   gap: 1rem;
   margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 768px) {
+  .guide-rating {
+    justify-content: center;
+  }
 }
 
 .guide-rating .stars {
@@ -75,6 +96,7 @@
 
 .rating-text {
   color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
 }
 
 .guide-hero-details {
@@ -88,9 +110,10 @@
   backdrop-filter: blur(10px);
 }
 
-@media (max-width: 480px) {
+@media (max-width: 768px) {
   .guide-hero-details {
     grid-template-columns: 1fr;
+    gap: 1rem;
   }
 }
 
@@ -104,11 +127,13 @@
   font-size: 0.8rem;
   text-transform: uppercase;
   opacity: 0.8;
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .guide-hero-details .detail-value {
   font-size: 1.1rem;
   font-weight: 600;
+  color: #ffb400;
 }
 
 .book-guide-btn {
@@ -121,11 +146,13 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+  margin-top: 1rem;
 }
 
 .book-guide-btn:hover {
   transform: translateY(-3px);
-  box-shadow: 0 10px 30px rgba(255, 180, 0, 0.3);
+  box-shadow: 0 15px 30px rgba(255, 180, 0, 0.3);
 }
 
 /* Main Content */
@@ -152,6 +179,12 @@
   margin-bottom: 2rem;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
   border: 1px solid rgba(30, 76, 36, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.info-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px rgba(30, 76, 36, 0.1);
 }
 
 .info-title {
@@ -167,14 +200,15 @@
 .guide-bio {
   font-size: 1rem;
   line-height: 1.7;
-  color: #495057;
+  color: #212529;
   margin-bottom: 1rem;
+  font-weight: 500;
 }
 
 .guide-description {
   font-size: 0.95rem;
   line-height: 1.7;
-  color: #6c757d;
+  color: #495057;
 }
 
 /* Specialties */
@@ -187,10 +221,17 @@
 .specialty-tag {
   background: linear-gradient(135deg, #1e4c24, #2c5f2d);
   color: white;
-  padding: 0.5rem 1.2rem;
+  padding: 0.6rem 1.2rem;
   border-radius: 50px;
   font-size: 0.9rem;
   font-weight: 500;
+  transition: all 0.3s ease;
+}
+
+.specialty-tag:hover {
+  background: linear-gradient(135deg, #ffb400, #ff6b35);
+  transform: translateY(-2px);
+  color: #1e2e1e;
 }
 
 /* Languages */
@@ -207,11 +248,22 @@
   padding: 0.75rem 1rem;
   background: rgba(30, 76, 36, 0.05);
   border-radius: 12px;
+  transition: background 0.3s ease;
+}
+
+.language-item:hover {
+  background: rgba(30, 76, 36, 0.1);
 }
 
 .language-name {
   font-weight: 600;
   color: #1e4c24;
+}
+
+.language-level {
+  color: #6c757d;
+  font-size: 0.85rem;
+  margin-left: auto;
 }
 
 /* Certifications */
@@ -227,16 +279,23 @@
   padding: 0.75rem 1rem;
   background: rgba(255, 180, 0, 0.05);
   border-radius: 12px;
-  color: #495057;
+  color: #212529;
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  transition: all 0.3s ease;
+}
+
+.certifications-list li:hover {
+  background: rgba(255, 180, 0, 0.1);
+  transform: translateX(5px);
 }
 
 .certifications-list li::before {
   content: '✓';
   color: #17b794;
   font-weight: 700;
+  font-size: 1.1rem;
 }
 
 /* Sidebar Cards */
@@ -247,6 +306,12 @@
   margin-bottom: 2rem;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
   border: 1px solid rgba(30, 76, 36, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.sidebar-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px rgba(30, 76, 36, 0.1);
 }
 
 .sidebar-title {
@@ -256,6 +321,7 @@
   margin-bottom: 1.25rem;
   padding-bottom: 0.5rem;
   border-bottom: 2px solid #ffb400;
+  display: inline-block;
 }
 
 /* Tour List */
@@ -271,10 +337,16 @@
   padding: 0.75rem 1rem;
   background: rgba(30, 76, 36, 0.05);
   border-radius: 12px;
-  color: #495057;
+  color: #212529;
   display: flex;
   align-items: center;
   gap: 0.75rem;
+  transition: all 0.3s ease;
+}
+
+.tour-list li:hover {
+  background: rgba(30, 76, 36, 0.1);
+  transform: translateX(5px);
 }
 
 .tour-list li::before {
@@ -296,6 +368,11 @@
   padding: 0.75rem 1rem;
   background: rgba(30, 76, 36, 0.05);
   border-radius: 12px;
+  transition: background 0.3s ease;
+}
+
+.contact-item:hover {
+  background: rgba(30, 76, 36, 0.1);
 }
 
 .contact-label {
@@ -323,6 +400,13 @@
   background: rgba(30, 76, 36, 0.03);
   border-radius: 16px;
   border: 1px solid rgba(30, 76, 36, 0.1);
+  transition: all 0.3s ease;
+}
+
+.review-item:hover {
+  background: rgba(30, 76, 36, 0.05);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05);
 }
 
 .review-header {
@@ -330,11 +414,14 @@
   justify-content: space-between;
   align-items: center;
   margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 .reviewer-name {
   font-weight: 700;
   color: #1e4c24;
+  font-size: 1rem;
 }
 
 .review-date {
@@ -351,13 +438,51 @@
 
 .review-tour {
   font-size: 0.8rem;
-  color: #ff8c42;
+  color: #ff6b35;
   margin-bottom: 0.5rem;
   font-weight: 600;
 }
 
 .review-comment {
-  color: #495057;
+  color: #212529;
   line-height: 1.6;
   font-size: 0.9rem;
+  font-style: italic;
+}
+
+.review-comment::before {
+  content: '"';
+  font-size: 1rem;
+  color: #ffb400;
+}
+
+.review-comment::after {
+  content: '"';
+  font-size: 1rem;
+  color: #ffb400;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .guide-detail-page {
+    padding: 1rem 0;
+  }
+  
+  .guide-hero {
+    padding: 2rem 0;
+  }
+  
+  .info-card,
+  .sidebar-card {
+    padding: 1.5rem;
+  }
+  
+  .specialties-list {
+    justify-content: center;
+  }
+  
+  .certifications-list li,
+  .tour-list li {
+    text-align: left;
+  }
 }

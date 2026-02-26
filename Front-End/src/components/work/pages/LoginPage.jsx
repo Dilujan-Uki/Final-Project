@@ -1,4 +1,4 @@
-// src/pages/LoginPage.jsx
+// src/pages/LoginPage.jsx - Remove the forgot password link
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './AuthPages.css';
@@ -49,10 +49,6 @@ const LoginPage = () => {
         
         localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify(userData));
-        
-        if (rememberMe) {
-          // Extend session if needed
-        }
         
         if (userData.role === 'admin') {
           navigate('/admin');
@@ -165,9 +161,7 @@ const LoginPage = () => {
                   />
                   <span>Remember me</span>
                 </label>
-                <Link to="/forgot-password" className="forgot-link">
-                  Forgot password?
-                </Link>
+                {/* REMOVED FORGOT PASSWORD LINK */}
               </div>
 
               <button 

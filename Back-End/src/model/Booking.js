@@ -69,7 +69,7 @@ const bookingSchema = new mongoose.Schema({
   }
 });
 
-// Update the updatedAt timestamp on save
+// Update the updatedAt field before saving
 bookingSchema.pre('save', function(next) {
   this.updatedAt = Date.now();
   next();

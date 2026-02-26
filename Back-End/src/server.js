@@ -35,7 +35,8 @@ const contactRoutes = require('./routes/contactRoutes');
 const reviewRoutes = require('./routes/reviewRoutes');
 const userRoutes = require('./routes/userRoutes');
 const newBookingRoutes = require('./routes/newBookingRoutes');
-const bookingRoutes = require('./routes/bookingRoutes');  // ← NEW LINE
+const bookingRoutes = require('./routes/bookingRoutes');  
+const tourDetailRoutes = require('./routes/tourDetailRoutes'); 
 
 // ============ USE ROUTES ============
 app.use('/api/auth', authRoutes);
@@ -44,7 +45,8 @@ app.use('/api/contact', contactRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/new-bookings', newBookingRoutes);
-app.use('/api/bookings', bookingRoutes);  // ← NEW LINE
+app.use('/api/bookings', bookingRoutes); 
+app.use('/api/tour-details', tourDetailRoutes);  
 
 // ============ TEST ENDPOINTS ============
 app.get('/api/health', (req, res) => {

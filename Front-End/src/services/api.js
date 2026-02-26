@@ -1,3 +1,4 @@
+// src/api.js (UPDATED - Add new-bookings endpoints)
 const API_BASE_URL = 'http://localhost:5000/api';
 
 // Generic API call function
@@ -61,18 +62,32 @@ export const contactAPI = {
 
 // Admin API calls
 export const adminAPI = {
-  getAllBookings: () => apiCall('/admin/bookings', 'GET'),
-  getAllReviews: () => apiCall('/admin/reviews', 'GET'),
-  getAllUsers: () => apiCall('/admin/users', 'GET'),
-  updateBookingStatus: (id, status) => apiCall(`/admin/bookings/${id}/status`, 'PATCH', { status }),
-  updateReviewStatus: (id, isApproved) => apiCall(`/admin/reviews/${id}/approve`, 'PATCH', { isApproved }),
+  getAllBookings: () => apiCall('/bookings/all', 'GET'),
+  getAllReviews: () => apiCall('/reviews/all', 'GET'),
+  getAllUsers: () => apiCall('/users', 'GET'),
+  updateBookingStatus: (id, status) => apiCall(`/bookings/${id}/status`, 'PATCH', { status }),
+  updateReviewStatus: (id, isApproved) => apiCall(`/reviews/${id}/approve`, 'PATCH', { isApproved }),
 };
 
-// Bookings API
+// ============ NEW BOOKINGS API (Using new-bookings endpoints) ============
+export const newBookingsAPI = {
+  // Create a new booking (used in BookingPage)
+  create: (bookingData) => apiCall('/new-bookings', 'POST', bookingData),
+  
+  // Get user's bookings (used in AccountPage and MyBookingsPage)
+  getMyBookings: () => apiCall('/new-bookings/my-bookings', 'GET'),
+  
+  // Get single booking by ID
+  getById: (id) => apiCall(`/new-bookings/${id}`, 'GET'),
+  
+  // Cancel a booking
+  cancel: (id) => apiCall(`/new-bookings/${id}/cancel`, 'PATCH')
+};
+
+// ============ LEGACY BOOKINGS API (Admin only) ============
 export const bookingsAPI = {
-  create: (bookingData) => apiCall('/bookings', 'POST', bookingData),
-  getMyBookings: () => apiCall('/bookings/my-bookings', 'GET'),
-  getAllBookings: () => apiCall('/bookings/all', 'GET'),
+  getAll: () => apiCall('/bookings/all', 'GET'),
+  updateStatus: (id, status) => apiCall(`/bookings/${id}/status`, 'PATCH', { status }),
 };
 
 // Reviews API
@@ -80,6 +95,8 @@ export const reviewsAPI = {
   create: (reviewData) => apiCall('/reviews', 'POST', reviewData),
   getMyReviews: () => apiCall('/reviews/my-reviews', 'GET'),
   getAllReviews: () => apiCall('/reviews/all', 'GET'),
+  approve: (id, isApproved) => apiCall(`/reviews/${id}/approve`, 'PATCH', { isApproved }),
+  delete: (id) => apiCall(`/reviews/${id}`, 'DELETE'),
 };
 
 // Health check

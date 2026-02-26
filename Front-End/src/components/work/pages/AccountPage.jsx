@@ -1,6 +1,7 @@
 // src/components/work/pages/AccountPage.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
+import { newBookingsAPI } from '/home/uki-dsa-01/LESSONS/Final-Project/Front-End/src/services/api.js';
 import './AccountPage.css';
 
 const AccountPage = () => {
@@ -43,21 +44,12 @@ const AccountPage = () => {
   const fetchUserBookings = async (token) => {
     setLoadingBookings(true);
     try {
-      const response = await fetch('http://localhost:5000/api/new-bookings/my-bookings', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
+      // Use the newBookingsAPI
+      const response = await newBookingsAPI.getMyBookings();
 
-      const data = await response.json();
-
-      if (response.ok && data.success) {
-        console.log('User bookings:', data.data);
-        setBookings(data.data || []);
-      } else {
-        console.error('Failed to fetch bookings:', data.message);
-        setBookings([]);
-      }
+      // The API already returns the data in the format we need
+      console.log('User bookings:', response.data);
+      setBookings(response.data || []);
     } catch (error) {
       console.error('Error fetching bookings:', error);
       setBookings([]);

@@ -1,6 +1,6 @@
-// src/pages/HomePage.jsx
-import React from 'react';
-import { Link } from 'react-router-dom';
+// src/pages/HomePage.jsx - FIXED with real tour data
+import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './HomePage.css';
 import Sigiriya from '/home/uki-dsa-01/LESSONS/Final-Project/Front-End/src/components/work/assets/Sigiriya-Rock.png';
 import Train from '/home/uki-dsa-01/LESSONS/Final-Project/Front-End/src/components/work/assets/Ella-Train.png';
@@ -8,23 +8,96 @@ import Tea from '/home/uki-dsa-01/LESSONS/Final-Project/Front-End/src/components
 import SriLanka from '/home/uki-dsa-01/LESSONS/Final-Project/Front-End/src/components/work/assets/SriLanka.png';
 
 const HomePage = () => {
-  const popularDestinations = [
-    {
-      name: "Sigiriya Rock Fortress",
-      image: Sigiriya,
-      description: "Ancient rock fortress and palace ruins, the 8th wonder of the world"
-    },
-    {
-      name: "Ella Train Journey",
-      image: Train,
-      description: "Scenic train ride through misty tea plantations and breathtaking valleys"
-    },
-    {
-      name: "Tea Plantations",
-      image: Tea,
-      description: "Visit lush tea estates in hill country and taste world-famous Ceylon tea"
+  const navigate = useNavigate();
+  const [tours, setTours] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  // Fetch tours from backend
+  useEffect(() => {
+    const fetchTours = async () => {
+      try {
+        const response = await fetch('http://localhost:5000/api/tours');
+        const data = await response.json();
+        
+        if (data.status === 'success') {
+          setTours(data.data);
+        }
+      } catch (error) {
+        console.error('Error fetching tours:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchTours();
+  }, []);
+
+  // Map popular destinations to actual tour IDs from database
+  const getPopularDestinations = () => {
+    // If tours are loaded, use real data
+    if (tours.length > 0) {
+      // Find tours by name patterns
+      const sigiriyaTour = tours.find(t => 
+        t.name.toLowerCase().includes('cultural') || 
+        t.name.toLowerCase().includes('sigiriya')
+      );
+      
+      const ellaTour = tours.find(t => 
+        t.name.toLowerCase().includes('hill') || 
+        t.name.toLowerCase().includes('ella')
+      );
+      
+      const teaTour = tours.find(t => 
+        t.name.toLowerCase().includes('tea') || 
+        t.name.toLowerCase().includes('plantation')
+      );
+
+      return [
+        {
+          id: sigiriyaTour?._id || (tours[0]?._id || '1'),
+          name: "Sigiriya Rock Fortress",
+          image: Sigiriya,
+          description: "Ancient rock fortress and palace ruins, the 8th wonder of the world"
+        },
+        {
+          id: ellaTour?._id || (tours[1]?._id || '2'),
+          name: "Ella Train Journey",
+          image: Train,
+          description: "Scenic train ride through misty tea plantations and breathtaking valleys"
+        },
+        {
+          id: teaTour?._id || (tours[2]?._id || '5'),
+          name: "Tea Plantations",
+          image: Tea,
+          description: "Visit lush tea estates in hill country and taste world-famous Ceylon tea"
+        }
+      ];
     }
-  ];
+    
+    // Fallback to hardcoded IDs if tours not loaded yet
+    return [
+      {
+        id: "699d48620ddb350b5e9ff8a2", // Cultural Triangle Explorer ID
+        name: "Sigiriya Rock Fortress",
+        image: Sigiriya,
+        description: "Ancient rock fortress and palace ruins, the 8th wonder of the world"
+      },
+      {
+        id: "699d48620ddb350b5e9ff8a3", // Hill Country Adventure ID
+        name: "Ella Train Journey",
+        image: Train,
+        description: "Scenic train ride through misty tea plantations and breathtaking valleys"
+      },
+      {
+        id: "699d48620ddb350b5e9ff8a6", // Tea Country Journey ID
+        name: "Tea Plantations",
+        image: Tea,
+        description: "Visit lush tea estates in hill country and taste world-famous Ceylon tea"
+      }
+    ];
+  };
+
+  const popularDestinations = getPopularDestinations();
 
   const whyChooseUs = [
     {
@@ -44,6 +117,39 @@ const HomePage = () => {
     }
   ];
 
+  const handleDestinationClick = (destinationId) => {
+    navigate(`/tour-detail/${destinationId}`);
+  };
+
+  if (loading) {
+    return (
+      <div className="home-page">
+        <div className="hero-section">
+          <div className="hero-background">
+            <img src={SriLanka} alt="Sri Lanka Paradise" className="hero-image" />
+            <div className="hero-overlay"></div>
+          </div>
+          <div className="container">
+            <div className="hero-content">
+              <h1 className="hero-title">
+                Discover <span>Sri Lanka</span>
+              </h1>
+              <p className="hero-subtitle">
+                The Pearl of the Indian Ocean Awaits Your Exploration
+              </p>
+              <div className="hero-buttons">
+                <button onClick={() => navigate('/tours')} className="btn-primary">Explore Tours</button>
+                <button onClick={() => navigate('/contact')} className="btn-secondary">Contact Us</button>
+              </div>
+            </div>
+          </div>
+        </div>
+        {/* Show loading spinner for destinations */}
+        <div className="loading-spinner" style={{ margin: '2rem auto' }}></div>
+      </div>
+    );
+  }
+
   return (
     <div className="home-page">
       {/* Hero Section with Sri Lanka Image */}
@@ -62,8 +168,8 @@ const HomePage = () => {
               The Pearl of the Indian Ocean Awaits Your Exploration
             </p>
             <div className="hero-buttons">
-              <Link to="/tours" className="btn-primary">Explore Tours</Link>
-              <Link to="/contact" className="btn-secondary">Contact Us</Link>
+              <button onClick={() => navigate('/tours')} className="btn-primary">Explore Tours</button>
+              <button onClick={() => navigate('/contact')} className="btn-secondary">Contact Us</button>
             </div>
           </div>
         </div>
@@ -105,8 +211,13 @@ const HomePage = () => {
             </p>
           </div>
           <div className="destinations-grid">
-            {popularDestinations.map((destination, index) => (
-              <div key={index} className="destination-card">
+            {popularDestinations.map((destination) => (
+              <div 
+                key={destination.id} 
+                className="destination-card"
+                onClick={() => handleDestinationClick(destination.id)}
+                style={{ cursor: 'pointer' }}
+              >
                 <div className="destination-image">
                   <img 
                     src={destination.image} 
@@ -123,7 +234,7 @@ const HomePage = () => {
                         <circle cx="12" cy="12" r="10"></circle>
                         <polyline points="12 6 12 12 16 14"></polyline>
                       </svg>
-                      <span>Best in {['2023', '2024', '2024'][index]}</span>
+                      <span>View Details →</span>
                     </div>
                   </div>
                 </div>
@@ -141,7 +252,7 @@ const HomePage = () => {
             <p className="cta-description">
               Book your tour today and create memories that will last a lifetime
             </p>
-            <Link to="/tours" className="btn-primary">View All Tours</Link>
+            <button onClick={() => navigate('/tours')} className="btn-primary">View All Tours</button>
           </div>
         </div>
       </section>

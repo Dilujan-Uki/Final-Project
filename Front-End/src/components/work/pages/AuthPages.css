@@ -262,17 +262,6 @@
   cursor: pointer;
 }
 
-.forgot-link {
-  color: #1e4c24;
-  font-weight: 500;
-  text-decoration: none;
-  transition: color 0.2s ease;
-}
-
-.forgot-link:hover {
-  color: #ff8c42;
-  text-decoration: underline;
-}
 
 /* Submit Button - Matching Global Styles */
 .submit-btn {

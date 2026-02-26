@@ -1,4 +1,4 @@
-// src/pages/PaymentPage.jsx
+// src/pages/PaymentPage.jsx - UPDATED to use state instead of URL params
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './PaymentPage.css';
@@ -6,19 +6,13 @@ import './PaymentPage.css';
 const PaymentPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const queryParams = new URLSearchParams(location.search);
   
-  // Get tour details from URL parameters
-  const tourId = queryParams.get('tour');
-  const tourName = queryParams.get('name') || "Cultural Triangle Explorer";
-  const duration = parseInt(queryParams.get('duration')) || 3;
-  const pricePerDay = parseInt(queryParams.get('pricePerDay')) || 80;
-  const basePrice = parseInt(queryParams.get('basePrice')) || 240;
+  // Get data from state (passed during navigation)
+  const { tour, guide } = location.state || {};
   
-  // Get guide details from URL parameters
-  const guideId = queryParams.get('guide');
-  const guideName = queryParams.get('guideName') || "";
-  const guideDailyRate = parseInt(queryParams.get('guideDailyRate')) || 0;
+  // If no state, try to get from localStorage as fallback
+  const [tourData, setTourData] = useState(null);
+  const [guideData, setGuideData] = useState(null);
 
   const [paymentData, setPaymentData] = useState({
     cardNumber: '',
@@ -30,50 +24,54 @@ const PaymentPage = () => {
 
   const [customization, setCustomization] = useState({
     participants: 2,
-    selectedDuration: duration,
+    selectedDuration: tour?.duration || 3,
     extraServices: {
       transport: false,
       meals: false
     }
   });
 
-  // Load saved selections from localStorage
+  // Load data from state or localStorage
   useEffect(() => {
-    const savedTour = localStorage.getItem('selectedTour');
-    const savedGuide = localStorage.getItem('selectedGuide');
-    
-    if (savedTour && !tourId) {
-      const tourData = JSON.parse(savedTour);
-      // Update URL or state with saved tour
+    // If we have state from navigation, use it
+    if (tour) {
+      setTourData(tour);
+      localStorage.setItem('selectedTour', JSON.stringify(tour));
+    } else {
+      // Fallback to localStorage
+      const savedTour = localStorage.getItem('selectedTour');
+      if (savedTour) {
+        setTourData(JSON.parse(savedTour));
+      }
     }
-    
-    if (savedGuide && !guideId) {
-      const guideData = JSON.parse(savedGuide);
-      // Update URL or state with saved guide
-    }
-  }, [tourId, guideId]);
 
-  // Calculate prices based on customization - UPDATED: service fee is now 15% of subtotal
+    if (guide) {
+      setGuideData(guide);
+      localStorage.setItem('selectedGuide', JSON.stringify(guide));
+    } else {
+      const savedGuide = localStorage.getItem('selectedGuide');
+      if (savedGuide) {
+        setGuideData(JSON.parse(savedGuide));
+      }
+    }
+  }, [tour, guide]);
+
+  // Calculate prices based on customization
   const calculatePrices = () => {
-    const baseTourPrice = customization.selectedDuration * pricePerDay * customization.participants;
-    const guideCost = guideDailyRate * customization.selectedDuration;
+    if (!tourData) return { baseTourPrice: 0, guideCost: 0, extraServicesCost: 0, subtotal: 0, serviceFee: 0, total: 0 };
+    
+    const baseTourPrice = customization.selectedDuration * (tourData.pricePerDay || 80) * customization.participants;
+    const guideCost = (guideData?.dailyRate || 0) * customization.selectedDuration;
     
     let extraServicesCost = 0;
     if (customization.extraServices.transport) extraServicesCost += 100;
     if (customization.extraServices.meals) extraServicesCost += 30 * customization.participants * customization.selectedDuration;
     
     const subtotal = baseTourPrice + guideCost + extraServicesCost;
-    const serviceFee = Math.round(subtotal * 0.15 * 100) / 100; // 15% of subtotal, rounded to 2 decimal places
+    const serviceFee = Math.round(subtotal * 0.15 * 100) / 100;
     const total = subtotal + serviceFee;
     
-    return { 
-      baseTourPrice, 
-      guideCost, 
-      extraServicesCost, 
-      subtotal, 
-      serviceFee, 
-      total 
-    };
+    return { baseTourPrice, guideCost, extraServicesCost, subtotal, serviceFee, total };
   };
 
   const prices = calculatePrices();
@@ -81,7 +79,6 @@ const PaymentPage = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     
-    // Check if user is logged in
     const token = localStorage.getItem('token');
     if (!token) {
       alert('Please login to book a tour');
@@ -90,9 +87,9 @@ const PaymentPage = () => {
     }
     
     console.log('Payment submitted:', paymentData);
-    console.log('Tour customization:', customization);
+    console.log('Tour data:', tourData);
+    console.log('Guide data:', guideData);
     
-    // Clear selections after successful payment
     localStorage.removeItem('selectedTour');
     localStorage.removeItem('selectedGuide');
     
@@ -176,6 +173,16 @@ const PaymentPage = () => {
   const handleChangeGuide = () => {
     navigate('/tour-guides');
   };
+
+  // If no data, show loading or redirect
+  if (!tourData) {
+    return (
+      <div className="loading-page">
+        <div className="loading-spinner"></div>
+        <p>Loading booking details...</p>
+      </div>
+    );
+  }
 
   return (
     <div className="payment-page">
@@ -347,7 +354,7 @@ const PaymentPage = () => {
                   <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <path d="M20.42 4.58a5.4 5.4 0 0 0-7.65 0l-.77.78-.77-.78a5.4 5.4 0 0 0-7.65 0C1.46 6.7 1.33 10.28 4 13l8 8 8-8c2.67-2.72 2.54-6.3.42-8.42z"></path>
                   </svg>
-                  {decodeURIComponent(tourName)}
+                  {tourData?.name}
                 </h3>
                 <button onClick={handleChangeTour} className="change-btn">
                   Change
@@ -357,17 +364,17 @@ const PaymentPage = () => {
               <div className="tour-details">
                 <div className="tour-detail-item">
                   <span className="detail-label">Price per day</span>
-                  <span className="detail-value">${pricePerDay}/person</span>
+                  <span className="detail-value">${tourData?.pricePerDay}/person</span>
                 </div>
                 <div className="tour-detail-item">
                   <span className="detail-label">Duration</span>
-                  <span className="detail-value">{duration} days</span>
+                  <span className="detail-value">{tourData?.duration} days</span>
                 </div>
               </div>
             </div>
 
             {/* Guide Info */}
-            {guideName && (
+            {guideData && (
               <div className="tour-info-card">
                 <div className="tour-header">
                   <h3 className="tour-name">
@@ -375,7 +382,7 @@ const PaymentPage = () => {
                       <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                       <circle cx="12" cy="7" r="4"></circle>
                     </svg>
-                    {decodeURIComponent(guideName)}
+                    {guideData.name}
                   </h3>
                   <button onClick={handleChangeGuide} className="change-btn">
                     Change
@@ -385,7 +392,7 @@ const PaymentPage = () => {
                 <div className="tour-details">
                   <div className="tour-detail-item">
                     <span className="detail-label">Daily Rate</span>
-                    <span className="detail-value">${guideDailyRate}/day</span>
+                    <span className="detail-value">${guideData.dailyRate}/day</span>
                   </div>
                 </div>
               </div>
@@ -461,7 +468,7 @@ const PaymentPage = () => {
                 <span className="price-amount">${prices.baseTourPrice}</span>
               </div>
               
-              {guideName && (
+              {guideData && (
                 <div className="price-row">
                   <span>Tour Guide</span>
                   <span className="price-amount">${prices.guideCost}</span>

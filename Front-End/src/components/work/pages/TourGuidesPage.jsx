@@ -1,6 +1,6 @@
-// src/pages/TourGuidesPage.jsx
+// src/pages/TourGuidesPage.jsx - FIXED
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import './TourGuidesPage.css';
 import Rajitha from '/home/uki-dsa-01/LESSONS/Final-Project/Front-End/src/components/work/assets/Rajitha.png';
 import Kamal from '/home/uki-dsa-01/LESSONS/Final-Project/Front-End/src/components/work/assets/Kamal.png';
@@ -15,34 +15,13 @@ const TourGuidesPage = () => {
   const queryParams = new URLSearchParams(location.search);
   
   const [selectedTour, setSelectedTour] = useState(null);
-  const [selectedGuide, setSelectedGuide] = useState(null);
   const [activeCategory, setActiveCategory] = useState('all');
   const [filteredGuides, setFilteredGuides] = useState([]);
 
-  // Get tour details from URL parameters
   const tourId = queryParams.get('tour');
   const tourName = queryParams.get('name');
   const duration = parseInt(queryParams.get('duration')) || 3;
   const pricePerDay = parseInt(queryParams.get('pricePerDay')) || 80;
-
-  useEffect(() => {
-    if (tourId && tourName) {
-      const tourData = {
-        id: tourId,
-        name: tourName,
-        duration: duration,
-        pricePerDay: pricePerDay,
-        basePrice: duration * pricePerDay
-      };
-      setSelectedTour(tourData);
-      localStorage.setItem('selectedTour', JSON.stringify(tourData));
-    } else {
-      const savedTour = localStorage.getItem('selectedTour');
-      if (savedTour) {
-        setSelectedTour(JSON.parse(savedTour));
-      }
-    }
-  }, [tourId, tourName, duration, pricePerDay]);
 
   const tourGuides = [
     {
@@ -132,6 +111,25 @@ const TourGuidesPage = () => {
   ];
 
   useEffect(() => {
+    if (tourId && tourName) {
+      const tourData = {
+        id: tourId,
+        name: tourName,
+        duration: duration,
+        pricePerDay: pricePerDay,
+        basePrice: duration * pricePerDay
+      };
+      setSelectedTour(tourData);
+      localStorage.setItem('selectedTour', JSON.stringify(tourData));
+    } else {
+      const savedTour = localStorage.getItem('selectedTour');
+      if (savedTour) {
+        setSelectedTour(JSON.parse(savedTour));
+      }
+    }
+  }, [tourId, tourName, duration, pricePerDay]);
+
+  useEffect(() => {
     if (activeCategory === 'all') {
       setFilteredGuides(tourGuides);
     } else {
@@ -139,7 +137,7 @@ const TourGuidesPage = () => {
         guide.specialties.some(s => s.includes(activeCategory))
       ));
     }
-  }, [activeCategory]);
+  }, [activeCategory, tourGuides]); // Added tourGuides to dependencies
 
   const categories = [
     { id: 'all', name: 'All Guides', icon: '👥' },
@@ -152,7 +150,6 @@ const TourGuidesPage = () => {
   ];
 
   const handleSelectGuide = (guide) => {
-    setSelectedGuide(guide);
     localStorage.setItem('selectedGuide', JSON.stringify(guide));
     
     if (selectedTour) {
@@ -215,6 +212,22 @@ const TourGuidesPage = () => {
               <div className="tour-summary">
                 <span>⏱️ {selectedTour.duration} days</span>
                 <span>💰 ${selectedTour.basePrice}/person</span>
+                
+                <button 
+                  className="btn-link" 
+                  onClick={() => navigate(`/tour-itinerary/${selectedTour.id}`)}
+                  style={{ 
+                    color: '#ffb400', 
+                    textDecoration: 'underline',
+                    background: 'none',
+                    border: 'none',
+                    cursor: 'pointer',
+                    fontSize: '0.95rem'
+                  }}
+                >
+                  View Full Itinerary →
+                </button>
+                
                 <button 
                   className="btn-secondary" 
                   onClick={() => navigate('/tours')}
