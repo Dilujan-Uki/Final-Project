@@ -37,6 +37,8 @@ const userRoutes = require('./routes/userRoutes');
 const newBookingRoutes = require('./routes/newBookingRoutes');
 const bookingRoutes = require('./routes/bookingRoutes');  
 const tourDetailRoutes = require('./routes/tourDetailRoutes'); 
+const guideApplicationRoutes = require('./routes/guideApplicationRoutes'); 
+const guideRoutes = require('./routes/guideRoutes');
 
 // ============ USE ROUTES ============
 app.use('/api/auth', authRoutes);
@@ -47,6 +49,8 @@ app.use('/api/users', userRoutes);
 app.use('/api/new-bookings', newBookingRoutes);
 app.use('/api/bookings', bookingRoutes); 
 app.use('/api/tour-details', tourDetailRoutes);  
+app.use('/api/guide-applications', guideApplicationRoutes); 
+app.use('/api/guides', guideRoutes);
 
 // ============ TEST ENDPOINTS ============
 app.get('/api/health', (req, res) => {
@@ -60,12 +64,12 @@ app.use((req, res) => {
 
 // ============ ERROR HANDLER ============
 app.use((err, req, res, next) => {
-  console.error('❌ Server Error:', err);
+  console.error(' Server Error:', err);
   res.status(500).json({ success: false, message: 'Internal server error' });
 });
 
 // ============ START SERVER ============
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`\n🚀 Server running on port ${PORT}`);
+  console.log(`\n Server running on port ${PORT}`);
 });

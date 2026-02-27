@@ -1,7 +1,8 @@
-// src/pages/TourDetailPage.jsx - COMPLETE FIXED VERSION
+// src/pages/TourDetailPage.jsx
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import './TourDetailPage.css';
+import { getTourImage } from '/home/uki-dsa-01/LESSONS/Final-Project/Front-End/src/utils/tourImageMapping';
 
 const TourDetailPage = () => {
   const { id } = useParams();
@@ -13,6 +14,7 @@ const TourDetailPage = () => {
   const [error, setError] = useState('');
   const [activeDay, setActiveDay] = useState(1);
   const [activeTab, setActiveTab] = useState('overview');
+  const [localImage, setLocalImage] = useState(null);
 
   useEffect(() => {
     const fetchTourData = async () => {
@@ -20,9 +22,6 @@ const TourDetailPage = () => {
         setLoading(true);
         setError('');
         
-        console.log('Fetching tour with ID:', id);
-        
-        // Fetch basic tour info
         const tourResponse = await fetch(`http://localhost:5000/api/tours/${id}`);
         
         if (!tourResponse.ok) {
@@ -30,26 +29,23 @@ const TourDetailPage = () => {
         }
         
         const tourData = await tourResponse.json();
-        console.log('Tour data received:', tourData);
         
         if (tourData.status === 'success') {
           setTour(tourData.data);
+          setLocalImage(getTourImage(tourData.data));
         } else {
           throw new Error('Invalid tour data format');
         }
 
-        // Fetch detailed tour information
         try {
           const detailsResponse = await fetch(`http://localhost:5000/api/tour-details/${id}`);
           
           if (detailsResponse.ok) {
             const detailsData = await detailsResponse.json();
-            console.log('Tour details received:', detailsData);
             
             if (detailsData.status === 'success' && detailsData.data) {
               setTourDetails(detailsData.data);
             } else {
-              // Use default structure if details not found
               setTourDetails({
                 overview: tourData.data.description,
                 highlights: tourData.data.features || [],
@@ -61,7 +57,6 @@ const TourDetailPage = () => {
               });
             }
           } else {
-            console.log('No detailed itinerary found, using defaults');
             setTourDetails({
               overview: tourData.data.description,
               highlights: tourData.data.features || [],
@@ -73,7 +68,6 @@ const TourDetailPage = () => {
             });
           }
         } catch (detailsErr) {
-          console.log('Error fetching details, using defaults:', detailsErr);
           setTourDetails({
             overview: tourData.data.description,
             highlights: tourData.data.features || [],
@@ -147,7 +141,7 @@ const TourDetailPage = () => {
       <section 
         className="detail-hero"
         style={{
-          backgroundImage: `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(${tour.image || 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=1200&h=600&fit=crop'})`,
+          backgroundImage: `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(${localImage})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center'
         }}
@@ -218,53 +212,51 @@ const TourDetailPage = () => {
           {/* Overview Tab */}
           {activeTab === 'overview' && (
             <div className="overview-tab">
-              <div className="overview-section">
-                <h2 className="section-title">Tour Overview</h2>
-                <p className="overview-text">{tourDetails?.overview || tour.description}</p>
-                
-                <div className="highlights-grid">
-                  <h3>Highlights</h3>
-                  <div className="highlights-list">
-                    {(tourDetails?.highlights && tourDetails.highlights.length > 0 
-                      ? tourDetails.highlights 
-                      : tour.features || []
-                    ).map((highlight, index) => (
-                      <div key={index} className="highlight-item">
-                        <span className="highlight-icon">✓</span>
-                        <span>{highlight}</span>
-                      </div>
-                    ))}
+              <h2 className="section-title">Tour Overview</h2>
+              <p className="overview-text">{tourDetails?.overview || tour.description}</p>
+              
+              <div className="highlights-grid">
+                <h3>Highlights</h3>
+                <div className="highlights-list">
+                  {(tourDetails?.highlights && tourDetails.highlights.length > 0 
+                    ? tourDetails.highlights 
+                    : tour.features || []
+                  ).map((highlight, index) => (
+                    <div key={index} className="highlight-item">
+                      <span className="highlight-icon">✓</span>
+                      <span>{highlight}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="quick-info">
+                <div className="info-card">
+                  <span className="info-icon">⏱️</span>
+                  <div>
+                    <h4>Duration</h4>
+                    <p>{tour.duration}</p>
                   </div>
                 </div>
-
-                <div className="quick-info">
-                  <div className="info-card">
-                    <span className="info-icon">⏱️</span>
-                    <div>
-                      <h4>Duration</h4>
-                      <p>{tour.duration}</p>
-                    </div>
+                <div className="info-card">
+                  <span className="info-icon">👥</span>
+                  <div>
+                    <h4>Group Size</h4>
+                    <p>{tour.groupSize}</p>
                   </div>
-                  <div className="info-card">
-                    <span className="info-icon">👥</span>
-                    <div>
-                      <h4>Group Size</h4>
-                      <p>{tour.groupSize}</p>
-                    </div>
+                </div>
+                <div className="info-card">
+                  <span className="info-icon">📍</span>
+                  <div>
+                    <h4>Start Point</h4>
+                    <p>Colombo</p>
                   </div>
-                  <div className="info-card">
-                    <span className="info-icon">📍</span>
-                    <div>
-                      <h4>Start Point</h4>
-                      <p>Colombo</p>
-                    </div>
-                  </div>
-                  <div className="info-card">
-                    <span className="info-icon">🌤️</span>
-                    <div>
-                      <h4>Best Season</h4>
-                      <p>{tourDetails?.practicalInfo?.bestTimeToVisit || 'Year Round'}</p>
-                    </div>
+                </div>
+                <div className="info-card">
+                  <span className="info-icon">🌤️</span>
+                  <div>
+                    <h4>Best Season</h4>
+                    <p>{tourDetails?.practicalInfo?.bestTimeToVisit || 'Year Round'}</p>
                   </div>
                 </div>
               </div>

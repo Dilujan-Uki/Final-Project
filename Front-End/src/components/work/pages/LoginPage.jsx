@@ -1,5 +1,5 @@
-// src/pages/LoginPage.jsx - Remove the forgot password link
-import React, { useState } from 'react';
+// src/pages/LoginPage.jsx
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import './AuthPages.css';
 
@@ -10,8 +10,12 @@ const LoginPage = () => {
   });
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
-  const [rememberMe, setRememberMe] = useState(false);
   const navigate = useNavigate();
+
+  // Clear form when component mounts
+  useEffect(() => {
+    setFormData({ email: '', password: '' });
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -52,6 +56,8 @@ const LoginPage = () => {
         
         if (userData.role === 'admin') {
           navigate('/admin');
+        } else if (userData.role === 'guide') {
+          navigate('/guide-dashboard');
         } else {
           navigate('/');
         }
@@ -152,18 +158,6 @@ const LoginPage = () => {
                 />
               </div>
 
-              <div className="form-options">
-                <label className="checkbox">
-                  <input 
-                    type="checkbox" 
-                    checked={rememberMe}
-                    onChange={(e) => setRememberMe(e.target.checked)}
-                  />
-                  <span>Remember me</span>
-                </label>
-                {/* REMOVED FORGOT PASSWORD LINK */}
-              </div>
-
               <button 
                 type="submit" 
                 className="submit-btn"
@@ -177,6 +171,12 @@ const LoginPage = () => {
                   Don't have an account?{' '}
                   <Link to="/register" className="auth-link">
                     Create account
+                  </Link>
+                </p>
+                <p style={{ marginTop: '0.5rem' }}>
+                  Want to be a guide?{' '}
+                  <Link to="/guide-application" className="auth-link">
+                    Apply here
                   </Link>
                 </p>
               </div>

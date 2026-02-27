@@ -1,4 +1,4 @@
-// src/pages/AdminDashboard.jsx (UPDATED - REMOVED REVIEW APPROVAL)
+// src/pages/AdminDashboard.jsx (FIXED)
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './AdminDashboard.css';
@@ -8,6 +8,8 @@ const AdminDashboard = () => {
   const [isAdmin, setIsAdmin] = useState(false);
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('dashboard');
+  
+  // Stats state
   const [stats, setStats] = useState({
     totalBookings: 0,
     pendingBookings: 0,
@@ -19,6 +21,19 @@ const AdminDashboard = () => {
     activeTours: 0
   });
 
+  // Applications state
+  const [applications, setApplications] = useState([]);
+  const [applicationStats, setApplicationStats] = useState({
+    total: 0,
+    pending: 0,
+    interview: 0,
+    accepted: 0,
+    rejected: 0
+  });
+  const [selectedApplication, setSelectedApplication] = useState(null);
+  const [rejectionReason, setRejectionReason] = useState('');
+
+  // Bookings state
   const [bookings, setBookings] = useState([]);
   const [users, setUsers] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
@@ -26,6 +41,8 @@ const AdminDashboard = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [dateRange, setDateRange] = useState('all');
+  const [reviews, setReviews] = useState([]);
+  
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -49,6 +66,8 @@ const AdminDashboard = () => {
 
         setIsAdmin(true);
         await fetchDashboardData(token);
+        await fetchApplications(token);
+        await fetchReviews(token);
       } catch (error) {
         console.error('Error checking admin:', error);
         navigate('/login');
@@ -59,6 +78,74 @@ const AdminDashboard = () => {
 
     checkAdmin();
   }, [navigate]);
+
+  const fetchApplications = async (token) => {
+    try {
+      const response = await fetch('http://localhost:5000/api/guide-applications', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const data = await response.json();
+      if (data.status === 'success') {
+        setApplications(data.data);
+        setApplicationStats(data.stats);
+      }
+    } catch (error) {
+      console.error('Error fetching applications:', error);
+    }
+  };
+
+  const fetchReviews = async (token) => {
+    try {
+      const response = await fetch('http://localhost:5000/api/reviews/all', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const data = await response.json();
+      if (data.status === 'success') {
+        setReviews(data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching reviews:', error);
+    }
+  };
+
+  const handleUpdateApplication = async (applicationId, newStatus) => {
+    const token = localStorage.getItem('token');
+    
+    try {
+      const response = await fetch(`http://localhost:5000/api/guide-applications/${applicationId}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ 
+          status: newStatus,
+          rejectionReason: newStatus === 'rejected' ? rejectionReason : ''
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.status === 'success') {
+        alert(`✅ Application ${newStatus}`);
+        setSelectedApplication(null);
+        setRejectionReason('');
+        fetchApplications(token); // Refresh
+      }
+    } catch (error) {
+      console.error('Error updating application:', error);
+      alert('Failed to update application');
+    }
+  };
+
+  const handleApplicationAction = (app) => {
+    setSelectedApplication(app);
+    setRejectionReason(app.rejectionReason || '');
+  };
 
   const fetchDashboardData = async (token) => {
     try {
@@ -318,6 +405,23 @@ const AdminDashboard = () => {
               </button>
 
               <button
+                className={`nav-item ${activeTab === 'applications' ? 'active' : ''}`}
+                onClick={() => setActiveTab('applications')}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                  <polyline points="14 2 14 8 20 8"></polyline>
+                  <line x1="16" y1="13" x2="8" y2="13"></line>
+                  <line x1="16" y1="17" x2="8" y2="17"></line>
+                  <polyline points="10 9 9 9 8 9"></polyline>
+                </svg>
+                Applications
+                {applicationStats.pending > 0 && (
+                  <span className="nav-badge">{applicationStats.pending}</span>
+                )}
+              </button>
+
+              <button
                 className={`nav-item ${activeTab === 'bookings' ? 'active' : ''}`}
                 onClick={() => setActiveTab('bookings')}
               >
@@ -411,6 +515,50 @@ const AdminDashboard = () => {
                   </div>
                 </div>
 
+                {/* Recent Reviews Section */}
+                <div className="dashboard-card">
+                  <div className="card-header">
+                    <h3 className="card-title">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                      </svg>
+                      Recent Reviews
+                    </h3>
+                  </div>
+
+                  <div className="reviews-grid">
+                    {reviews.slice(0, 6).map((review) => (
+                      <div key={review._id} className="review-card">
+                        <div className="review-header">
+                          <div className="reviewer-info">
+                            <h4 className="reviewer-name">{review.user?.name || 'Anonymous'}</h4>
+                            <span className="review-tour">{review.tour}</span>
+                          </div>
+                          <div className="review-rating">
+                            {'★'.repeat(review.rating)}
+                            {'☆'.repeat(5 - review.rating)}
+                          </div>
+                        </div>
+                        <div className="review-content">
+                          <h5 className="review-title">{review.title}</h5>
+                          <p className="review-comment">{review.comment.substring(0, 100)}...</p>
+                          {review.guide && (
+                            <span className="review-guide">Guide: {review.guide}</span>
+                          )}
+                          <div className="review-footer">
+                            <span className="review-date">
+                              📅 {new Date(review.createdAt).toLocaleDateString()}
+                            </span>
+                            <span className={`review-status ${review.isApproved ? 'approved' : 'pending'}`}>
+                              {review.isApproved ? 'Approved' : 'Pending'}
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
                 {/* Recent Bookings */}
                 <div className="dashboard-card">
                   <div className="card-header">
@@ -473,6 +621,200 @@ const AdminDashboard = () => {
                     </div>
                   </div>
                 </div>
+              </div>
+            )}
+
+            {/* Applications Tab */}
+            {activeTab === 'applications' && (
+              <div className="applications-tab">
+                <div className="tab-header">
+                  <h3 className="tab-title">Guide Applications</h3>
+                </div>
+
+                {/* Stats Cards */}
+                <div className="stats-grid small">
+                  <div className="stat-card">
+                    <div className="stat-icon">📝</div>
+                    <div className="stat-content">
+                      <h3 className="stat-value">{applicationStats.total}</h3>
+                      <p className="stat-label">Total Applications</p>
+                    </div>
+                  </div>
+                  <div className="stat-card">
+                    <div className="stat-icon">⏳</div>
+                    <div className="stat-content">
+                      <h3 className="stat-value">{applicationStats.pending}</h3>
+                      <p className="stat-label">Pending</p>
+                    </div>
+                  </div>
+                  <div className="stat-card">
+                    <div className="stat-icon">📞</div>
+                    <div className="stat-content">
+                      <h3 className="stat-value">{applicationStats.interview}</h3>
+                      <p className="stat-label">Interview</p>
+                    </div>
+                  </div>
+                  <div className="stat-card">
+                    <div className="stat-icon">✅</div>
+                    <div className="stat-content">
+                      <h3 className="stat-value">{applicationStats.accepted}</h3>
+                      <p className="stat-label">Accepted</p>
+                    </div>
+                  </div>
+                  <div className="stat-card">
+                    <div className="stat-icon">❌</div>
+                    <div className="stat-content">
+                      <h3 className="stat-value">{applicationStats.rejected}</h3>
+                      <p className="stat-label">Rejected</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Applications Table */}
+                <div className="applications-table">
+                  <div className="table-header">
+                    <div>Name</div>
+                    <div>Contact</div>
+                    <div>Details</div>
+                    <div>Experience</div>
+                    <div>Status</div>
+                    <div>Actions</div>
+                  </div>
+
+                  <div className="table-body">
+                    {applications.map(app => (
+                      <div key={app._id} className="table-row">
+                        <div className="table-col" data-label="Name">
+                          <p className="customer-name">{app.fullName}</p>
+                          <p>Age: {app.age} | {app.gender}</p>
+                        </div>
+                        <div className="table-col" data-label="Contact">
+                          <p>{app.email}</p>
+                          <p>{app.phone}</p>
+                        </div>
+                        <div className="table-col" data-label="Details">
+                          <p>Languages: {app.languages?.join(', ') || 'N/A'}</p>
+                          <p>Specialties: {app.specialties?.slice(0, 3).join(', ')}</p>
+                        </div>
+                        <div className="table-col" data-label="Experience">
+                          <p>{app.experience?.substring(0, 50)}...</p>
+                        </div>
+                        <div className="table-col" data-label="Status">
+                          <span className={`status-badge ${app.status}`}>
+                            {app.status}
+                          </span>
+                        </div>
+                        <div className="table-col" data-label="Actions">
+                          <button
+                            className="action-btn view-btn"
+                            onClick={() => handleApplicationAction(app)}
+                          >
+                            Review
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Application Review Modal */}
+                {selectedApplication && (
+                  <div className="modal-overlay" onClick={() => setSelectedApplication(null)}>
+                    <div className="modal-content" onClick={e => e.stopPropagation()}>
+                      <div className="modal-header">
+                        <h2>Review Application: {selectedApplication.fullName}</h2>
+                        <button className="modal-close" onClick={() => setSelectedApplication(null)}>×</button>
+                      </div>
+
+                      <div className="modal-body">
+                        <div className="info-grid">
+                          <div className="info-item">
+                            <label>Name:</label>
+                            <span>{selectedApplication.fullName}</span>
+                          </div>
+                          <div className="info-item">
+                            <label>Email:</label>
+                            <span>{selectedApplication.email}</span>
+                          </div>
+                          <div className="info-item">
+                            <label>Phone:</label>
+                            <span>{selectedApplication.phone}</span>
+                          </div>
+                          <div className="info-item">
+                            <label>Age/Gender:</label>
+                            <span>{selectedApplication.age} / {selectedApplication.gender}</span>
+                          </div>
+                        </div>
+
+                        <div className="info-item full-width">
+                          <label>Experience:</label>
+                          <p>{selectedApplication.experience}</p>
+                        </div>
+
+                        <div className="info-item full-width">
+                          <label>Certifications:</label>
+                          <p>{selectedApplication.certifications}</p>
+                        </div>
+
+                        <div className="info-item full-width">
+                          <label>Languages:</label>
+                          <p>{selectedApplication.languages?.join(', ')}</p>
+                        </div>
+
+                        <div className="info-item full-width">
+                          <label>Specialties:</label>
+                          <p>{selectedApplication.specialties?.join(', ')}</p>
+                        </div>
+
+                        <div className="action-buttons" style={{ marginTop: '2rem' }}>
+                          <select 
+                            className="status-select"
+                            value={selectedApplication.status}
+                            onChange={(e) => {
+                              const newStatus = e.target.value;
+                              setSelectedApplication({
+                                ...selectedApplication,
+                                status: newStatus
+                              });
+                            }}
+                          >
+                            <option value="pending">Pending</option>
+                            <option value="interview">Interview</option>
+                            <option value="accepted">Accept</option>
+                            <option value="rejected">Reject</option>
+                          </select>
+
+                          {selectedApplication.status === 'rejected' && (
+                            <div className="form-group">
+                              <label>Rejection Reason *</label>
+                              <textarea
+                                placeholder="Why is this application being rejected?"
+                                value={rejectionReason}
+                                onChange={(e) => setRejectionReason(e.target.value)}
+                                rows="3"
+                              />
+                            </div>
+                          )}
+
+                          <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                            <button
+                              className="btn-success"
+                              onClick={() => handleUpdateApplication(selectedApplication._id, selectedApplication.status)}
+                            >
+                              Update Status
+                            </button>
+                            <button
+                              className="btn-outline"
+                              onClick={() => setSelectedApplication(null)}
+                            >
+                              Cancel
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 

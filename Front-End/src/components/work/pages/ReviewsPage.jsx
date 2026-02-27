@@ -1,4 +1,4 @@
-// src/pages/ReviewsPage.jsx
+// src/pages/ReviewsPage.jsx - FIXED
 import React, { useState, useEffect } from 'react';
 import './ReviewsPage.css';
 
@@ -13,80 +13,13 @@ const ReviewsPage = () => {
     guide: ''
   });
 
-  const [existingReviews, setExistingReviews] = useState([
-    {
-      id: 1,
-      name: "Sarah Johnson",
-      location: "London, UK",
-      rating: 5,
-      date: "January 2024",
-      title: "Amazing Cultural Experience",
-      comment: "The Cultural Triangle tour was absolutely incredible! Our guide Rajitha was knowledgeable and made ancient history come alive. Highly recommended!",
-      tour: "Cultural Triangle Explorer",
-      guide: "Rajitha Fernando",
-      verified: true
-    },
-    {
-      id: 2,
-      name: "Michael Chen",
-      location: "Singapore",
-      rating: 5,
-      date: "December 2023",
-      title: "Best Wildlife Safari",
-      comment: "Saw leopards, elephants, and so many birds in Yala National Park. Our guide Sanduni was an expert tracker and made the experience unforgettable!",
-      tour: "Wildlife Safari Experience",
-      guide: "Sanduni Perera",
-      verified: true
-    },
-    {
-      id: 3,
-      name: "Emma Watson",
-      location: "Madrid, Spain",
-      rating: 5,
-      date: "November 2023",
-      title: "Perfect Hill Country Adventure",
-      comment: "The train journey through tea plantations was breathtaking. Our guide Kamal was excellent and made the experience magical.",
-      tour: "Hill Country Adventure",
-      guide: "Kamal Silva",
-      verified: true
-    },
-    {
-      id: 4,
-      name: "David Wilson",
-      location: "Sydney, Australia",
-      rating: 4,
-      date: "October 2023",
-      title: "Great Beach Tour",
-      comment: "Galle Fort was fascinating and the beaches were pristine. Our guide Chaminda was very knowledgeable about marine life.",
-      tour: "Coastal Paradise Tour",
-      guide: "Chaminda Wickramasinghe",
-      verified: true
-    },
-    {
-      id: 5,
-      name: "Priya Sharma",
-      location: "Mumbai, India",
-      rating: 5,
-      date: "September 2023",
-      title: "Tea Plantation Excellence",
-      comment: "As a tea lover, this tour was perfect! Priya's knowledge about Ceylon tea was incredible. The tasting sessions were amazing.",
-      tour: "Tea Country Journey",
-      guide: "Priya Jayawardena",
-      verified: true
-    },
-    {
-      id: 6,
-      name: "James Anderson",
-      location: "Toronto, Canada",
-      rating: 5,
-      date: "August 2023",
-      title: "Complete Sri Lanka Experience",
-      comment: "12 days covering the entire island was worth every penny. Our guide Nilantha made every day special with his culinary insights.",
-      tour: "Complete Sri Lanka Experience",
-      guide: "Nilantha De Silva",
-      verified: true
-    }
-  ]);
+  const [existingReviews, setExistingReviews] = useState([]);
+  const [stats, setStats] = useState({
+    averageRating: 0,
+    totalReviews: 0,
+    recommendationRate: 0
+  });
+  const [loading, setLoading] = useState(true);
 
   const tours = [
     "Cultural Triangle Explorer",
@@ -106,7 +39,12 @@ const ReviewsPage = () => {
     "Priya Jayawardena"
   ];
 
-  //Auto filling the user data in review form 
+  // Fetch reviews on component mount
+  useEffect(() => {
+    fetchReviews();
+  }, []);
+
+  // Auto-fill user data
   useEffect(() => {
     const userData = localStorage.getItem('user');
     if (userData) {
@@ -117,12 +55,59 @@ const ReviewsPage = () => {
           name: user.name || '',
           email: user.email || ''
         }));
-      }catch (err){
-        console.log('Error passing Data',err)
+      } catch (err) {
+        console.log('Error parsing user data', err);
       }
     }
   }, []);
-  
+
+  const fetchReviews = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch('http://localhost:5000/api/reviews');
+      const data = await response.json();
+
+      if (data.status === 'success') {
+        // Map API reviews to component format
+        const apiReviews = data.data.map(review => ({
+          id: review._id,
+          name: review.user?.name || 'Anonymous',
+          location: 'Verified Traveler',
+          rating: review.rating,
+          date: new Date(review.createdAt).toLocaleDateString('en-US', {
+            month: 'long',
+            year: 'numeric'
+          }),
+          title: review.title,
+          comment: review.comment,
+          tour: review.tour,
+          guide: review.guide || '',
+          verified: review.isApproved || false
+        }));
+        
+        setExistingReviews(apiReviews);
+        
+        // Calculate real stats
+        const total = apiReviews.length;
+        const avgRating = total > 0 
+          ? (apiReviews.reduce((sum, r) => sum + r.rating, 0) / total).toFixed(1)
+          : 0;
+        const recommendRate = total > 0
+          ? ((apiReviews.filter(r => r.rating >= 4).length / total) * 100).toFixed(0)
+          : 0;
+        
+        setStats({
+          averageRating: avgRating,
+          totalReviews: total,
+          recommendationRate: recommendRate
+        });
+      }
+    } catch (error) {
+      console.error('Error fetching reviews:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -165,43 +150,11 @@ const ReviewsPage = () => {
         guide: ''
       });
 
-      fetchReviews();
+      fetchReviews(); // Refresh reviews
 
     } catch (error) {
       console.error('Review submission error:', error);
       alert(error.message || 'Failed to submit review');
-    }
-  };
-
-  useEffect(() => {
-    fetchReviews();
-  }, []);
-
-  const fetchReviews = async () => {
-    try {
-      const response = await fetch('http://localhost:5000/api/reviews');
-      const data = await response.json();
-
-      if (data.status === 'success') {
-        const apiReviews = data.data.map(review => ({
-          id: review._id,
-          name: review.user?.name || 'Anonymous',
-          location: review.location || 'Verified Traveler',
-          rating: review.rating,
-          date: new Date(review.createdAt).toLocaleDateString('en-US', {
-            month: 'long',
-            year: 'numeric'
-          }),
-          title: review.title,
-          comment: review.comment,
-          tour: review.tour,
-          guide: review.guide || '',
-          verified: review.isApproved || false
-        }));
-        // setExistingReviews(apiReviews);
-      }
-    } catch (error) {
-      console.error('Error fetching reviews:', error);
     }
   };
 
@@ -219,11 +172,6 @@ const ReviewsPage = () => {
       rating
     }));
   };
-
-  // Calculate stats
-  const averageRating = (existingReviews.reduce((acc, review) => acc + review.rating, 0) / existingReviews.length).toFixed(1);
-  const totalReviews = existingReviews.length;
-  const recommendationRate = ((existingReviews.filter(r => r.rating >= 4).length / totalReviews) * 100).toFixed(0);
 
   return (
     <div className="reviews-page">
@@ -251,6 +199,7 @@ const ReviewsPage = () => {
             </div>
 
             <form onSubmit={handleSubmit} className="review-form">
+              {/* Form fields (same as before) */}
               <div className="form-row">
                 <div className="form-group">
                   <label htmlFor="name" className="form-label">Your Name</label>
@@ -381,54 +330,73 @@ const ReviewsPage = () => {
               </p>
             </div>
 
-            <div className="reviews-stats">
-              <div className="stat">
-                <div className="stat-value">{averageRating}</div>
-                <div className="stat-label">Average Rating</div>
+            {loading ? (
+              <div className="loading-reviews">
+                <div className="loading-spinner"></div>
+                <p>Loading reviews...</p>
               </div>
-              <div className="stat">
-                <div className="stat-value">{totalReviews}</div>
-                <div className="stat-label">Total Reviews</div>
-              </div>
-              <div className="stat">
-                <div className="stat-value">{recommendationRate}%</div>
-                <div className="stat-label">Would Recommend</div>
-              </div>
-            </div>
-
-            <div className="reviews-list">
-              {existingReviews.map((review) => (
-                <div key={review.id} className="review-card">
-                  <div className="review-header">
-                    <div className="reviewer-info">
-                      <h4 className="reviewer-name">
-                        {review.name}
-                        {review.verified && (
-                          <span className="verified-badge">Verified Trip</span>
-                        )}
-                      </h4>
-                      <div className="reviewer-details">
-                        <span className="reviewer-location">{review.location}</span>
-                        <span className="review-date">{review.date}</span>
-                      </div>
-                    </div>
-                    <div className="review-rating">
-                      {'★'.repeat(review.rating)}
-                      {'☆'.repeat(5 - review.rating)}
-                    </div>
+            ) : (
+              <>
+                <div className="reviews-stats">
+                  <div className="stat">
+                    <div className="stat-value">{stats.averageRating}</div>
+                    <div className="stat-label">Average Rating</div>
                   </div>
-
-                  <div className="review-content">
-                    <h3 className="review-title">{review.title}</h3>
-                    <span className="review-tour">{review.tour}</span>
-                    {review.guide && (
-                      <span className="review-guide">Guide: {review.guide}</span>
-                    )}
-                    <p className="review-comment">{review.comment}</p>
+                  <div className="stat">
+                    <div className="stat-value">{stats.totalReviews}</div>
+                    <div className="stat-label">Total Reviews</div>
+                  </div>
+                  <div className="stat">
+                    <div className="stat-value">{stats.recommendationRate}%</div>
+                    <div className="stat-label">Would Recommend</div>
                   </div>
                 </div>
-              ))}
-            </div>
+
+                <div className="reviews-list">
+                  {existingReviews.length === 0 ? (
+                    <div className="empty-reviews">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
+                        <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                      </svg>
+                      <h3>No Reviews Yet</h3>
+                      <p>Be the first to share your experience!</p>
+                    </div>
+                  ) : (
+                    existingReviews.map((review) => (
+                      <div key={review.id} className="review-card">
+                        <div className="review-header">
+                          <div className="reviewer-info">
+                            <h4 className="reviewer-name">
+                              {review.name}
+                              {review.verified && (
+                                <span className="verified-badge">Verified Trip</span>
+                              )}
+                            </h4>
+                            <div className="reviewer-details">
+                              <span className="reviewer-location">{review.location}</span>
+                              <span className="review-date">{review.date}</span>
+                            </div>
+                          </div>
+                          <div className="review-rating">
+                            {'★'.repeat(review.rating)}
+                            {'☆'.repeat(5 - review.rating)}
+                          </div>
+                        </div>
+
+                        <div className="review-content">
+                          <h3 className="review-title">{review.title}</h3>
+                          <span className="review-tour">{review.tour}</span>
+                          {review.guide && (
+                            <span className="review-guide">Guide: {review.guide}</span>
+                          )}
+                          <p className="review-comment">{review.comment}</p>
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
+              </>
+            )}
           </div>
         </div>
       </div>

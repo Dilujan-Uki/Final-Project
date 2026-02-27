@@ -7,7 +7,7 @@ import HomePage from './components/work/pages/HomePage';
 import ToursPage from './components/work/pages/ToursPage';
 import TourGuidesPage from './components/work/pages/TourGuidesPage';
 import TourGuideDetailPage from './components/work/pages/TourGuideDetailPage';
-import TourItineraryPage from './components/work/pages/TourItineraryPage'; // NEW IMPORT
+import TourItineraryPage from './components/work/pages/TourItineraryPage';
 import ContactPage from './components/work/pages/ContactPage';
 import LoginPage from './components/work/pages/LoginPage';
 import RegisterPage from './components/work/pages/RegisterPage';
@@ -17,7 +17,8 @@ import ReviewsPage from './components/work/pages/ReviewsPage';
 import BookingPage from './components/work/pages/BookingPage';
 import AdminDashboard from './components/work/pages/AdminDashboard';
 import MyBookingsPage from './components/work/pages/myBookingsPage';
-import TourDetailPage from './components/work/pages/TourDetailPage';  
+import TourDetailPage from './components/work/pages/TourDetailPage'; 
+import './utils/tourImageMapping' 
 import './components/work/styles/GlobalStyles.css'
 
 const App = () => {
@@ -42,6 +43,8 @@ const App = () => {
             <Route path="/admin" element={<AdminDashboard />} />
             <Route path="/my-bookings" element={<MyBookingsPage />} />
             <Route path="/tour-detail/:id" element={<TourDetailPage />} />
+            <Route path="/guide-dashboard" element={<GuideDashboard />} /> 
+            <Route path="/guide-application" element={<GuideApplicationPage />} /> 
             <Route path="*" element={
               <div className="not-found">
                 <div className="container">

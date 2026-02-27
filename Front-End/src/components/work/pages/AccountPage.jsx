@@ -117,6 +117,49 @@ const AccountPage = () => {
     );
   }
 
+  // Add this function in AccountPage.jsx
+const handleDeleteReview = async (reviewId) => {
+  if (!window.confirm('Are you sure you want to delete this review?')) {
+    return;
+  }
+
+  const token = localStorage.getItem('token');
+  
+  try {
+    const response = await fetch(`http://localhost:5000/api/reviews/${reviewId}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      }
+    });
+
+    const data = await response.json();
+
+    if (data.status === 'success') {
+      alert('✅ Review deleted successfully');
+      // Refresh reviews list
+      fetchUserReviews(token);
+    } else {
+      alert('Failed to delete review');
+    }
+  } catch (error) {
+    console.error('Error deleting review:', error);
+    alert('Error deleting review');
+  }
+};
+
+// Add delete button in the review card:
+{/* In the reviews list map */}
+<div className="review-actions" style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem' }}>
+  <button 
+    onClick={() => handleDeleteReview(review._id)}
+    className="btn-outline cancel"
+    style={{ padding: '0.4rem 1rem', fontSize: '0.8rem' }}
+  >
+    🗑️ Delete
+  </button>
+</div>
+
   // Check if user is admin
   const isAdmin = user?.role === 'admin';
 

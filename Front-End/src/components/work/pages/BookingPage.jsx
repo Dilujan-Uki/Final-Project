@@ -93,82 +93,72 @@ const BookingPage = () => {
 
   const prices = calculatePrices();
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+// src/pages/BookingPage.jsx - Fix handleSubmit function
+const handleSubmit = async (e) => {
+  e.preventDefault();
 
-    // Check if user is logged in
-    const token = localStorage.getItem('token');
-    const userData = localStorage.getItem('user');
+  const token = localStorage.getItem('token');
+  const userData = localStorage.getItem('user');
 
-    if (!token || !userData) {
-      alert('Please login to book a tour');
-      navigate('/login');
-      return;
+  if (!token || !userData) {
+    alert('Please login to book a tour');
+    navigate('/login');
+    return;
+  }
+
+  setLoading(true);
+  setError('');
+
+  try {
+    // Create booking payload
+    const bookingPayload = {
+      tourId: tourId || bookingData.tourId,
+      tourName: bookingData.tourName,
+      guideName: bookingData.guideName || '',
+      participants: parseInt(bookingData.participants),
+      duration: parseInt(bookingData.selectedDuration),
+      totalPrice: prices.total,
+      extraServices: {
+        transport: bookingData.extraServices.transport || false,
+        meals: bookingData.extraServices.meals || false
+      },
+      bookingDate: bookingData.bookingDate,
+      specialRequests: bookingData.specialRequests || ''
+    };
+
+    console.log('Sending booking:', bookingPayload);
+
+    // USE FETCH DIRECTLY INSTEAD OF API IMPORT
+    const response = await fetch('http://localhost:5000/api/new-bookings', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify(bookingPayload)
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.message || 'Booking failed');
     }
 
-    setLoading(true);
-    setError('');
-
-    try {
-      // First, get the actual tour ID from the database
-      const toursResponse = await fetch('http://localhost:5000/api/tours');
-      const toursData = await toursResponse.json();
-
-      if (!toursResponse.ok) {
-        throw new Error('Failed to fetch tours');
-      }
-
-      // Find the tour that matches the name
-      const selectedTour = toursData.data.find(t =>
-        t.name.toLowerCase() === bookingData.tourName.toLowerCase() ||
-        t.name.toLowerCase().includes(bookingData.tourName.toLowerCase().split(' ')[0])
-      );
-
-      if (!selectedTour) {
-        throw new Error('Tour not found in database');
-      }
-
-      // Create booking payload for NEW API
-      const bookingPayload = {
-        tourId: selectedTour._id,
-        tourName: selectedTour.name,
-        guideName: bookingData.guideName || '',
-        participants: parseInt(bookingData.participants),
-        duration: parseInt(bookingData.selectedDuration),
-        totalPrice: prices.total,
-        extraServices: {
-          transport: bookingData.extraServices.transport || false,
-          meals: bookingData.extraServices.meals || false
-        },
-        bookingDate: bookingData.bookingDate,
-        specialRequests: bookingData.specialRequests || ''
-      };
-
-      console.log('Sending to NEW booking API:', bookingPayload);
-
-      // USE THE NEW API HERE
-      const response = await newBookingsAPI.create(bookingPayload);
-
-      console.log('Server response:', response);
-
-      if (response.success) {
-        // Clear selections after successful booking
-        localStorage.removeItem('selectedTour');
-        localStorage.removeItem('selectedGuide');
-
-        alert('✅ Booking Successful!');
-
-        // Navigate to my bookings page
-        navigate('/my-bookings');
-      }
-
-    } catch (err) {
-      console.error('Booking error:', err);
-      setError(err.message || 'Booking failed. Please try again.');
-    } finally {
-      setLoading(false);
+    if (data.success) {
+      localStorage.removeItem('selectedTour');
+      localStorage.removeItem('selectedGuide');
+      
+      alert(' Booking Successful!');
+      navigate('/my-bookings');
     }
-  };
+
+  } catch (err) {
+    console.error('Booking error:', err);
+    setError(err.message || 'Booking failed. Please try again.');
+  } finally {
+    setLoading(false);
+  }
+};
 
   const handleChange = (e) => {
     const { name, value, type } = e.target;

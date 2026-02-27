@@ -1,0 +1,231 @@
+/* src/pages/GuideDashboard.css */
+.guide-dashboard {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f8fafc, #ffffff);
+  padding: 3rem 0;
+}
+
+.guide-header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.guide-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #1e4c24;
+  margin-bottom: 0.5rem;
+}
+
+.guide-subtitle {
+  color: #6c757d;
+  font-size: 1.1rem;
+}
+
+.assignments-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
+  gap: 1.5rem;
+}
+
+.assignment-card {
+  background: white;
+  border-radius: 24px;
+  padding: 1.5rem;
+  box-shadow: 0 15px 35px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(30, 76, 36, 0.08);
+  transition: all 0.3s ease;
+}
+
+.assignment-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 25px 50px rgba(30, 76, 36, 0.12);
+}
+
+.assignment-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(30, 76, 36, 0.1);
+}
+
+.tour-name {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1e4c24;
+  margin: 0;
+}
+
+.status-badge {
+  padding: 0.4rem 1rem;
+  border-radius: 50px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.status-badge.upcoming {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.status-badge.ongoing {
+  background: #d4edda;
+  color: #155724;
+}
+
+.status-badge.completed {
+  background: #cce5ff;
+  color: #004085;
+}
+
+.customer-info {
+  background: rgba(30, 76, 36, 0.04);
+  border-radius: 16px;
+  padding: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.customer-info h4 {
+  font-size: 0.9rem;
+  color: #6c757d;
+  margin-bottom: 0.75rem;
+  text-transform: uppercase;
+}
+
+.customer-info p {
+  margin: 0.5rem 0;
+  font-size: 0.95rem;
+}
+
+.tour-details {
+  margin-bottom: 1.5rem;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 0.5rem 0;
+  border-bottom: 1px solid rgba(30, 76, 36, 0.05);
+}
+
+.special-requests {
+  background: #fff8e7;
+  border-left: 4px solid #ffb400;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+}
+
+.assignment-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.assignment-actions button {
+  flex: 1;
+  padding: 0.75rem;
+  font-size: 0.9rem;
+}
+
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: white;
+  border-radius: 24px;
+  max-width: 500px;
+  margin: 2rem auto;
+}
+
+.empty-state svg {
+  color: #adb5bd;
+  margin-bottom: 1.5rem;
+}
+
+.empty-state h3 {
+  color: #1e4c24;
+  margin-bottom: 0.75rem;
+}
+
+.empty-state p {
+  color: #6c757d;
+}
+
+/* Modal Styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+}
+
+.modal-content {
+  background: white;
+  border-radius: 28px;
+  width: 90%;
+  max-width: 600px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-header {
+  padding: 1.5rem 2rem;
+  background: linear-gradient(135deg, #1e4c24, #2c5f2d);
+  color: white;
+  border-radius: 28px 28px 0 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 1.5rem;
+}
+
+.modal-close {
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  color: white;
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.modal-body {
+  padding: 2rem;
+}
+
+.detail-section {
+  margin-bottom: 1.5rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid rgba(30, 76, 36, 0.1);
+}
+
+.detail-section:last-child {
+  border-bottom: none;
+}
+
+.detail-section h4 {
+  color: #1e4c24;
+  margin-bottom: 1rem;
+  font-size: 1rem;
+  text-transform: uppercase;
+}
+
+.detail-section p {
+  margin: 0.5rem 0;
+  line-height: 1.6;
+}

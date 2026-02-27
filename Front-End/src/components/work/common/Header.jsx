@@ -99,6 +99,7 @@ const Header = () => {
                 <div className="dropdown">
                   <Link to="/account">My Account</Link>
                   {isAdmin && <Link to="/admin">Admin Dashboard</Link>}
+                  {user?.role === 'guide' && <Link to="/guide-dashboard">Guide Dashboard</Link>}
                   <button onClick={logout}>Logout</button>
                 </div>
               )}

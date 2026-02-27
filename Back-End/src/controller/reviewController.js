@@ -164,12 +164,12 @@ const updateReviewApproval = async (req, res) => {
     });
   }
 };
-// @desc    Delete review (Admin or owner)
+// @desc    Delete review (User can delete their own, admin gets notification)
 // @route   DELETE /api/reviews/:id
 // @access  Private
 const deleteReview = async (req, res) => {
   try {
-    const review = await Review.findById(req.params.id);
+    const review = await Review.findById(req.params.id).populate('user', 'name email');
 
     if (!review) {
       return res.status(404).json({
@@ -178,19 +178,34 @@ const deleteReview = async (req, res) => {
       });
     }
 
-    // Check if user owns the review or is admin
-    if (review.user.toString() !== req.userId && req.user.role !== 'admin') {
+    // Check if user owns the review
+    if (review.user._id.toString() !== req.userId) {
       return res.status(403).json({
         status: 'error',
         message: 'Not authorized to delete this review'
       });
     }
 
+    // Store review data for response
+    const deletedReview = {
+      id: review._id,
+      userName: review.user.name,
+      tour: review.tour,
+      rating: review.rating
+    };
+
     await review.deleteOne();
+
+    // Log for admin (in real app, you'd save this to a deletion log)
+    console.log(`🗑️ REVIEW DELETED - User: ${deletedReview.userName} deleted review for ${deletedReview.tour} (Rating: ${deletedReview.rating})`);
 
     res.status(200).json({
       status: 'success',
-      message: 'Review deleted successfully'
+      message: 'Review deleted successfully',
+      data: {
+        deletedReview,
+        notification: `Admin notification: User ${deletedReview.userName} deleted their review`
+      }
     });
   } catch (error) {
     console.error('Delete review error:', error);
@@ -200,7 +215,6 @@ const deleteReview = async (req, res) => {
     });
   }
 };
-
 
 // @desc    Get all reviews with user details (Admin only)
 // @route   GET /api/reviews/all

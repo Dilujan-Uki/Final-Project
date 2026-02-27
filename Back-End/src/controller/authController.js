@@ -42,7 +42,7 @@ const registerUser = async (req, res) => {
         name: user.name,
         email: user.email,
         phone: user.phone,
-        role: user.role,  // ADDED THIS LINE
+        role: user.role, 
         token
       }
     });
@@ -89,7 +89,7 @@ const loginUser = async (req, res) => {
         name: user.name,
         email: user.email,
         phone: user.phone,
-        role: user.role,  // ADDED THIS LINE
+        role: user.role, 
         token
       }
     });
@@ -121,7 +121,7 @@ const getUserProfile = async (req, res) => {
         name: user.name,
         email: user.email,
         phone: user.phone,
-        role: user.role  // ADDED THIS LINE
+        role: user.role  
       }
     });
   } catch (error) {
