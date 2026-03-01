@@ -1,4 +1,4 @@
-// src/components/work/pages/AccountPage.jsx
+// src/components/work/pages/AccountPage.jsx - FIXED
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { newBookingsAPI } from '/home/uki-dsa-01/LESSONS/Final-Project/Front-End/src/services/api.js';
@@ -38,9 +38,6 @@ const AccountPage = () => {
     }
   }, [navigate]);
 
-
-  // In AccountPage.jsx - Replace the fetchUserBookings function
-
   const fetchUserBookings = async (token) => {
     setLoadingBookings(true);
     try {
@@ -57,6 +54,7 @@ const AccountPage = () => {
       setLoadingBookings(false);
     }
   };
+  
   const fetchUserReviews = async (token) => {
     setLoadingReviews(true);
     try {
@@ -106,6 +104,37 @@ const AccountPage = () => {
     }
   };
 
+  // Add delete function
+  const handleDeleteReview = async (reviewId) => {
+    if (!window.confirm('Are you sure you want to delete this review?')) {
+      return;
+    }
+
+    const token = localStorage.getItem('token');
+
+    try {
+      const response = await fetch(`http://localhost:5000/api/reviews/${reviewId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+
+      const data = await response.json();
+
+      if (data.status === 'success') {
+        alert('✅ Review deleted successfully');
+        // Refresh reviews list
+        fetchUserReviews(token);
+      } else {
+        alert('Failed to delete review');
+      }
+    } catch (error) {
+      console.error('Error deleting review:', error);
+      alert('Error deleting review');
+    }
+  };
+
   if (loading) {
     return (
       <div className="loading-page">
@@ -116,49 +145,6 @@ const AccountPage = () => {
       </div>
     );
   }
-
-  // Add this function in AccountPage.jsx
-const handleDeleteReview = async (reviewId) => {
-  if (!window.confirm('Are you sure you want to delete this review?')) {
-    return;
-  }
-
-  const token = localStorage.getItem('token');
-  
-  try {
-    const response = await fetch(`http://localhost:5000/api/reviews/${reviewId}`, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${token}`
-      }
-    });
-
-    const data = await response.json();
-
-    if (data.status === 'success') {
-      alert('✅ Review deleted successfully');
-      // Refresh reviews list
-      fetchUserReviews(token);
-    } else {
-      alert('Failed to delete review');
-    }
-  } catch (error) {
-    console.error('Error deleting review:', error);
-    alert('Error deleting review');
-  }
-};
-
-// Add delete button in the review card:
-{/* In the reviews list map */}
-<div className="review-actions" style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem' }}>
-  <button 
-    onClick={() => handleDeleteReview(review._id)}
-    className="btn-outline cancel"
-    style={{ padding: '0.4rem 1rem', fontSize: '0.8rem' }}
-  >
-    🗑️ Delete
-  </button>
-</div>
 
   // Check if user is admin
   const isAdmin = user?.role === 'admin';
@@ -462,6 +448,16 @@ const handleDeleteReview = async (reviewId) => {
                           <span className={`review-status ${review.isApproved ? 'approved' : 'pending'}`}>
                             {review.isApproved ? '✓ Approved' : '⏳ Pending Approval'}
                           </span>
+                        </div>
+                        
+                        <div className="review-actions" style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem' }}>
+                          <button
+                            onClick={() => handleDeleteReview(review._id)}
+                            className="btn-outline cancel"
+                            style={{ padding: '0.4rem 1rem', fontSize: '0.8rem' }}
+                          >
+                            🗑️ Delete
+                          </button>
                         </div>
                       </div>
                     ))}

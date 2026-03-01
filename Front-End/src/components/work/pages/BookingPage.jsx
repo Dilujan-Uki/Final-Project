@@ -1,7 +1,6 @@
 // src/pages/BookingPage.jsx
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
-import { newBookingsAPI } from '/home/uki-dsa-01/LESSONS/Final-Project/Front-End/src/services/api.js';
 import './BookingPage.css';
 
 const BookingPage = () => {

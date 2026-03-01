@@ -1,14 +1,41 @@
-// src/pages/TourGuideDetailPage.jsx
-import React from 'react';
+// src/pages/TourGuideDetailPage.jsx - FIXED
+import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import './TourGuideDetailPage.css';
 
 const TourGuideDetailPage = () => {
   const { id } = useParams();
   const navigate = useNavigate();
+  const [guide, setGuide] = useState(null);
+  const [loading, setLoading] = useState(true);
 
-  // Mock data - In real app, you'd fetch this based on ID
-  const guide = {
+  useEffect(() => {
+    // In a real app, you would fetch the guide data based on the id
+    const fetchGuide = async () => {
+      try {
+        // Uncomment when your API is ready
+        const response = await fetch(`http://localhost:5000/api/guides/${id}`);
+        const data = await response.json();
+        setGuide(data.data);
+        
+        // For now, just log that we're fetching
+        console.log(`Fetching guide with ID: ${id}`);
+        
+        // Simulate loading
+        setTimeout(() => {
+          setLoading(false);
+        }, 500);
+      } catch (error) {
+        console.error('Error fetching guide:', error);
+        setLoading(false);
+      }
+    };
+
+    fetchGuide();
+  }, [id]);
+
+  // Mock data - In a real app, this would come from the API
+  const guideData = {
     id: 1,
     name: "Rajitha Fernando",
     title: "Senior Heritage Guide",
@@ -75,12 +102,27 @@ const TourGuideDetailPage = () => {
     const selectedTour = localStorage.getItem('selectedTour');
     if (selectedTour) {
       const tourData = JSON.parse(selectedTour);
-      navigate(`/payment?tour=${tourData.id}&name=${encodeURIComponent(tourData.name)}&duration=${tourData.duration}&pricePerDay=${tourData.pricePerDay}&guide=${guide.id}&guideName=${encodeURIComponent(guide.name)}&guideDailyRate=${guide.dailyRate}`);
+      navigate(`/booking?tour=${tourData.id}&name=${encodeURIComponent(tourData.name)}&duration=${tourData.duration}&pricePerDay=${tourData.pricePerDay}&guide=${guideData.id}&guideName=${encodeURIComponent(guideData.name)}&guideDailyRate=${guideData.dailyRate}`);
     } else {
       // If no tour selected, go to tours page
+      alert('Please Select a tour first')
       navigate('/tours');
     }
   };
+
+  if (loading) {
+    return (
+      <div className="loading-page">
+        <div className="container">
+          <div className="loading-spinner"></div>
+          <p>Loading guide details...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Use guideData instead of guide (or set guide state with fetched data)
+  const currentGuide = guide || guideData;
 
   return (
     <div className="guide-detail-page">
@@ -89,30 +131,30 @@ const TourGuideDetailPage = () => {
         <div className="container">
           <div className="guide-hero-content">
             <div className="guide-hero-image">
-              <img src={guide.image} alt={guide.name} />
+              <img src={currentGuide.image} alt={currentGuide.name} />
             </div>
             <div className="guide-hero-info">
-              <h1 className="guide-name">{guide.name}</h1>
-              <h2 className="guide-title">{guide.title}</h2>
+              <h1 className="guide-name">{currentGuide.name}</h1>
+              <h2 className="guide-title">{currentGuide.title}</h2>
               <div className="guide-rating">
                 <div className="stars">
-                  {'★'.repeat(Math.floor(guide.rating))}
-                  {'☆'.repeat(5 - Math.floor(guide.rating))}
+                  {'★'.repeat(Math.floor(currentGuide.rating))}
+                  {'☆'.repeat(5 - Math.floor(currentGuide.rating))}
                 </div>
-                <span className="rating-text">{guide.rating} • {guide.reviews} reviews</span>
+                <span className="rating-text">{currentGuide.rating} • {currentGuide.reviews} reviews</span>
               </div>
               <div className="guide-hero-details">
                 <div className="detail">
                   <span className="detail-label">Experience</span>
-                  <span className="detail-value">{guide.experience}</span>
+                  <span className="detail-value">{currentGuide.experience}</span>
                 </div>
                 <div className="detail">
                   <span className="detail-label">Daily Rate</span>
-                  <span className="detail-value">${guide.dailyRate}/day</span>
+                  <span className="detail-value">${currentGuide.dailyRate}/day</span>
                 </div>
                 <div className="detail">
                   <span className="detail-label">Response Time</span>
-                  <span className="detail-value">{guide.responseTime}</span>
+                  <span className="detail-value">{currentGuide.responseTime}</span>
                 </div>
               </div>
               <button onClick={handleBookGuide} className="btn-primary book-guide-btn">
@@ -130,15 +172,15 @@ const TourGuideDetailPage = () => {
             {/* About Guide */}
             <div className="info-card">
               <h3 className="info-title">About Me</h3>
-              <p className="guide-bio">{guide.bio}</p>
-              <p className="guide-description">{guide.description}</p>
+              <p className="guide-bio">{currentGuide.bio}</p>
+              <p className="guide-description">{currentGuide.description}</p>
             </div>
 
             {/* Specialties */}
             <div className="info-card">
               <h3 className="info-title">Specialties</h3>
               <div className="specialties-list">
-                {guide.specialties.map((specialty, index) => (
+                {currentGuide.specialties.map((specialty, index) => (
                   <span key={index} className="specialty-tag">{specialty}</span>
                 ))}
               </div>
@@ -148,7 +190,7 @@ const TourGuideDetailPage = () => {
             <div className="info-card">
               <h3 className="info-title">Languages</h3>
               <div className="languages-list">
-                {guide.languages.map((language, index) => (
+                {currentGuide.languages.map((language, index) => (
                   <div key={index} className="language-item">
                     <span className="language-name">{language}</span>
                   </div>
@@ -160,7 +202,7 @@ const TourGuideDetailPage = () => {
             <div className="info-card">
               <h3 className="info-title">Certifications</h3>
               <ul className="certifications-list">
-                {guide.certifications.map((cert, index) => (
+                {currentGuide.certifications.map((cert, index) => (
                   <li key={index}>{cert}</li>
                 ))}
               </ul>
@@ -173,7 +215,7 @@ const TourGuideDetailPage = () => {
             <div className="sidebar-card">
               <h3 className="sidebar-title">Tour Specialties</h3>
               <ul className="tour-list">
-                {guide.tourSpecialties.map((tour, index) => (
+                {currentGuide.tourSpecialties.map((tour, index) => (
                   <li key={index}>{tour}</li>
                 ))}
               </ul>
@@ -185,15 +227,15 @@ const TourGuideDetailPage = () => {
               <div className="contact-details">
                 <div className="contact-item">
                   <span className="contact-label">Email:</span>
-                  <span className="contact-value">{guide.contactInfo.email}</span>
+                  <span className="contact-value">{currentGuide.contactInfo.email}</span>
                 </div>
                 <div className="contact-item">
                   <span className="contact-label">Phone:</span>
-                  <span className="contact-value">{guide.contactInfo.phone}</span>
+                  <span className="contact-value">{currentGuide.contactInfo.phone}</span>
                 </div>
                 <div className="contact-item">
                   <span className="contact-label">Availability:</span>
-                  <span className="contact-value">{guide.availability}</span>
+                  <span className="contact-value">{currentGuide.availability}</span>
                 </div>
               </div>
             </div>

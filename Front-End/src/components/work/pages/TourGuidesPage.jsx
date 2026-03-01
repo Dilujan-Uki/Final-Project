@@ -1,7 +1,9 @@
-// src/pages/TourGuidesPage.jsx - FIXED
+// src/pages/TourGuidesPage.jsx - UPDATED with 6 guides and imported images
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import './TourGuidesPage.css';
+
+// Import guide images
 import Rajitha from '/home/uki-dsa-01/LESSONS/Final-Project/Front-End/src/components/work/assets/Rajitha.png';
 import Kamal from '/home/uki-dsa-01/LESSONS/Final-Project/Front-End/src/components/work/assets/Kamal.png';
 import Nimal from '/home/uki-dsa-01/LESSONS/Final-Project/Front-End/src/components/work/assets/Nimal.png';
@@ -14,175 +16,157 @@ const TourGuidesPage = () => {
   const navigate = useNavigate();
   const queryParams = new URLSearchParams(location.search);
   
-  const [selectedTour, setSelectedTour] = useState(null);
-  const [activeCategory, setActiveCategory] = useState('all');
-  const [filteredGuides, setFilteredGuides] = useState([]);
-
+  // Get tour data from URL if coming from a tour
   const tourId = queryParams.get('tour');
   const tourName = queryParams.get('name');
-  const duration = parseInt(queryParams.get('duration')) || 3;
-  const pricePerDay = parseInt(queryParams.get('pricePerDay')) || 80;
+  const tourDuration = queryParams.get('duration');
+  const tourPricePerDay = queryParams.get('pricePerDay');
 
-  const tourGuides = [
+  const [selectedCategory, setSelectedCategory] = useState('all');
+  const [selectedTour, setSelectedTour] = useState(null);
+
+  // Complete guides data with 6 guides and imported images
+  const guides = [
     {
       id: 1,
       name: "Rajitha Fernando",
-      title: "Senior Heritage Guide",
       rating: 4.9,
       reviews: 247,
-      specialties: ["Cultural Heritage", "UNESCO Sites", "Ancient History"],
+      specialties: ["Cultural Heritage", "UNESCO Sites", "Ancient History", "Temple Architecture"],
       image: Rajitha,
-      experience: "12 Years Experience",
+      experience: "12 Years",
       languages: ["English", "Sinhala", "Tamil", "French"],
       hourlyRate: 25,
-      dailyRate: 60,
-      description: "Expert in Sri Lankan cultural heritage with deep knowledge of ancient civilizations."
+      dailyRate: 80,
+      category: "cultural",
+      bio: "Expert in Sri Lankan ancient civilizations with Masters in Archaeology"
     },
     {
       id: 2,
       name: "Kamal Silva",
-      title: "Wildlife & Nature Expert",
       rating: 4.8,
       reviews: 189,
-      specialties: ["Wildlife Tours", "National Parks", "Bird Watching"],
-      image: Kamal,
-      experience: "9 Years Experience",
-      languages: ["English", "Sinhala", "German"],
-      hourlyRate: 22,
-      dailyRate: 50,
-      description: "Passionate wildlife photographer and nature conservationist."
+      specialties: ["Wildlife", "Bird Watching", "Safari", "Photography", "Conservation"],
+      image: Kamal ,
+      experience: "8 Years",
+      languages: ["English", "Sinhala"],
+      hourlyRate: 20,
+      dailyRate: 70,
+      category: "wildlife",
+      bio: "Former wildlife researcher turned guide, specialist in leopards and elephants"
     },
     {
       id: 3,
-      name: "Nimal De Silva",
-      title: "Adventure & Trekking Guide",
-      rating: 4.9,
-      reviews: 312,
-      specialties: ["Mountain Trekking", "Adventure Sports", "Camping"],
+      name: "Nimaltha Perera",
+      rating: 4.7,
+      reviews: 156,
+      specialties: ["Adventure", "Hiking", "Camping", "Mountain Biking", "Rock Climbing"],
       image: Nimal,
-      experience: "11 Years Experience",
-      languages: ["English", "Sinhala", "Japanese"],
-      hourlyRate: 28,
-      dailyRate: 60,
-      description: "Certified adventure guide specializing in mountain treks and outdoor activities."
+      experience: "6 Years",
+      languages: ["English", "Sinhala", "Tamil"],
+      hourlyRate: 18,
+      dailyRate: 65,
+      category: "adventure",
+      bio: "Certified mountain guide with extensive experience in Sri Lanka's hill country"
     },
     {
       id: 4,
       name: "Sanduni Perera",
-      title: "Cultural & Culinary Guide",
-      rating: 4.7,
+      rating: 4.9,
       reviews: 203,
-      specialties: ["Cooking Classes", "Temple Visits", "Local Markets"],
+      specialties: ["Temple Tours", "History", "Archaeology", "Art", "Traditional Crafts"],
       image: Sanduni,
-      experience: "8 Years Experience",
-      languages: ["English", "Sinhala", "Tamil", "Japanese"],
-      hourlyRate: 20,
-      dailyRate: 50,
-      description: "Food enthusiast specializing in Sri Lankan cuisine and culinary traditions."
+      experience: "10 Years",
+      languages: ["English", "Sinhala", "Japanese"],
+      hourlyRate: 22,
+      dailyRate: 75,
+      category: "cultural",
+      bio: "Specializes in Buddhist heritage and traditional Sri Lankan arts"
     },
     {
       id: 5,
       name: "Chaminda Wickramasinghe",
-      title: "Beach & Coastal Expert",
-      rating: 4.6,
-      reviews: 156,
-      specialties: ["Beach Tours", "Snorkeling", "Marine Life"],
+      rating: 4.8,
+      reviews: 178,
+      specialties: ["Beach Tours", "Snorkeling", "Diving", "Whale Watching", "Surfing"],
       image: Chaminda,
-      experience: "9 Years Experience",
-      languages: ["English", "Sinhala", "Italian"],
-      hourlyRate: 18,
-      dailyRate: 40,
-      description: "Marine biologist and certified diver with extensive coastal knowledge."
+      experience: "7 Years",
+      languages: ["English", "Sinhala", "German"],
+      hourlyRate: 19,
+      dailyRate: 68,
+      category: "beach",
+      bio: "PADI certified diving instructor with expertise in marine life"
     },
     {
       id: 6,
       name: "Priya Jayawardena",
-      title: "Tea Plantation Specialist",
-      rating: 4.8,
-      reviews: 178,
-      specialties: ["Tea Plantations", "Hill Country", "Tea Tasting"],
+      rating: 4.9,
+      reviews: 167,
+      specialties: ["Photography", "Wildlife", "Landscape", "Cultural Events", "Sunrise Spots"],
       image: Priya,
-      experience: "11 Years Experience",
-      languages: ["English", "Sinhala", "Tamil", "Chinese"],
-      hourlyRate: 23,
-      dailyRate: 50,
-      description: "Third-generation tea planter with deep knowledge of Ceylon tea production."
+      experience: "9 Years",
+      languages: ["English", "Sinhala", "French"],
+      hourlyRate: 24,
+      dailyRate: 82,
+      category: "photography",
+      bio: "Professional photographer who knows the best spots for amazing shots"
     }
   ];
 
+  // Set selected tour from URL params
   useEffect(() => {
     if (tourId && tourName) {
-      const tourData = {
+      setSelectedTour({
         id: tourId,
-        name: tourName,
-        duration: duration,
-        pricePerDay: pricePerDay,
-        basePrice: duration * pricePerDay
-      };
-      setSelectedTour(tourData);
-      localStorage.setItem('selectedTour', JSON.stringify(tourData));
-    } else {
-      const savedTour = localStorage.getItem('selectedTour');
-      if (savedTour) {
-        setSelectedTour(JSON.parse(savedTour));
-      }
+        name: decodeURIComponent(tourName),
+        duration: tourDuration,
+        pricePerDay: tourPricePerDay
+      });
+      
+      // Store in localStorage for persistence
+      localStorage.setItem('selectedTour', JSON.stringify({
+        id: tourId,
+        name: decodeURIComponent(tourName),
+        duration: parseInt(tourDuration) || 3,
+        pricePerDay: parseInt(tourPricePerDay) || 80
+      }));
     }
-  }, [tourId, tourName, duration, pricePerDay]);
-
-  useEffect(() => {
-    if (activeCategory === 'all') {
-      setFilteredGuides(tourGuides);
-    } else {
-      setFilteredGuides(tourGuides.filter(guide => 
-        guide.specialties.some(s => s.includes(activeCategory))
-      ));
-    }
-  }, [activeCategory, tourGuides]); // Added tourGuides to dependencies
+  }, [tourId, tourName, tourDuration, tourPricePerDay]);
 
   const categories = [
-    { id: 'all', name: 'All Guides', icon: '👥' },
-    { id: 'Cultural', name: 'Cultural', icon: '🏛️' },
-    { id: 'Wildlife', name: 'Wildlife', icon: '🦁' },
-    { id: 'Adventure', name: 'Adventure', icon: '🏔️' },
-    { id: 'Beach', name: 'Beach', icon: '🏖️' },
-    { id: 'Tea', name: 'Tea Plantations', icon: '🍃' },
-    { id: 'Culinary', name: 'Culinary', icon: '🍛' }
+    { id: 'all', label: 'All Guides', icon: '👥' },
+    { id: 'cultural', label: 'Cultural', icon: '🏛️' },
+    { id: 'wildlife', label: 'Wildlife', icon: '🦁' },
+    { id: 'adventure', label: 'Adventure', icon: '🏔️' },
+    { id: 'beach', label: 'Beach', icon: '🏖️' },
+    { id: 'photography', label: 'Photography', icon: '📸' }
   ];
 
+  const filteredGuides = selectedCategory === 'all' 
+    ? guides 
+    : guides.filter(guide => guide.category === selectedCategory);
+
   const handleSelectGuide = (guide) => {
-    localStorage.setItem('selectedGuide', JSON.stringify(guide));
+    // Get selected tour from state or localStorage
+    const tour = selectedTour || JSON.parse(localStorage.getItem('selectedTour') || '{}');
     
-    if (selectedTour) {
-      navigate(`/payment?tour=${selectedTour.id}&name=${encodeURIComponent(selectedTour.name)}&duration=${selectedTour.duration}&pricePerDay=${selectedTour.pricePerDay}&guide=${guide.id}&guideName=${encodeURIComponent(guide.name)}&guideDailyRate=${guide.dailyRate}`);
+    if (!tour.id) {
+      alert('Please select a tour first');
+      navigate('/tours');
+      return;
     }
+
+    // Navigate to booking page with both tour and guide
+    navigate(`/booking?tour=${tour.id}&name=${encodeURIComponent(tour.name)}&duration=${tour.duration}&pricePerDay=${tour.pricePerDay}&guide=${guide.id}&guideName=${encodeURIComponent(guide.name)}&guideDailyRate=${guide.dailyRate}`);
   };
 
-  const handleViewProfile = (guideId) => {
+  const handleViewGuideDetails = (guideId) => {
     navigate(`/tour-guide/${guideId}`);
   };
 
-  const whyChooseGuides = [
-    {
-      title: "Licensed & Certified",
-      description: "All guides are government-licensed professionals with official certification",
-      icon: "📜"
-    },
-    {
-      title: "Multilingual Experts",
-      description: "Fluent in multiple languages for global guests with cultural sensitivity",
-      icon: "🌐"
-    },
-    {
-      title: "Local Knowledge",
-      description: "Deep understanding of hidden gems and authentic experiences",
-      icon: "💎"
-    },
-    {
-      title: "Highly Rated",
-      description: "Consistently excellent reviews from travelers worldwide",
-      icon: "⭐"
-    }
-  ];
+  const handleChangeTour = () => {
+    navigate('/tours');
+  };
 
   return (
     <div className="tour-guides-page">
@@ -190,48 +174,26 @@ const TourGuidesPage = () => {
       <section className="guides-hero">
         <div className="container">
           <div className="hero-content">
-            <h1 className="hero-title">Meet Your Expert Guides</h1>
+            <h1 className="hero-title">Our Expert Tour Guides</h1>
             <p className="hero-subtitle">
-              {selectedTour 
-                ? `You're booking: ${decodeURIComponent(selectedTour.name)} - ${selectedTour.duration} days`
-                : "Choose from our licensed professionals with deep local knowledge"
-              }
+              Meet our certified local guides who will make your Sri Lankan journey unforgettable
             </p>
           </div>
         </div>
       </section>
 
-      {/* Selected Tour Info */}
+      {/* Selected Tour Info - Show only if coming from a tour */}
       {selectedTour && (
         <section className="selected-tour-section">
           <div className="container">
             <div className="selected-tour-card">
               <h3>
-                <span>🎫</span> Selected Tour: <span>{decodeURIComponent(selectedTour.name)}</span>
+                Selected Tour: <span>{selectedTour.name}</span>
               </h3>
               <div className="tour-summary">
-                <span>⏱️ {selectedTour.duration} days</span>
-                <span>💰 ${selectedTour.basePrice}/person</span>
-                
-                <button 
-                  className="btn-link" 
-                  onClick={() => navigate(`/tour-itinerary/${selectedTour.id}`)}
-                  style={{ 
-                    color: '#ffb400', 
-                    textDecoration: 'underline',
-                    background: 'none',
-                    border: 'none',
-                    cursor: 'pointer',
-                    fontSize: '0.95rem'
-                  }}
-                >
-                  View Full Itinerary →
-                </button>
-                
-                <button 
-                  className="btn-secondary" 
-                  onClick={() => navigate('/tours')}
-                >
+                <span>📅 {selectedTour.duration} days</span>
+                <span>💰 ${selectedTour.pricePerDay}/day per person</span>
+                <button onClick={handleChangeTour} className="btn-secondary">
                   Change Tour
                 </button>
               </div>
@@ -240,36 +202,37 @@ const TourGuidesPage = () => {
         </section>
       )}
 
-      {/* Categories Filter */}
-      <section className="categories-section">
-        <div className="container">
+      <div className="container">
+        {/* Categories Filter */}
+        <section className="categories-section">
           <div className="categories-header">
-            <h2 className="section-title">Browse by Specialty</h2>
+            <h2>Find Your Perfect Guide</h2>
           </div>
           <div className="categories-grid">
-            {categories.map((category) => (
-              <button 
-                key={category.id} 
-                className={`category-btn ${activeCategory === category.id ? 'active' : ''}`}
-                onClick={() => setActiveCategory(category.id)}
+            {categories.map(category => (
+              <button
+                key={category.id}
+                className={`category-btn ${selectedCategory === category.id ? 'active' : ''}`}
+                onClick={() => setSelectedCategory(category.id)}
               >
-                <span>{category.icon}</span> {category.name}
+                <span>{category.icon}</span>
+                {category.label}
               </button>
             ))}
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Guides Grid */}
-      <section className="guides-section">
-        <div className="container">
+        {/* Guides Grid */}
+        <section className="guides-section">
           <div className="section-header">
-            <h2 className="section-title">Our Professional Tour Guides</h2>
+            <h2 className="section-title">
+              {selectedCategory === 'all' ? 'All Tour Guides' : `${categories.find(c => c.id === selectedCategory)?.label} Guides`}
+            </h2>
             <p className="section-subtitle">
-              Select a guide for your tour. All guides are government-licensed and highly experienced.
+              {filteredGuides.length} certified guides available
             </p>
           </div>
-          
+
           <div className="guides-grid">
             {filteredGuides.map((guide) => (
               <div key={guide.id} className="guide-card">
@@ -287,24 +250,21 @@ const TourGuidesPage = () => {
                   </div>
                   
                   <div className="guide-rating">
-                    <div className="stars">
-                      {'★'.repeat(Math.floor(guide.rating))}
-                      {'☆'.repeat(5 - Math.floor(guide.rating))}
-                    </div>
-                    <span className="rating-text">({guide.reviews} reviews)</span>
+                    <span className="stars">{'★'.repeat(Math.floor(guide.rating))}</span>
+                    <span className="rating-text">{guide.reviews} reviews</span>
                   </div>
                   
                   <div className="guide-details">
                     <div className="detail">
-                      <span className="detail-label">Experience:</span>
+                      <span className="detail-label">Experience</span>
                       <span className="detail-value">{guide.experience}</span>
                     </div>
                     <div className="detail">
-                      <span className="detail-label">Languages:</span>
-                      <span className="detail-value">{guide.languages.slice(0, 3).join(', ')}</span>
+                      <span className="detail-label">Languages</span>
+                      <span className="detail-value">{guide.languages.join(', ')}</span>
                     </div>
                     <div className="detail">
-                      <span className="detail-label">Daily Rate:</span>
+                      <span className="detail-label">Daily Rate</span>
                       <span className="detail-value">${guide.dailyRate}/day</span>
                     </div>
                   </div>
@@ -315,17 +275,21 @@ const TourGuidesPage = () => {
                     ))}
                   </div>
                   
+                  <div className="guide-bio-preview">
+                    <p>{guide.bio}</p>
+                  </div>
+                  
                   <div className="guide-actions">
                     <button 
-                      className="btn-primary"
                       onClick={() => handleSelectGuide(guide)}
-                      disabled={!selectedTour}
+                      className="btn-primary"
+                      disabled={!selectedTour && !localStorage.getItem('selectedTour')}
                     >
-                      {selectedTour ? 'Select This Guide' : 'Select Tour First'}
+                      Select Guide
                     </button>
                     <button 
+                      onClick={() => handleViewGuideDetails(guide.id)}
                       className="btn-secondary"
-                      onClick={() => handleViewProfile(guide.id)}
                     >
                       View Profile
                     </button>
@@ -334,26 +298,39 @@ const TourGuidesPage = () => {
               </div>
             ))}
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Why Choose Our Guides */}
-      <section className="why-choose-section">
-        <div className="container">
+        {/* Why Choose Our Guides */}
+        <section className="why-choose-section">
           <div className="section-header">
             <h2 className="section-title">Why Choose Our Guides?</h2>
+            <p className="section-subtitle">
+              All our guides are licensed, experienced, and passionate about sharing Sri Lanka's beauty
+            </p>
           </div>
+          
           <div className="features-grid">
-            {whyChooseGuides.map((feature, index) => (
-              <div key={index} className="feature-card">
-                <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>{feature.icon}</div>
-                <h3 className="feature-title">{feature.title}</h3>
-                <p className="feature-description">{feature.description}</p>
-              </div>
-            ))}
+            <div className="feature-card">
+              <h3 className="feature-title">✓ Licensed Professionals</h3>
+              <p className="feature-description">
+                All guides are certified by the Sri Lanka Tourism Development Authority
+              </p>
+            </div>
+            <div className="feature-card">
+              <h3 className="feature-title">✓ Local Knowledge</h3>
+              <p className="feature-description">
+                Deep understanding of local culture, history, and hidden gems
+              </p>
+            </div>
+            <div className="feature-card">
+              <h3 className="feature-title">✓ Multi-lingual</h3>
+              <p className="feature-description">
+                Guides fluent in English, French, German, Japanese, and more
+              </p>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      </div>
     </div>
   );
 };
