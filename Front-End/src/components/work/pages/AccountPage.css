@@ -1019,3 +1019,539 @@
     width: 100%;
   }
 }
+
+/* Add to AccountPage.css */
+
+/* Edit Profile Button */
+.edit-profile-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.2rem;
+  background: linear-gradient(135deg, #1e4c24, #2c5f2d);
+  color: white;
+  border: none;
+  border-radius: 50px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.edit-profile-btn:hover {
+  background: linear-gradient(135deg, #ffb400, #ff6b35);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(255, 180, 0, 0.2);
+}
+
+/* Edit Profile Form */
+.edit-profile-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.edit-profile-form .form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.edit-profile-form label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #1e4c24;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.edit-profile-form .form-input,
+.edit-profile-form .form-select {
+  padding: 0.9rem 1.2rem;
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  background: white;
+  width: 100%;
+}
+
+.edit-profile-form .form-input:focus,
+.edit-profile-form .form-select:focus {
+  outline: none;
+  border-color: #1e4c24;
+  box-shadow: 0 0 0 4px rgba(30, 76, 36, 0.1);
+}
+
+.edit-profile-form .form-input.disabled {
+  background: #f8f9fa;
+  color: #6c757d;
+  cursor: not-allowed;
+}
+
+.field-note {
+  font-size: 0.75rem;
+  color: #6c757d;
+  margin-top: 0.25rem;
+}
+
+.checkbox-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 0.5rem 0;
+}
+
+.checkbox-group .checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  font-size: 0.95rem;
+  color: #495057;
+  padding: 0.5rem 1rem;
+  background: rgba(30, 76, 36, 0.05);
+  border-radius: 50px;
+  transition: all 0.3s ease;
+}
+
+.checkbox-group .checkbox:hover {
+  background: rgba(30, 76, 36, 0.1);
+}
+
+.checkbox-group .checkbox input {
+  width: 18px;
+  height: 18px;
+  accent-color: #1e4c24;
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.save-btn {
+  flex: 1;
+  padding: 0.9rem;
+  background: linear-gradient(135deg, #1e4c24, #2c5f2d);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.save-btn:hover {
+  background: linear-gradient(135deg, #ffb400, #ff6b35);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(255, 180, 0, 0.2);
+}
+
+.cancel-btn {
+  flex: 1;
+  padding: 0.9rem;
+  background: transparent;
+  border: 2px solid #1e4c24;
+  color: #1e4c24;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.cancel-btn:hover {
+  background: #1e4c24;
+  color: white;
+  transform: translateY(-2px);
+}
+
+/* Quick Stats */
+.quick-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  margin-top: 2rem;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, rgba(30, 76, 36, 0.04), rgba(255, 180, 0, 0.02));
+  border-radius: 20px;
+  border: 1px solid rgba(30, 76, 36, 0.08);
+}
+
+.quick-stats .stat-item {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.quick-stats .stat-number {
+  font-size: 1.8rem;
+  font-weight: 800;
+  color: #1e4c24;
+  line-height: 1;
+}
+
+.quick-stats .stat-label {
+  font-size: 0.8rem;
+  color: #6c757d;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Bookings Grid */
+.bookings-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+  gap: 1.5rem;
+  margin-top: 1rem;
+}
+
+.booking-card {
+  background: white;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(30, 76, 36, 0.08);
+  transition: all 0.3s ease;
+}
+
+.booking-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 20px 40px rgba(30, 76, 36, 0.1);
+  border-color: rgba(30, 76, 36, 0.15);
+}
+
+.booking-image {
+  position: relative;
+  height: 180px;
+  overflow: hidden;
+}
+
+.booking-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.booking-card:hover .booking-image img {
+  transform: scale(1.1);
+}
+
+.booking-status-badge {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  padding: 0.5rem 1.2rem;
+  border-radius: 50px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  z-index: 2;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.booking-status-badge.confirmed {
+  background: linear-gradient(135deg, #d4edda, #c3e6cb);
+  color: #155724;
+}
+
+.booking-status-badge.pending {
+  background: linear-gradient(135deg, #fff3cd, #ffe69b);
+  color: #856404;
+}
+
+.booking-status-badge.completed {
+  background: linear-gradient(135deg, #cce5ff, #b8daff);
+  color: #004085;
+}
+
+.booking-status-badge.cancelled {
+  background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+  color: #721c24;
+}
+
+.booking-card-content {
+  padding: 1.5rem;
+}
+
+.booking-tour-name {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #1e4c24;
+  margin: 0 0 1rem 0;
+  line-height: 1.3;
+}
+
+.booking-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  background: rgba(30, 76, 36, 0.04);
+  border-radius: 12px;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  font-size: 0.85rem;
+  color: #495057;
+}
+
+.meta-icon {
+  font-size: 0.9rem;
+}
+
+.booking-guide {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  padding: 0.5rem 1rem;
+  background: rgba(255, 180, 0, 0.08);
+  border-radius: 50px;
+  font-size: 0.85rem;
+  color: #b45f1b;
+  font-weight: 600;
+}
+
+.guide-icon {
+  font-size: 0.9rem;
+}
+
+.booking-price {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding: 0.75rem 0;
+  border-top: 1px solid rgba(30, 76, 36, 0.1);
+  border-bottom: 1px solid rgba(30, 76, 36, 0.1);
+}
+
+.price-label {
+  font-size: 0.9rem;
+  color: #6c757d;
+  font-weight: 600;
+}
+
+.price-value {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: #ff8c42;
+}
+
+.booking-requests {
+  margin-bottom: 1.25rem;
+  padding: 0.75rem;
+  background: #fff8e7;
+  border-left: 3px solid #ffb400;
+  border-radius: 8px;
+  font-size: 0.85rem;
+}
+
+.requests-label {
+  font-weight: 700;
+  color: #b45f1b;
+  display: block;
+  margin-bottom: 0.25rem;
+}
+
+.booking-requests p {
+  color: #495057;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.booking-card-actions {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.view-details-btn {
+  flex: 1;
+  padding: 0.75rem;
+  font-size: 0.9rem;
+  background: linear-gradient(135deg, #1e4c24, #2c5f2d);
+  color: white;
+  border: none;
+  border-radius: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-decoration: none;
+  text-align: center;
+}
+
+.view-details-btn:hover {
+  background: linear-gradient(135deg, #ffb400, #ff6b35);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(255, 180, 0, 0.2);
+}
+
+/* Reviews Tab Improvements */
+.review-rating-display {
+  display: flex;
+  gap: 0.15rem;
+}
+
+.review-rating-display .star {
+  color: #ffb400;
+  font-size: 1.1rem;
+}
+
+.review-rating-display .star.filled {
+  color: #ffb400;
+}
+
+.review-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(30, 76, 36, 0.1);
+}
+
+.delete-review-btn {
+  padding: 0.5rem 1.2rem;
+  background: transparent;
+  border: 2px solid #dc3545;
+  color: #dc3545;
+  border-radius: 50px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.delete-review-btn:hover {
+  background: #dc3545;
+  color: white;
+}
+
+/* Loading State */
+.loading-state {
+  text-align: center;
+  padding: 3rem;
+}
+
+.loading-state .loading-spinner {
+  margin: 0 auto 1rem;
+}
+
+/* Success/Error Messages */
+.success-message {
+  background: linear-gradient(135deg, #d4edda, #c3e6cb);
+  color: #155724;
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-weight: 500;
+  animation: slideIn 0.3s ease;
+}
+
+.error-message {
+  background: linear-gradient(135deg, #f8d7da, #f5c6cb);
+  color: #721c24;
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-weight: 500;
+  animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .bookings-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-actions {
+    flex-direction: column;
+  }
+  
+  .quick-stats {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .quick-stats .stat-item {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid rgba(30, 76, 36, 0.1);
+  }
+  
+  .quick-stats .stat-item:last-child {
+    border-bottom: none;
+  }
+}
+
+/* Update the booking status badge */
+.booking-status-badge.pending {
+  background: linear-gradient(135deg, #fff3cd, #ffe69b);
+  color: #856404;
+}
+
+.booking-status-badge.pending::before {
+  content: '📅';
+  margin-right: 0.35rem;
+}
+
+/* For the booking cards */
+.booking-status.pending {
+  background: linear-gradient(135deg, #fff3cd, #ffe69b);
+  color: #856404;
+}
+
+.booking-status.pending::before {
+  content: '📅';
+}
+
+/* Completely hide any review status tags */
+.review-status {
+  display: none !important;
+}
+
+/* If there are any other pending status elements */
+.status-pending {
+  background: linear-gradient(135deg, #fff3cd, #ffe69b) !important;
+  color: #856404 !important;
+}
+
+/* Override any text that says "pending" to show as "Booked" */
+.booking-status.pending span:last-child,
+.booking-badge.pending span:last-child,
+.status-badge.pending span:last-child {
+  display: none;
+}
+
+.booking-status.pending::after,
+.booking-badge.pending::after,
+.status-badge.pending::after {
+  content: 'Booked';
+}

@@ -1,5 +1,3 @@
-// /home/uki-dsa-01/LESSONS/Final-Project/Front-End/src/utils/tourImageMapping.js
-
 // Import all images
 import Cultural from '../components/work/assets/Cultural-Triangle.png';
 import Hill from '../components/work/assets/Hill-Country.png';

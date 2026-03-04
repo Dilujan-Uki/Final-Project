@@ -1,4 +1,4 @@
-// src/pages/PaymentPage.jsx - UPDATED to use state instead of URL params
+// src/pages/PaymentPage.jsx - COMPLETE REPLACE
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './PaymentPage.css';
@@ -6,13 +6,15 @@ import './PaymentPage.css';
 const PaymentPage = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  
+
   // Get data from state (passed during navigation)
   const { tour, guide } = location.state || {};
-  
+
   // If no state, try to get from localStorage as fallback
   const [tourData, setTourData] = useState(null);
   const [guideData, setGuideData] = useState(null);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState('card');
+  const [processing, setProcessing] = useState(false);
 
   const [paymentData, setPaymentData] = useState({
     cardNumber: '',
@@ -31,14 +33,20 @@ const PaymentPage = () => {
     }
   });
 
+  // Payment method options
+  const paymentMethods = [
+    { id: 'card', name: 'Credit/Debit Card', icon: '💳', description: 'Pay securely with your card' },
+    { id: 'paypal', name: 'PayPal', icon: '🅿️', description: 'Pay with your PayPal account' },
+    { id: 'applepay', name: 'Apple Pay', icon: '📱', description: 'Fast and secure with Apple' },
+    { id: 'googlepay', name: 'Google Pay', icon: '🅶', description: 'Pay with your Google account' }
+  ];
+
   // Load data from state or localStorage
   useEffect(() => {
-    // If we have state from navigation, use it
     if (tour) {
       setTourData(tour);
       localStorage.setItem('selectedTour', JSON.stringify(tour));
     } else {
-      // Fallback to localStorage
       const savedTour = localStorage.getItem('selectedTour');
       if (savedTour) {
         setTourData(JSON.parse(savedTour));
@@ -59,44 +67,65 @@ const PaymentPage = () => {
   // Calculate prices based on customization
   const calculatePrices = () => {
     if (!tourData) return { baseTourPrice: 0, guideCost: 0, extraServicesCost: 0, subtotal: 0, serviceFee: 0, total: 0 };
-    
+
     const baseTourPrice = customization.selectedDuration * (tourData.pricePerDay || 80) * customization.participants;
     const guideCost = (guideData?.dailyRate || 0) * customization.selectedDuration;
-    
+
     let extraServicesCost = 0;
     if (customization.extraServices.transport) extraServicesCost += 100;
     if (customization.extraServices.meals) extraServicesCost += 30 * customization.participants * customization.selectedDuration;
-    
+
     const subtotal = baseTourPrice + guideCost + extraServicesCost;
     const serviceFee = Math.round(subtotal * 0.15 * 100) / 100;
     const total = subtotal + serviceFee;
-    
+
     return { baseTourPrice, guideCost, extraServicesCost, subtotal, serviceFee, total };
   };
 
   const prices = calculatePrices();
 
-  const handleSubmit = (e) => {
+  // In the handleSubmit function, after successful payment:
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    
+    setProcessing(true);
+
     const token = localStorage.getItem('token');
     if (!token) {
-      alert('Please login to book a tour');
+      alert('Please login to complete payment');
       navigate('/login');
       return;
     }
-    
-    console.log('Payment submitted:', paymentData);
-    console.log('Tour data:', tourData);
-    console.log('Guide data:', guideData);
-    
-    localStorage.removeItem('selectedTour');
-    localStorage.removeItem('selectedGuide');
-    
-    alert('Payment Successful! Your booking is confirmed.');
-    navigate('/');
-  };
 
+    // Simulate payment processing
+    setTimeout(async () => {
+      try {
+        // After payment success, confirm the booking
+        // You'll need the booking ID - you should store it from the booking response
+        const bookingId = localStorage.getItem('lastBookingId');
+
+        if (bookingId) {
+          await fetch(`http://localhost:5000/api/new-bookings/${bookingId}/confirm`, {
+            method: 'PATCH',
+            headers: {
+              'Authorization': `Bearer ${token}`
+            }
+          });
+        }
+
+        localStorage.removeItem('selectedTour');
+        localStorage.removeItem('selectedGuide');
+        localStorage.removeItem('lastBookingId');
+
+        alert('Payment Successful! Your booking is confirmed.');
+        navigate('/account?tab=bookings');
+      } catch (error) {
+        console.error('Error confirming booking:', error);
+      } finally {
+        setProcessing(false);
+      }
+    }, 2000);
+  };
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
     setPaymentData(prev => ({
@@ -107,7 +136,7 @@ const PaymentPage = () => {
 
   const handleCustomizationChange = (e) => {
     const { name, value, type } = e.target;
-    
+
     setCustomization(prev => ({
       ...prev,
       [name]: type === 'checkbox' ? e.target.checked : parseInt(value)
@@ -129,11 +158,11 @@ const PaymentPage = () => {
     const matches = v.match(/\d{4,16}/g);
     const match = (matches && matches[0]) || '';
     const parts = [];
-    
+
     for (let i = 0, len = match.length; i < len; i += 4) {
       parts.push(match.substring(i, i + 4));
     }
-    
+
     if (parts.length) {
       return parts.join(' ');
     } else {
@@ -149,19 +178,35 @@ const PaymentPage = () => {
     }));
   };
 
+  const formatExpiryDate = (value) => {
+    const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
+    if (v.length >= 2) {
+      return v.slice(0, 2) + '/' + v.slice(2, 4);
+    }
+    return v;
+  };
+
+  const handleExpiryChange = (e) => {
+    const formatted = formatExpiryDate(e.target.value);
+    setPaymentData(prev => ({
+      ...prev,
+      expiryDate: formatted
+    }));
+  };
+
   const extraServicesList = [
     {
       id: 'transport',
       name: 'Private Transport',
       price: 100,
-      description: '$100 flat fee',
+      description: '$100 flat fee - Comfortable private vehicle with driver',
       checked: customization.extraServices.transport
     },
     {
       id: 'meals',
       name: 'Full Board Meals',
       price: 30,
-      description: '$30 per person/day',
+      description: '$30 per person/day - Breakfast, lunch & dinner',
       checked: customization.extraServices.meals
     }
   ];
@@ -188,170 +233,229 @@ const PaymentPage = () => {
     <div className="payment-page">
       <div className="container">
         <div className="payment-header">
-          <h1 className="page-title">Complete Your Booking</h1>
-          <p className="page-subtitle">Review your selections and enter payment details</p>
+          <h1 className="page-title">Secure Checkout</h1>
+          <p className="page-subtitle">Complete your payment to confirm your Sri Lankan adventure</p>
+        </div>
+
+        {/* Progress Bar */}
+        <div className="payment-progress">
+          <div className="progress-step completed">
+            <span className="step-number">1</span>
+            <span className="step-label">Booking Details</span>
+          </div>
+          <div className="progress-step active">
+            <span className="step-number">2</span>
+            <span className="step-label">Payment</span>
+          </div>
+          <div className="progress-step">
+            <span className="step-number">3</span>
+            <span className="step-label">Confirmation</span>
+          </div>
         </div>
 
         <div className="payment-container">
           {/* Left Column - Payment Form */}
           <div className="payment-form-section">
-            <h2 className="form-section-title">Payment Details</h2>
-            
-            <form onSubmit={handleSubmit} className="payment-form">
-              {/* Card Details */}
-              <div className="form-section">
-                <div className="section-header">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
-                    <line x1="1" y1="10" x2="23" y2="10"></line>
-                  </svg>
-                  <h3>Card Information</h3>
+            <h2 className="form-section-title">Payment Method</h2>
+
+            {/* Payment Method Selection */}
+            <div className="payment-methods">
+              {paymentMethods.map(method => (
+                <div
+                  key={method.id}
+                  className={`payment-method ${selectedPaymentMethod === method.id ? 'active' : ''}`}
+                  onClick={() => setSelectedPaymentMethod(method.id)}
+                >
+                  <span className="method-icon">{method.icon}</span>
+                  <div className="method-info">
+                    <span className="method-name">{method.name}</span>
+                    <span className="method-description">{method.description}</span>
+                  </div>
                 </div>
-                
-                <div className="form-group">
-                  <label htmlFor="cardName" className="form-label">Name on Card</label>
-                  <input
-                    type="text"
-                    id="cardName"
-                    name="cardName"
-                    value={paymentData.cardName}
-                    onChange={handleChange}
-                    className="form-input"
-                    required
-                    placeholder="John Doe"
-                  />
-                </div>
-                
-                <div className="form-group input-with-icon">
-                  <label htmlFor="cardNumber" className="form-label">Card Number</label>
-                  <input
-                    type="text"
-                    id="cardNumber"
-                    name="cardNumber"
-                    value={paymentData.cardNumber}
-                    onChange={handleCardNumberChange}
-                    className="form-input"
-                    required
-                    placeholder="1234 5678 9012 3456"
-                    maxLength="19"
-                  />
-                  <span className="card-icon">💳</span>
-                </div>
-                
-                <div className="form-row">
+              ))}
+            </div>
+
+            {/* Card Payment Form */}
+            {selectedPaymentMethod === 'card' && (
+              <form onSubmit={handleSubmit} className="payment-form">
+                <div className="form-section">
+                  <div className="section-header">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <rect x="1" y="4" width="22" height="16" rx="2" ry="2"></rect>
+                      <line x1="1" y1="10" x2="23" y2="10"></line>
+                    </svg>
+                    <h3>Card Information</h3>
+                  </div>
+
+                  <div className="card-preview">
+                    <div className="card-display">
+                      <div className="card-chip">💳</div>
+                      <div className="card-number-display">
+                        {paymentData.cardNumber || '•••• •••• •••• ••••'}
+                      </div>
+                      <div className="card-details-display">
+                        <div className="card-name-display">
+                          {paymentData.cardName || 'CARDHOLDER NAME'}
+                        </div>
+                        <div className="card-expiry-display">
+                          {paymentData.expiryDate || 'MM/YY'}
+                        </div>
+                      </div>
+                      <div className="card-type">
+                        {paymentData.cardNumber.startsWith('4') ? 'VISA' :
+                          paymentData.cardNumber.startsWith('5') ? 'MASTERCARD' :
+                            paymentData.cardNumber.startsWith('3') ? 'AMEX' : 'CARD'}
+                      </div>
+                    </div>
+                  </div>
+
                   <div className="form-group">
-                    <label htmlFor="expiryDate" className="form-label">Expiry Date</label>
+                    <label htmlFor="cardName" className="form-label">Name on Card</label>
                     <input
                       type="text"
-                      id="expiryDate"
-                      name="expiryDate"
-                      value={paymentData.expiryDate}
+                      id="cardName"
+                      name="cardName"
+                      value={paymentData.cardName}
                       onChange={handleChange}
                       className="form-input"
                       required
-                      placeholder="MM/YY"
-                      maxLength="5"
+                      placeholder="John Doe"
                     />
                   </div>
-                  
-                  <div className="form-group">
-                    <label htmlFor="cvv" className="form-label">CVV</label>
+
+                  <div className="form-group input-with-icon">
+                    <label htmlFor="cardNumber" className="form-label">Card Number</label>
                     <input
                       type="text"
-                      id="cvv"
-                      name="cvv"
-                      value={paymentData.cvv}
+                      id="cardNumber"
+                      name="cardNumber"
+                      value={paymentData.cardNumber}
+                      onChange={handleCardNumberChange}
+                      className="form-input"
+                      required
+                      placeholder="1234 5678 9012 3456"
+                      maxLength="19"
+                    />
+                    <span className="card-icon">💳</span>
+                  </div>
+
+                  <div className="form-row">
+                    <div className="form-group">
+                      <label htmlFor="expiryDate" className="form-label">Expiry Date</label>
+                      <input
+                        type="text"
+                        id="expiryDate"
+                        name="expiryDate"
+                        value={paymentData.expiryDate}
+                        onChange={handleExpiryChange}
+                        className="form-input"
+                        required
+                        placeholder="MM/YY"
+                        maxLength="5"
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label htmlFor="cvv" className="form-label">CVV</label>
+                      <input
+                        type="text"
+                        id="cvv"
+                        name="cvv"
+                        value={paymentData.cvv}
+                        onChange={handleChange}
+                        className="form-input"
+                        required
+                        placeholder="123"
+                        maxLength="4"
+                      />
+                    </div>
+                  </div>
+
+                  <label className="checkbox">
+                    <input
+                      type="checkbox"
+                      name="saveCard"
+                      checked={paymentData.saveCard}
                       onChange={handleChange}
-                      className="form-input"
-                      required
-                      placeholder="123"
-                      maxLength="4"
                     />
-                  </div>
-                </div>
-                
-                <label className="checkbox">
-                  <input
-                    type="checkbox"
-                    name="saveCard"
-                    checked={paymentData.saveCard}
-                    onChange={handleChange}
-                  />
-                  <span>Save card for future payments</span>
-                </label>
-              </div>
+                    <span>Save this card for future payments</span>
+                  </label>
 
-              {/* Billing Address */}
-              <div className="form-section">
-                <div className="section-header">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                    <circle cx="12" cy="10" r="3"></circle>
-                  </svg>
-                  <h3>Billing Address</h3>
-                </div>
-                
-                <div className="form-group">
-                  <label htmlFor="address" className="form-label">Address</label>
-                  <input
-                    type="text"
-                    id="address"
-                    name="address"
-                    className="form-input"
-                    required
-                    placeholder="1234 Main Street"
-                  />
-                </div>
-                
-                <div className="form-row">
-                  <div className="form-group">
-                    <label htmlFor="city" className="form-label">City</label>
-                    <input
-                      type="text"
-                      id="city"
-                      name="city"
-                      className="form-input"
-                      required
-                      placeholder="Colombo"
-                    />
-                  </div>
-                  
-                  <div className="form-group">
-                    <label htmlFor="zip" className="form-label">ZIP Code</label>
-                    <input
-                      type="text"
-                      id="zip"
-                      name="zip"
-                      className="form-input"
-                      required
-                      placeholder="00100"
-                    />
+                  <div className="secure-badge">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                      <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                      <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+                    </svg>
+                    <span>256-bit SSL Secure Encryption</span>
                   </div>
                 </div>
-              </div>
+              </form>
+            )}
 
-              {/* Terms Agreement */}
-              <div className="form-section">
-                <label className="checkbox">
-                  <input type="checkbox" required />
-                  <span>
-                    I agree to the <a href="/terms" className="text-link">Terms & Conditions</a> and{' '}
-                    <a href="/privacy" className="text-link">Privacy Policy</a>
-                  </span>
-                </label>
+            {/* PayPal Section */}
+            {selectedPaymentMethod === 'paypal' && (
+              <div className="alternative-payment">
+                <div className="payment-info">
+                  <p>You'll be redirected to PayPal to complete your payment securely.</p>
+                  <button className="paypal-button">
+                    <span className="paypal-icon">🅿️</span>
+                    Continue with PayPal
+                  </button>
+                </div>
               </div>
-            </form>
+            )}
+
+            {/* Apple Pay Section */}
+            {selectedPaymentMethod === 'applepay' && (
+              <div className="alternative-payment">
+                <div className="payment-info">
+                  <p>Pay quickly and securely with Apple Pay on your compatible devices.</p>
+                  <button className="applepay-button">
+                    <span className="apple-icon">📱</span>
+                    Pay with Apple Pay
+                  </button>
+                </div>
+              </div>
+            )}
+
+            {/* Google Pay Section */}
+            {selectedPaymentMethod === 'googlepay' && (
+              <div className="alternative-payment">
+                <div className="payment-info">
+                  <p>Fast and secure checkout with Google Pay.</p>
+                  <button className="googlepay-button">
+                    <span className="google-icon">🅶</span>
+                    Pay with Google Pay
+                  </button>
+                </div>
+              </div>
+            )}
+
+            <div className="payment-guarantee">
+              <div className="guarantee-item">
+                <span>🔒</span>
+                <span>Your data is protected</span>
+              </div>
+              <div className="guarantee-item">
+                <span>💰</span>
+                <span>Money-back guarantee</span>
+              </div>
+              <div className="guarantee-item">
+                <span>✓</span>
+                <span>No hidden fees</span>
+              </div>
+            </div>
           </div>
 
           {/* Right Column - Order Summary */}
           <div className="order-summary-section">
             <h2 className="summary-title">Order Summary</h2>
-            
+
             {/* Tour Info */}
             <div className="tour-info-card">
               <div className="tour-header">
                 <h3 className="tour-name">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                     <path d="M20.42 4.58a5.4 5.4 0 0 0-7.65 0l-.77.78-.77-.78a5.4 5.4 0 0 0-7.65 0C1.46 6.7 1.33 10.28 4 13l8 8 8-8c2.67-2.72 2.54-6.3.42-8.42z"></path>
                   </svg>
                   {tourData?.name}
@@ -360,7 +464,7 @@ const PaymentPage = () => {
                   Change
                 </button>
               </div>
-              
+
               <div className="tour-details">
                 <div className="tour-detail-item">
                   <span className="detail-label">Price per day</span>
@@ -378,7 +482,7 @@ const PaymentPage = () => {
               <div className="tour-info-card">
                 <div className="tour-header">
                   <h3 className="tour-name">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                       <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                       <circle cx="12" cy="7" r="4"></circle>
                     </svg>
@@ -388,7 +492,7 @@ const PaymentPage = () => {
                     Change
                   </button>
                 </div>
-                
+
                 <div className="tour-details">
                   <div className="tour-detail-item">
                     <span className="detail-label">Daily Rate</span>
@@ -401,7 +505,7 @@ const PaymentPage = () => {
             {/* Customization Controls */}
             <div className="customization-section">
               <h4 className="customization-title">Customize Your Package</h4>
-              
+
               <div className="customization-controls">
                 <div className="control-group">
                   <label htmlFor="participants" className="control-label">Participants</label>
@@ -416,7 +520,7 @@ const PaymentPage = () => {
                     className="control-input"
                   />
                 </div>
-                
+
                 <div className="control-group">
                   <label htmlFor="selectedDuration" className="control-label">Duration (Days)</label>
                   <input
@@ -438,7 +542,7 @@ const PaymentPage = () => {
               <h4 className="services-title">Add Extra Services</h4>
               <div className="services-list">
                 {extraServicesList.map((service) => (
-                  <div 
+                  <div
                     key={service.id}
                     className={`service-item ${service.checked ? 'selected' : ''}`}
                     onClick={() => handleServiceToggle(service.id)}
@@ -462,26 +566,26 @@ const PaymentPage = () => {
             {/* Price Breakdown */}
             <div className="price-breakdown">
               <h4 className="services-title">Price Breakdown</h4>
-              
+
               <div className="price-row">
-                <span>Base Tour Price</span>
+                <span>Base Tour Price ({customization.participants} x {customization.selectedDuration} days)</span>
                 <span className="price-amount">${prices.baseTourPrice}</span>
               </div>
-              
+
               {guideData && (
                 <div className="price-row">
-                  <span>Tour Guide</span>
+                  <span>Tour Guide ({customization.selectedDuration} days)</span>
                   <span className="price-amount">${prices.guideCost}</span>
                 </div>
               )}
-              
+
               {prices.extraServicesCost > 0 && (
                 <div className="price-row">
                   <span>Extra Services</span>
                   <span className="price-amount">${prices.extraServicesCost}</span>
                 </div>
               )}
-              
+
               <div className="price-row subtotal">
                 <span>Subtotal</span>
                 <span className="price-amount">${prices.subtotal}</span>
@@ -491,7 +595,7 @@ const PaymentPage = () => {
                 <span>Service Fee (15%)</span>
                 <span className="price-amount">${prices.serviceFee}</span>
               </div>
-              
+
               <div className="price-row total">
                 <span>Total Amount</span>
                 <span className="price-amount total">${prices.total}</span>
@@ -500,16 +604,31 @@ const PaymentPage = () => {
 
             {/* Payment Actions */}
             <div className="payment-actions">
-              <button type="submit" onClick={handleSubmit} className="submit-btn">
-                Pay ${prices.total} - Complete Booking
+              <button
+                type="submit"
+                onClick={handleSubmit}
+                className="submit-btn"
+                disabled={processing}
+              >
+                {processing ? (
+                  <>
+                    <span className="processing-spinner"></span>
+                    Processing Payment...
+                  </>
+                ) : (
+                  <>
+                    <span>🔒</span>
+                    Pay ${prices.total} Securely
+                  </>
+                )}
               </button>
-              
+
               <p className="security-note">
-                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                   <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                   <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
                 </svg>
-                Your payment is secured with SSL encryption
+                Your payment information is encrypted and secure
               </p>
             </div>
           </div>

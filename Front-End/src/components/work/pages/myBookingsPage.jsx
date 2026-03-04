@@ -1,4 +1,4 @@
-// src/components/work/pages/MyBookingsPage.jsx
+// src/components/work/pages/MyBookingsPage.jsx - COMPLETE REPLACE
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './MyBookingsPage.css';
@@ -9,44 +9,51 @@ const MyBookingsPage = () => {
   const [error, setError] = useState('');
   const navigate = useNavigate();
 
-// In myBookingsPage.jsx - Replace the fetchBookings function
-
-useEffect(() => {
-  const fetchBookings = async () => {
-    const token = localStorage.getItem('token');
-    
-    if (!token) {
-      navigate('/login');
-      return;
-    }
-
-    try {
-      const response = await fetch('http://localhost:5000/api/new-bookings/my-bookings', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      const data = await response.json();
+  useEffect(() => {
+    const fetchBookings = async () => {
+      const token = localStorage.getItem('token');
       
-      if (!response.ok) {
-        throw new Error(data.message || 'Failed to fetch bookings');
+      if (!token) {
+        navigate('/login');
+        return;
       }
 
-      if (data.success) {
-        setBookings(data.data);
+      try {
+        const response = await fetch('http://localhost:5000/api/new-bookings/my-bookings', {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        const data = await response.json();
+        
+        if (!response.ok) {
+          throw new Error(data.message || 'Failed to fetch bookings');
+        }
+
+        if (data.success) {
+          setBookings(data.data);
+        }
+      } catch (err) {
+        setError(err.message || 'Failed to load bookings');
+        console.error('Error fetching bookings:', err);
+      } finally {
+        setLoading(false);
       }
-    } catch (err) {
-      setError(err.message || 'Failed to load bookings');
-      console.error('Error fetching bookings:', err);
-    } finally {
-      setLoading(false);
+    };
+
+    fetchBookings();
+  }, [navigate]);
+
+  const getStatusDisplay = (status) => {
+    switch (status) {
+      case 'pending': return 'Booked';
+      case 'confirmed': return 'Confirmed';
+      case 'completed': return 'Completed';
+      case 'cancelled': return 'Cancelled';
+      default: return status;
     }
   };
-
-  fetchBookings();
-}, [navigate]);
-
 
   const getStatusBadgeClass = (status) => {
     switch (status) {
@@ -109,9 +116,9 @@ useEffect(() => {
                 </div>
                 <div className="booking-content">
                   <div className="booking-header">
-                    <h3 className="booking-title">{booking.tour?.name}</h3>
+                    <h3 className="booking-title">{booking.tour?.name || booking.tourName}</h3>
                     <span className={`status-badge ${getStatusBadgeClass(booking.status)}`}>
-                      {booking.status}
+                      {getStatusDisplay(booking.status)}
                     </span>
                   </div>
                   
@@ -145,12 +152,12 @@ useEffect(() => {
                   <div className="booking-actions">
                     <button 
                       className="btn-secondary"
-                      onClick={() => navigate(`/booking/${booking._id}`)}
+                      onClick={() => navigate(`/booking-detail/${booking._id}`)}
                     >
                       View Details
                     </button>
                     <button 
-                      className="btn-outline"
+                      className="btn-outline cancel"
                       onClick={() => console.log('Cancel booking', booking._id)}
                       disabled={booking.status === 'cancelled' || booking.status === 'completed'}
                     >

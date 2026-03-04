@@ -995,3 +995,26 @@
 .bookings-grid::-webkit-scrollbar-thumb:hover {
   background: linear-gradient(135deg, #ffb400, #ff6b35);
 }
+
+/* Update the status badge styling */
+.status-badge.status-pending {
+  background: linear-gradient(135deg, #fff3cd, #ffe69b);
+  color: #856404;
+  border: 1px solid #ffe69b;
+}
+
+.status-badge.status-pending::before {
+  content: '📅'; /* Calendar icon for booked */
+  margin-right: 0.35rem;
+}
+
+/* Ensure the text shows correctly */
+.booking-badge.pending {
+  background: linear-gradient(135deg, #fff3cd, #ffe69b);
+  color: #856404;
+  border: 1px solid #ffe69b;
+}
+
+.booking-badge.pending::before {
+  content: '📅';
+}

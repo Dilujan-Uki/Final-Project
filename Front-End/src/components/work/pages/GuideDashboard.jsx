@@ -26,7 +26,7 @@ const GuideDashboard = () => {
     const token = localStorage.getItem('token');
     
     try {
-      const response = await fetch('http://localhost:5000/api/guide/assignments', {
+      const response = await fetch('http://localhost:5000/api/guides/assignments', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -51,7 +51,7 @@ const GuideDashboard = () => {
     const token = localStorage.getItem('token');
     
     try {
-      const response = await fetch(`http://localhost:5000/api/guide/assignments/${assignmentId}/status`, {
+      const response = await fetch(`http://localhost:5000/api/guides/assignments/${assignmentId}/status`, {
         method: 'PATCH',
         headers: {
           'Content-Type': 'application/json',

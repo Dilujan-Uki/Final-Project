@@ -19,7 +19,8 @@ import AdminDashboard from './components/work/pages/AdminDashboard';
 import MyBookingsPage from './components/work/pages/myBookingsPage';
 import TourDetailPage from './components/work/pages/TourDetailPage'; 
 import GuideDashboard from './components/work/pages/GuideDashboard';
-import GuideApplicationPage from './components/work/pages/GuideApplicationPage';  
+import GuideApplicationPage from './components/work/pages/GuideApplicationPage'; 
+import BookingDetailPage from './components/work/pages/BookingDetailPage'; 
 import './utils/tourImageMapping' 
 import './components/work/styles/GlobalStyles.css'
 
@@ -47,6 +48,7 @@ const App = () => {
             <Route path="/tour-detail/:id" element={<TourDetailPage />} />
             <Route path="/guide-dashboard" element={<GuideDashboard />} /> 
             <Route path="/guide-application" element={<GuideApplicationPage />} /> 
+            <Route path="/booking-detail/:id" element={<BookingDetailPage />} />
             <Route path="*" element={
               <div className="not-found">
                 <div className="container">

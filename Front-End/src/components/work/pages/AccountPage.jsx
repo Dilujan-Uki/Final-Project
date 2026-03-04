@@ -1,7 +1,8 @@
-// src/components/work/pages/AccountPage.jsx - FIXED
+// src/components/work/pages/AccountPage.jsx - COMPLETE REPLACE
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { newBookingsAPI } from '/home/uki-dsa-01/LESSONS/Final-Project/Front-End/src/services/api.js';
+import { getTourImage } from '/home/uki-dsa-01/LESSONS/Final-Project/Front-End/src/utils/tourImageMapping';
 import './AccountPage.css';
 
 const AccountPage = () => {
@@ -12,6 +13,20 @@ const AccountPage = () => {
   const [activeTab, setActiveTab] = useState('profile');
   const [loadingBookings, setLoadingBookings] = useState(false);
   const [loadingReviews, setLoadingReviews] = useState(false);
+  const [isEditing, setIsEditing] = useState(false);
+  const [editForm, setEditForm] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    address: '',
+    preferences: {
+      tourTypes: [],
+      language: 'English'
+    }
+  });
+  const [updateSuccess, setUpdateSuccess] = useState(false);
+  const [updateError, setUpdateError] = useState('');
+  
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -27,6 +42,16 @@ const AccountPage = () => {
     try {
       const parsedUser = JSON.parse(userData);
       setUser(parsedUser);
+      setEditForm({
+        name: parsedUser.name || '',
+        email: parsedUser.email || '',
+        phone: parsedUser.phone || '',
+        address: parsedUser.address || '',
+        preferences: parsedUser.preferences || {
+          tourTypes: [],
+          language: 'English'
+        }
+      });
       setLoading(false);
 
       // Fetch user-specific data
@@ -41,10 +66,7 @@ const AccountPage = () => {
   const fetchUserBookings = async (token) => {
     setLoadingBookings(true);
     try {
-      // Use the newBookingsAPI
       const response = await newBookingsAPI.getMyBookings();
-
-      // The API already returns the data in the format we need
       console.log('User bookings:', response.data);
       setBookings(response.data || []);
     } catch (error) {
@@ -78,6 +100,79 @@ const AccountPage = () => {
       setReviews([]);
     } finally {
       setLoadingReviews(false);
+    }
+  };
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setEditForm(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
+
+  const handlePreferenceChange = (e) => {
+    const { name, value, checked, type } = e.target;
+    
+    if (name === 'tourTypes') {
+      setEditForm(prev => ({
+        ...prev,
+        preferences: {
+          ...prev.preferences,
+          tourTypes: checked 
+            ? [...prev.preferences.tourTypes, value]
+            : prev.preferences.tourTypes.filter(t => t !== value)
+        }
+      }));
+    } else if (name === 'language') {
+      setEditForm(prev => ({
+        ...prev,
+        preferences: {
+          ...prev.preferences,
+          language: value
+        }
+      }));
+    }
+  };
+
+  const handleUpdateProfile = async () => {
+    const token = localStorage.getItem('token');
+    setUpdateError('');
+    setUpdateSuccess(false);
+
+    try {
+      const response = await fetch('http://localhost:5000/api/users/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          name: editForm.name,
+          phone: editForm.phone,
+          address: editForm.address,
+          preferences: editForm.preferences
+        })
+      });
+
+      const data = await response.json();
+
+      if (data.status === 'success') {
+        // Update local storage and state
+        const updatedUser = { ...user, ...data.data };
+        localStorage.setItem('user', JSON.stringify(updatedUser));
+        setUser(updatedUser);
+        setUpdateSuccess(true);
+        setIsEditing(false);
+        
+        // Hide success message after 3 seconds
+        setTimeout(() => setUpdateSuccess(false), 3000);
+      } else {
+        setUpdateError(data.message || 'Failed to update profile');
+      }
+    } catch (error) {
+      console.error('Update error:', error);
+      setUpdateError('Network error. Please try again.');
     }
   };
 
@@ -135,6 +230,8 @@ const AccountPage = () => {
     }
   };
 
+  const tourTypeOptions = ['Cultural', 'Adventure', 'Wildlife', 'Beach', 'Hill Country', 'Food & Cuisine'];
+
   if (loading) {
     return (
       <div className="loading-page">
@@ -155,11 +252,10 @@ const AccountPage = () => {
         {/* Header */}
         <div className="account-header">
           <h1 className="account-title">
-            {isAdmin ? 'Administrator Account' : 'My Account'}
+            My Account
           </h1>
           <p className="account-subtitle">
-            Welcome back, {user?.name}!
-            {isAdmin && <span className="admin-badge">Administrator</span>}
+            Welcome back, {user?.name?.split(' ')[0]}!
           </p>
         </div>
 
@@ -167,15 +263,12 @@ const AccountPage = () => {
           {/* Sidebar Navigation */}
           <aside className="account-sidebar">
             <div className="sidebar-profile">
-              <div className={`profile-avatar ${isAdmin ? 'admin-avatar' : ''}`}>
-                {isAdmin ? '👑' : user?.name?.charAt(0).toUpperCase()}
+              <div className="profile-avatar">
+                {user?.name?.charAt(0).toUpperCase()}
               </div>
               <div className="profile-info">
                 <h3 className="profile-name">{user?.name}</h3>
                 <p className="profile-email">{user?.email}</p>
-                <span className={`role-badge ${isAdmin ? 'admin' : ''}`}>
-                  {isAdmin ? 'Administrator' : 'Member'}
-                </span>
               </div>
             </div>
 
@@ -253,48 +346,194 @@ const AccountPage = () => {
                     </svg>
                     Personal Information
                   </h2>
+                  {!isEditing && (
+                    <button 
+                      className="edit-profile-btn"
+                      onClick={() => setIsEditing(true)}
+                    >
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                        <path d="M20 14.66V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5.34"></path>
+                        <polygon points="18 2 22 6 12 16 8 16 8 12 18 2"></polygon>
+                      </svg>
+                      Edit Profile
+                    </button>
+                  )}
                 </div>
 
-                <div className="info-grid">
-                  <div className="info-item">
-                    <span className="info-label">Full Name</span>
-                    <p className="info-value">{user?.name}</p>
+                {updateSuccess && (
+                  <div className="success-message">
+                    ✅ Profile updated successfully!
                   </div>
-                  <div className="info-item">
-                    <span className="info-label">Email Address</span>
-                    <p className="info-value">{user?.email}</p>
-                  </div>
-                  <div className="info-item">
-                    <span className="info-label">Phone Number</span>
-                    <p className="info-value">{user?.phone || 'Not provided'}</p>
-                  </div>
-                  <div className="info-item">
-                    <span className="info-label">Account Type</span>
-                    <p className="info-value">{isAdmin ? 'Administrator' : 'Standard User'}</p>
-                  </div>
-                  <div className="info-item">
-                    <span className="info-label">Member Since</span>
-                    <p className="info-value">
-                      {user?.createdAt ? formatDate(user.createdAt) : 'Recently'}
-                    </p>
-                  </div>
-                </div>
+                )}
 
-                {/* Account Stats */}
-                <div style={{ marginTop: '2rem', display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem' }}>
-                  <div style={{ textAlign: 'center', padding: '1rem', background: 'rgba(30, 76, 36, 0.05)', borderRadius: '12px' }}>
-                    <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#1e4c24' }}>{bookings.length}</div>
-                    <div style={{ fontSize: '0.8rem', color: '#6c757d' }}>Total Bookings</div>
+                {updateError && (
+                  <div className="error-message">
+                    ❌ {updateError}
                   </div>
-                  <div style={{ textAlign: 'center', padding: '1rem', background: 'rgba(30, 76, 36, 0.05)', borderRadius: '12px' }}>
-                    <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#1e4c24' }}>{reviews.length}</div>
-                    <div style={{ fontSize: '0.8rem', color: '#6c757d' }}>Reviews Written</div>
-                  </div>
-                  <div style={{ textAlign: 'center', padding: '1rem', background: 'rgba(30, 76, 36, 0.05)', borderRadius: '12px' }}>
-                    <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#1e4c24' }}>
-                      {bookings.filter(b => b.status === 'completed').length}
+                )}
+
+                {isEditing ? (
+                  <div className="edit-profile-form">
+                    <div className="form-group">
+                      <label htmlFor="name">Full Name</label>
+                      <input
+                        type="text"
+                        id="name"
+                        name="name"
+                        value={editForm.name}
+                        onChange={handleInputChange}
+                        className="form-input"
+                      />
                     </div>
-                    <div style={{ fontSize: '0.8rem', color: '#6c757d' }}>Tours Completed</div>
+
+                    <div className="form-group">
+                      <label htmlFor="email">Email Address</label>
+                      <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        value={editForm.email}
+                        disabled
+                        className="form-input disabled"
+                      />
+                      <small className="field-note">Email cannot be changed</small>
+                    </div>
+
+                    <div className="form-group">
+                      <label htmlFor="phone">Phone Number</label>
+                      <input
+                        type="tel"
+                        id="phone"
+                        name="phone"
+                        value={editForm.phone}
+                        onChange={handleInputChange}
+                        className="form-input"
+                        placeholder="Enter your phone number"
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label htmlFor="address">Address</label>
+                      <input
+                        type="text"
+                        id="address"
+                        name="address"
+                        value={editForm.address}
+                        onChange={handleInputChange}
+                        className="form-input"
+                        placeholder="Enter your address"
+                      />
+                    </div>
+
+                    <div className="form-group">
+                      <label>Preferred Language</label>
+                      <select
+                        name="language"
+                        value={editForm.preferences.language}
+                        onChange={handlePreferenceChange}
+                        className="form-select"
+                      >
+                        <option value="English">English</option>
+                        <option value="Sinhala">Sinhala</option>
+                        <option value="Tamil">Tamil</option>
+                        <option value="French">French</option>
+                        <option value="German">German</option>
+                      </select>
+                    </div>
+
+                    <div className="form-group">
+                      <label>Interested Tour Types</label>
+                      <div className="checkbox-group">
+                        {tourTypeOptions.map(type => (
+                          <label key={type} className="checkbox">
+                            <input
+                              type="checkbox"
+                              name="tourTypes"
+                              value={type}
+                              checked={editForm.preferences.tourTypes.includes(type)}
+                              onChange={handlePreferenceChange}
+                            />
+                            {type}
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="form-actions">
+                      <button 
+                        className="btn-primary save-btn"
+                        onClick={handleUpdateProfile}
+                      >
+                        Save Changes
+                      </button>
+                      <button 
+                        className="btn-outline cancel-btn"
+                        onClick={() => {
+                          setIsEditing(false);
+                          setEditForm({
+                            name: user.name || '',
+                            email: user.email || '',
+                            phone: user.phone || '',
+                            address: user.address || '',
+                            preferences: user.preferences || {
+                              tourTypes: [],
+                              language: 'English'
+                            }
+                          });
+                        }}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="info-grid">
+                    <div className="info-item">
+                      <span className="info-label">Full Name</span>
+                      <p className="info-value">{user?.name}</p>
+                    </div>
+                    <div className="info-item">
+                      <span className="info-label">Email Address</span>
+                      <p className="info-value">{user?.email}</p>
+                    </div>
+                    <div className="info-item">
+                      <span className="info-label">Phone Number</span>
+                      <p className="info-value">{user?.phone || 'Not provided'}</p>
+                    </div>
+                    <div className="info-item">
+                      <span className="info-label">Address</span>
+                      <p className="info-value">{user?.address || 'Not provided'}</p>
+                    </div>
+                    <div className="info-item">
+                      <span className="info-label">Preferred Language</span>
+                      <p className="info-value">{user?.preferences?.language || 'English'}</p>
+                    </div>
+                    <div className="info-item">
+                      <span className="info-label">Interested In</span>
+                      <p className="info-value">
+                        {user?.preferences?.tourTypes?.length > 0 
+                          ? user.preferences.tourTypes.join(', ') 
+                          : 'All tours'}
+                      </p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Quick Stats - Simplified */}
+                <div className="quick-stats">
+                  <div className="stat-item">
+                    <span className="stat-number">{bookings.length}</span>
+                    <span className="stat-label">Total Bookings</span>
+                  </div>
+                  <div className="stat-item">
+                    <span className="stat-number">{reviews.length}</span>
+                    <span className="stat-label">Reviews</span>
+                  </div>
+                  <div className="stat-item">
+                    <span className="stat-number">
+                      {bookings.filter(b => b.status === 'completed').length}
+                    </span>
+                    <span className="stat-label">Tours Completed</span>
                   </div>
                 </div>
               </div>
@@ -311,13 +550,13 @@ const AccountPage = () => {
                     My Bookings
                   </h2>
                   <Link to="/tours" className="view-all-link">
-                    Book New Tour →
+                    Book New Tour
                   </Link>
                 </div>
 
                 {loadingBookings ? (
-                  <div style={{ textAlign: 'center', padding: '3rem' }}>
-                    <div className="loading-spinner" style={{ margin: '0 auto 1rem' }}></div>
+                  <div className="loading-state">
+                    <div className="loading-spinner"></div>
                     <p>Loading your bookings...</p>
                   </div>
                 ) : bookings.length === 0 ? (
@@ -326,66 +565,72 @@ const AccountPage = () => {
                       <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
                     </svg>
                     <h3>No Bookings Yet</h3>
-                    <p>You haven't booked any tours yet. Start your Sri Lankan adventure today!</p>
+                    <p>Start your Sri Lankan adventure today!</p>
                     <Link to="/tours" className="btn-primary">Browse Tours</Link>
                   </div>
                 ) : (
-                  <div className="bookings-list">
-                    {bookings.map((booking) => (
-                      <div key={booking._id} className="booking-item">
-                        <div className="booking-image">
-                          <img
-                            src={booking.tour?.image || 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=300&h=200&fit=crop'}
-                            alt={booking.tour?.name || 'Tour'}
-                          />
-                        </div>
-                        <div className="booking-info">
-                          <h4 className="booking-title">{booking.tour?.name || 'Tour Package'}</h4>
-                          <div className="booking-meta">
-                            <span className="booking-date">
-                              📅 {formatDate(booking.bookingDate)}
-                            </span>
-                            <span className="booking-participants">
-                              👥 {booking.participants} {booking.participants === 1 ? 'person' : 'people'}
-                            </span>
-                            <span className="booking-duration">
-                              ⏱️ {booking.duration} {booking.duration === 1 ? 'day' : 'days'}
-                            </span>
-                          </div>
-
-                          {booking.guide && (
-                            <div style={{ marginBottom: '0.5rem', fontSize: '0.85rem', color: '#ff8c42' }}>
-                              👤 Guide: {booking.guide}
+                  <div className="bookings-grid">
+                    {bookings.map((booking) => {
+                      const tourImage = getTourImage({ name: booking.tourName });
+                      
+                      return (
+                        <div key={booking._id} className="booking-card">
+                          <div className="booking-image">
+                            <img src={tourImage} alt={booking.tourName} />
+                            <div className={`booking-status-badge ${booking.status}`}>
+                              {booking.status === 'confirmed' ? 'Booked' : booking.status}
                             </div>
-                          )}
-
-                          {booking.specialRequests && (
-                            <div style={{
-                              marginBottom: '0.75rem',
-                              padding: '0.5rem',
-                              background: '#fff8e7',
-                              borderRadius: '8px',
-                              fontSize: '0.85rem',
-                              borderLeft: '3px solid #ffb400'
-                            }}>
-                              <strong>Special Requests:</strong> {booking.specialRequests}
+                          </div>
+                          
+                          <div className="booking-card-content">
+                            <h3 className="booking-tour-name">{booking.tourName}</h3>
+                            
+                            <div className="booking-meta">
+                              <div className="meta-item">
+                                <span className="meta-icon">📅</span>
+                                <span>{formatDate(booking.bookingDate)}</span>
+                              </div>
+                              <div className="meta-item">
+                                <span className="meta-icon">👥</span>
+                                <span>{booking.participants} {booking.participants === 1 ? 'person' : 'people'}</span>
+                              </div>
+                              <div className="meta-item">
+                                <span className="meta-icon">⏱️</span>
+                                <span>{booking.duration} days</span>
+                              </div>
                             </div>
-                          )}
 
-                          <div className="booking-status-container">
-                            <span className={`booking-status ${getStatusBadgeClass(booking.status)}`}>
-                              {booking.status}
-                            </span>
-                            <span className="booking-price">${booking.totalPrice}</span>
+                            {booking.guideName && (
+                              <div className="booking-guide">
+                                <span className="guide-icon">👤</span>
+                                <span>Guide: {booking.guideName}</span>
+                              </div>
+                            )}
+
+                            <div className="booking-price">
+                              <span className="price-label">Total:</span>
+                              <span className="price-value">${booking.totalPrice}</span>
+                            </div>
+
+                            {booking.specialRequests && (
+                              <div className="booking-requests">
+                                <span className="requests-label">Special Requests:</span>
+                                <p>{booking.specialRequests}</p>
+                              </div>
+                            )}
+
+                            <div className="booking-card-actions">
+                              <Link 
+                                to={`/booking-detail/${booking._id}`} 
+                                className="btn-secondary view-details-btn"
+                              >
+                                View Details
+                              </Link>
+                            </div>
                           </div>
                         </div>
-                        <div className="booking-actions">
-                          <Link to={`/booking/${booking._id}`} className="btn-outline">
-                            View Details
-                          </Link>
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 )}
               </div>
@@ -402,13 +647,13 @@ const AccountPage = () => {
                     My Reviews
                   </h2>
                   <Link to="/reviews" className="view-all-link">
-                    Write New Review →
+                    Write New Review
                   </Link>
                 </div>
 
                 {loadingReviews ? (
-                  <div style={{ textAlign: 'center', padding: '3rem' }}>
-                    <div className="loading-spinner" style={{ margin: '0 auto 1rem' }}></div>
+                  <div className="loading-state">
+                    <div className="loading-spinner"></div>
                     <p>Loading your reviews...</p>
                   </div>
                 ) : reviews.length === 0 ? (
@@ -417,7 +662,7 @@ const AccountPage = () => {
                       <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
                     </svg>
                     <h3>No Reviews Yet</h3>
-                    <p>You haven't written any reviews. Share your experience with other travelers!</p>
+                    <p>Share your experience with other travelers!</p>
                     <Link to="/reviews" className="btn-primary">Write a Review</Link>
                   </div>
                 ) : (
@@ -425,18 +670,20 @@ const AccountPage = () => {
                     {reviews.map((review) => (
                       <div key={review._id} className="review-item">
                         <div className="review-header">
-                          <h4 className="review-tour">{review.tour}</h4>
-                          <div className="review-rating">
-                            {'★'.repeat(review.rating)}
-                            {'☆'.repeat(5 - review.rating)}
+                          <div>
+                            <h4 className="review-tour">{review.tour}</h4>
+                            {review.guide && (
+                              <div className="review-guide">Guide: {review.guide}</div>
+                            )}
+                          </div>
+                          <div className="review-rating-display">
+                            {[1, 2, 3, 4, 5].map(star => (
+                              <span key={star} className={star <= review.rating ? 'star filled' : 'star'}>
+                                ★
+                              </span>
+                            ))}
                           </div>
                         </div>
-
-                        {review.guide && (
-                          <div style={{ fontSize: '0.8rem', color: '#ff8c42', marginBottom: '0.5rem' }}>
-                            👤 Guide: {review.guide}
-                          </div>
-                        )}
 
                         <h5 className="review-title">{review.title}</h5>
                         <p className="review-comment">{review.comment}</p>
@@ -446,17 +693,16 @@ const AccountPage = () => {
                             📅 {formatDate(review.createdAt)}
                           </span>
                           <span className={`review-status ${review.isApproved ? 'approved' : 'pending'}`}>
-                            {review.isApproved ? '✓ Approved' : '⏳ Pending Approval'}
+                            {review.isApproved ? 'Approved' : 'Pending Approval'}
                           </span>
                         </div>
                         
-                        <div className="review-actions" style={{ display: 'flex', gap: '0.5rem', marginTop: '0.75rem' }}>
+                        <div className="review-actions">
                           <button
                             onClick={() => handleDeleteReview(review._id)}
-                            className="btn-outline cancel"
-                            style={{ padding: '0.4rem 1rem', fontSize: '0.8rem' }}
+                            className="btn-outline delete-review-btn"
                           >
-                            🗑️ Delete
+                            Delete
                           </button>
                         </div>
                       </div>
