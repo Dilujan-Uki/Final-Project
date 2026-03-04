@@ -69,7 +69,7 @@ const getAllReviews = async (req, res) => {
       filter.isApproved = approved === 'true';
     } else {
       // Default to showing only approved reviews for public
-      filter.isApproved = true;
+      // filter.isApproved = true;
     }
 
     const reviews = await Review.find(filter)

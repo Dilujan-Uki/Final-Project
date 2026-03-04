@@ -1,4 +1,4 @@
-// src/pages/ReviewsPage.jsx - FIXED
+// src/pages/ReviewsPage.jsx - UPDATED with auto-refresh
 import React, { useState, useEffect } from 'react';
 import './ReviewsPage.css';
 
@@ -20,6 +20,7 @@ const ReviewsPage = () => {
     recommendationRate: 0
   });
   const [loading, setLoading] = useState(true);
+  const [submitLoading, setSubmitLoading] = useState(false); // New state for submit button
 
   const tours = [
     "Cultural Triangle Explorer",
@@ -118,6 +119,8 @@ const ReviewsPage = () => {
       return;
     }
 
+    setSubmitLoading(true); // Set submit loading state
+
     try {
       const response = await fetch('http://localhost:5000/api/reviews', {
         method: 'POST',
@@ -150,11 +153,14 @@ const ReviewsPage = () => {
         guide: ''
       });
 
-      fetchReviews(); // Refresh reviews
+      // Immediately fetch updated reviews
+      await fetchReviews();
 
     } catch (error) {
       console.error('Review submission error:', error);
       alert(error.message || 'Failed to submit review');
+    } finally {
+      setSubmitLoading(false); // Reset submit loading state
     }
   };
 
@@ -212,6 +218,7 @@ const ReviewsPage = () => {
                     className="form-input"
                     required
                     placeholder="Enter your name"
+                    disabled={submitLoading}
                   />
                 </div>
 
@@ -226,6 +233,7 @@ const ReviewsPage = () => {
                     className="form-input"
                     required
                     placeholder="Enter your email"
+                    disabled={submitLoading}
                   />
                 </div>
               </div>
@@ -240,6 +248,7 @@ const ReviewsPage = () => {
                     onChange={handleChange}
                     className="form-select"
                     required
+                    disabled={submitLoading}
                   >
                     <option value="">Select a tour</option>
                     {tours.map((tour, index) => (
@@ -256,6 +265,7 @@ const ReviewsPage = () => {
                     value={newReview.guide}
                     onChange={handleChange}
                     className="form-select"
+                    disabled={submitLoading}
                   >
                     <option value="">Select a guide (if any)</option>
                     {guides.map((guide, index) => (
@@ -275,6 +285,7 @@ const ReviewsPage = () => {
                       className={`rating-star ${star <= newReview.rating ? 'selected' : ''}`}
                       onClick={() => handleRatingChange(star)}
                       aria-label={`Rate ${star} star${star > 1 ? 's' : ''}`}
+                      disabled={submitLoading}
                     >
                       ★
                     </button>
@@ -294,6 +305,7 @@ const ReviewsPage = () => {
                   className="form-input"
                   required
                   placeholder="Give your review a title"
+                  disabled={submitLoading}
                 />
               </div>
 
@@ -308,11 +320,16 @@ const ReviewsPage = () => {
                   required
                   placeholder="Share details of your experience with the tour and guide..."
                   rows="6"
+                  disabled={submitLoading}
                 />
               </div>
 
-              <button type="submit" className="submit-btn">
-                Submit Review
+              <button 
+                type="submit" 
+                className="submit-btn"
+                disabled={submitLoading}
+              >
+                {submitLoading ? 'Submitting...' : 'Submit Review'}
               </button>
 
               <p className="form-note">

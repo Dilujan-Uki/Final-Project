@@ -125,31 +125,15 @@ const handleSubmit = async (e) => {
       specialRequests: bookingData.specialRequests || ''
     };
 
-    console.log('Sending booking:', bookingPayload);
+    console.log('Sending to payment:', bookingPayload);
 
-    // USE FETCH DIRECTLY INSTEAD OF API IMPORT
-    const response = await fetch('http://localhost:5000/api/new-bookings', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify(bookingPayload)
+    // Save booking data to localStorage for payment page
+    localStorage.setItem('pendingBooking', JSON.stringify(bookingPayload));
+    
+    // Navigate to payment page with the booking data
+    navigate('/payment', { 
+      state: { bookingData: bookingPayload } 
     });
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.message || 'Booking failed');
-    }
-
-    if (data.success) {
-      localStorage.removeItem('selectedTour');
-      localStorage.removeItem('selectedGuide');
-      
-      alert(' Booking Successful!');
-      navigate('/my-bookings');
-    }
 
   } catch (err) {
     console.error('Booking error:', err);
@@ -214,7 +198,7 @@ const handleSubmit = async (e) => {
             ❌ {error}
           </div>
         )}
-
+        
         <div className="booking-container">
           {/* Left Column - Booking Form */}
           <div className="booking-form-section">
