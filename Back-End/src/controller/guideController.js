@@ -1,15 +1,19 @@
-// src/controller/guideController.js
+// src/controller/guideController.js - COMPLETE REPLACE
 const GuideAssignment = require('../model/GuideAssignment');
 const Booking = require('../model/Booking');
 const User = require('../model/User');
 
 // @desc    Get guide's assigned tours
-// @route   GET /api/guide/assignments
+// @route   GET /api/guides/assignments
 // @access  Private (Guide only)
 const getGuideAssignments = async (req, res) => {
   try {
+    console.log('Fetching assignments for guide:', req.userId);
+    
     const assignments = await GuideAssignment.find({ guideId: req.userId })
       .sort({ startDate: 1 });
+
+    console.log(`Found ${assignments.length} assignments`);
 
     res.status(200).json({
       status: 'success',
@@ -26,7 +30,7 @@ const getGuideAssignments = async (req, res) => {
 };
 
 // @desc    Get single assignment details
-// @route   GET /api/guide/assignments/:id
+// @route   GET /api/guides/assignments/:id
 // @access  Private (Guide only)
 const getAssignmentById = async (req, res) => {
   try {
@@ -56,12 +60,20 @@ const getAssignmentById = async (req, res) => {
 };
 
 // @desc    Update assignment status (guide marks as ongoing/completed)
-// @route   PATCH /api/guide/assignments/:id/status
+// @route   PATCH /api/guides/assignments/:id/status
 // @access  Private (Guide only)
 const updateAssignmentStatus = async (req, res) => {
   try {
     const { status } = req.body;
     
+    const validStatuses = ['upcoming', 'ongoing', 'completed', 'cancelled'];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({
+        status: 'error',
+        message: 'Invalid status value'
+      });
+    }
+
     const assignment = await GuideAssignment.findOneAndUpdate(
       { _id: req.params.id, guideId: req.userId },
       { status },
@@ -90,7 +102,7 @@ const updateAssignmentStatus = async (req, res) => {
 };
 
 // @desc    Create assignment when booking is confirmed (Admin only)
-// @route   POST /api/guide/assignments
+// @route   POST /api/guides/assignments
 // @access  Private/Admin
 const createAssignment = async (req, res) => {
   try {
@@ -119,7 +131,7 @@ const createAssignment = async (req, res) => {
     // Calculate end date
     const startDate = new Date(booking.bookingDate);
     const endDate = new Date(startDate);
-    endDate.setDate(endDate.getDate() + booking.duration);
+    endDate.setDate(endDate.getDate() + (booking.duration || 1));
 
     // Create assignment
     const assignment = await GuideAssignment.create({
@@ -128,14 +140,14 @@ const createAssignment = async (req, res) => {
       bookingId: booking._id,
       tourId: booking.tourId,
       tourName: booking.tourName,
-      customerName: booking.userId.name,
-      customerEmail: booking.userId.email,
-      customerPhone: booking.userId.phone,
-      participants: booking.participants,
-      duration: booking.duration,
+      customerName: booking.userId?.name || 'Customer',
+      customerEmail: booking.userId?.email || '',
+      customerPhone: booking.userId?.phone || '',
+      participants: booking.participants || 1,
+      duration: booking.duration || 1,
       startDate: booking.bookingDate,
       endDate: endDate,
-      specialRequests: booking.specialRequests,
+      specialRequests: booking.specialRequests || '',
       status: 'upcoming'
     });
 

@@ -57,6 +57,90 @@ app.get('/api/health', (req, res) => {
   res.json({ status: 'success', message: 'API is running' });
 });
 
+// TEMPORARY TEST ENDPOINT - Add this to server.js
+app.get('/api/create-test-assignment', async (req, res) => {
+  try {
+    const GuideAssignment = require('./model/GuideAssignment');
+    const User = require('./model/User');
+    
+    // Find the first guide
+    const guide = await User.findOne({ role: 'guide' });
+    
+    if (!guide) {
+      return res.json({ 
+        success: false, 
+        message: 'No guide found. Run seedGuides.js first.' 
+      });
+    }
+    
+    // Find the first tour
+    const Tour = require('./model/Tour');
+    const tour = await Tour.findOne();
+    
+    if (!tour) {
+      return res.json({ 
+        success: false, 
+        message: 'No tour found. Run seedTours.js first.' 
+      });
+    }
+    
+    // Create a test assignment
+    const assignment = await GuideAssignment.create({
+      guideId: guide._id,
+      guideName: guide.name,
+      bookingId: new mongoose.Types.ObjectId(),
+      tourId: tour._id,
+      tourName: tour.name,
+      customerName: 'Test Customer',
+      customerEmail: 'test@example.com',
+      customerPhone: '+94 77 123 4567',
+      participants: 2,
+      duration: 3,
+      startDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+      endDate: new Date(Date.now() + 10 * 24 * 60 * 60 * 1000),
+      meetingPoint: 'Colombo Airport',
+      specialRequests: 'Vegetarian meals please',
+      status: 'upcoming'
+    });
+    
+    res.json({
+      success: true,
+      message: 'Test assignment created',
+      assignment,
+      guide: {
+        id: guide._id,
+        name: guide.name,
+        email: guide.email
+      }
+    });
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ success: false, error: error.message });
+  }
+});
+
+
+// Add this temporary endpoint to server.js
+app.get('/api/check-database', async (req, res) => {
+  try {
+    const User = require('./model/User');
+    const GuideAssignment = require('./model/GuideAssignment');
+    const Tour = require('./model/Tour');
+    
+    const guides = await User.find({ role: 'guide' });
+    const assignments = await GuideAssignment.find();
+    const tours = await Tour.find();
+    
+    res.json({
+      guides: guides.map(g => ({ id: g._id, name: g.name, email: g.email })),
+      assignments: assignments,
+      tours: tours.map(t => ({ id: t._id, name: t.name }))
+    });
+  } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+});
+
 // ============ 404 HANDLER ============
 app.use((req, res) => {
   res.status(404).json({ success: false, message: `Route ${req.method} ${req.url} not found` });
@@ -67,6 +151,8 @@ app.use((err, req, res, next) => {
   console.error(' Server Error:', err);
   res.status(500).json({ success: false, message: 'Internal server error' });
 });
+
+
 
 // ============ START SERVER ============
 const PORT = process.env.PORT || 5000;

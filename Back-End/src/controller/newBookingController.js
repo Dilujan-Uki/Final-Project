@@ -2,9 +2,8 @@
 const Booking = require('../model/Booking');
 const Tour = require('../model/Tour');
 
-// @desc    Create a new booking
-// @route   POST /api/new-bookings
-// @access  Private
+// In src/controller/newBookingController.js - Update the createBooking function
+
 const createBooking = async (req, res) => {
   try {
     console.log('\n========== NEW BOOKING SYSTEM ==========');
@@ -68,7 +67,7 @@ const createBooking = async (req, res) => {
       },
       bookingDate: new Date(bookingDate),
       specialRequests: specialRequests || '',
-      status: 'pending',
+      status: 'pending',  // Start as pending
       paymentStatus: 'pending'
     };
 
@@ -79,6 +78,14 @@ const createBooking = async (req, res) => {
     const savedBooking = await booking.save();
 
     console.log('4. Booking saved successfully with ID:', savedBooking._id);
+    
+    // IMPORTANT: If guide is selected, we should auto-confirm? Or wait for payment?
+    // For now, let's create a pending assignment that will be activated when payment is confirmed
+    if (guideName) {
+      console.log('5. Guide selected - will create assignment after payment confirmation');
+      // Store in session or handle later
+    }
+    
     console.log('=========================================\n');
 
     // Return success response
@@ -90,7 +97,8 @@ const createBooking = async (req, res) => {
         tourName: savedBooking.tourName,
         bookingDate: savedBooking.bookingDate,
         status: savedBooking.status,
-        totalPrice: savedBooking.totalPrice
+        totalPrice: savedBooking.totalPrice,
+        guideName: savedBooking.guideName
       }
     });
 
@@ -226,9 +234,149 @@ const cancelBooking = async (req, res) => {
   }
 };
 
+// Add this to src/controller/newBookingController.js
+
+// @desc    Auto-create guide assignment when booking is confirmed
+// @route   (called internally, not an endpoint)
+const createGuideAssignment = async (bookingId) => {
+  try {
+    const booking = await Booking.findById(bookingId)
+      .populate('userId', 'name email phone');
+    
+    if (!booking) {
+      console.log('❌ Booking not found for assignment');
+      return false;
+    }
+
+    // Only create assignment if there's a guide name
+    if (!booking.guideName) {
+      console.log('ℹ️ No guide selected for this booking');
+      return false;
+    }
+
+    // Find the guide by name
+    const guide = await User.findOne({ 
+      name: booking.guideName,
+      role: 'guide'
+    });
+
+    if (!guide) {
+      console.log('❌ Guide not found with name:', booking.guideName);
+      return false;
+    }
+
+    // Calculate end date
+    const startDate = new Date(booking.bookingDate);
+    const endDate = new Date(startDate);
+    endDate.setDate(endDate.getDate() + booking.duration);
+
+    // Create assignment
+    const assignment = await GuideAssignment.create({
+      guideId: guide._id,
+      guideName: guide.name,
+      bookingId: booking._id,
+      tourId: booking.tourId,
+      tourName: booking.tourName,
+      customerName: booking.userId.name,
+      customerEmail: booking.userId.email,
+      customerPhone: booking.userId.phone,
+      participants: booking.participants,
+      duration: booking.duration,
+      startDate: booking.bookingDate,
+      endDate: endDate,
+      specialRequests: booking.specialRequests,
+      meetingPoint: 'To be confirmed with customer',
+      status: 'upcoming'
+    });
+
+    console.log('✅ Guide assignment created automatically:', assignment._id);
+    return true;
+  } catch (error) {
+    console.error('❌ Error creating guide assignment:', error);
+    return false;
+  }
+};
+
+
+
+// Add this to src/controller/newBookingController.js
+
+// @desc    Confirm booking after payment and create guide assignment
+// @route   PATCH /api/new-bookings/:id/confirm
+// @access  Private
+const confirmBooking = async (req, res) => {
+  try {
+    const booking = await Booking.findById(req.params.id)
+      .populate('userId', 'name email phone');
+
+    if (!booking) {
+      return res.status(404).json({
+        success: false,
+        message: 'Booking not found'
+      });
+    }
+
+    // Update booking status
+    booking.status = 'confirmed';
+    booking.paymentStatus = 'paid';
+    await booking.save();
+
+    // Create guide assignment if guide was selected
+    if (booking.guideName) {
+      const guide = await User.findOne({ 
+        name: booking.guideName,
+        role: 'guide'
+      });
+
+      if (guide) {
+        // Calculate end date
+        const startDate = new Date(booking.bookingDate);
+        const endDate = new Date(startDate);
+        endDate.setDate(endDate.getDate() + booking.duration);
+
+        // Create assignment
+        await GuideAssignment.create({
+          guideId: guide._id,
+          guideName: guide.name,
+          bookingId: booking._id,
+          tourId: booking.tourId,
+          tourName: booking.tourName,
+          customerName: booking.userId.name,
+          customerEmail: booking.userId.email,
+          customerPhone: booking.userId.phone,
+          participants: booking.participants,
+          duration: booking.duration,
+          startDate: booking.bookingDate,
+          endDate: endDate,
+          specialRequests: booking.specialRequests,
+          status: 'upcoming'
+        });
+
+        console.log('✅ Guide assignment created for booking:', booking._id);
+      }
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Booking confirmed successfully',
+      data: booking
+    });
+
+  } catch (error) {
+    console.error('❌ Error confirming booking:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to confirm booking',
+      error: error.message
+    });
+  }
+};
+
+// Add to module.exports
 module.exports = {
   createBooking,
   getMyBookings,
   getBookingById,
-  cancelBooking
+  cancelBooking,
+  confirmBooking  
 };

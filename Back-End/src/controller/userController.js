@@ -88,7 +88,52 @@ const getUserById = async (req, res) => {
   }
 };
 
+
+// src/controller/userController.js - Add this function
+const updateUserProfile = async (req, res) => {
+  try {
+    const { name, phone, address, preferences } = req.body;
+    
+    const user = await User.findById(req.userId);
+    
+    if (!user) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'User not found'
+      });
+    }
+    
+    // Update fields
+    if (name) user.name = name;
+    if (phone !== undefined) user.phone = phone;
+    if (address !== undefined) user.address = address;
+    if (preferences) user.preferences = preferences;
+    
+    await user.save();
+    
+    res.status(200).json({
+      status: 'success',
+      message: 'Profile updated successfully',
+      data: {
+        name: user.name,
+        email: user.email,
+        phone: user.phone,
+        address: user.address,
+        preferences: user.preferences
+      }
+    });
+  } catch (error) {
+    console.error('Update profile error:', error);
+    res.status(500).json({
+      status: 'error',
+      message: 'Server error while updating profile'
+    });
+  }
+};
+
+// Add to exports
 module.exports = {
   getAllUsers,
-  getUserById
+  getUserById,
+  updateUserProfile
 };
