@@ -1,19 +1,34 @@
-// src/controller/guideController.js - COMPLETE REPLACE
+// src/controller/guideController.js - FIXED
 const GuideAssignment = require('../model/GuideAssignment');
 const Booking = require('../model/Booking');
 const User = require('../model/User');
+const Guide = require('../model/Guide'); // Add this import
 
 // @desc    Get guide's assigned tours
 // @route   GET /api/guides/assignments
 // @access  Private (Guide only)
 const getGuideAssignments = async (req, res) => {
   try {
-    console.log('Fetching assignments for guide:', req.userId);
+    console.log('Fetching assignments for user ID:', req.userId);
     
-    const assignments = await GuideAssignment.find({ guideId: req.userId })
+    // First, find the guide profile using the user ID
+    const guide = await Guide.findOne({ userId: req.userId });
+    
+    if (!guide) {
+      console.log('❌ Guide profile not found for user:', req.userId);
+      return res.status(404).json({
+        status: 'error',
+        message: 'Guide profile not found'
+      });
+    }
+    
+    console.log('✅ Found guide profile with ID:', guide._id);
+    
+    // Now fetch assignments using the guide's _id from Guide model
+    const assignments = await GuideAssignment.find({ guideId: guide._id })
       .sort({ startDate: 1 });
 
-    console.log(`Found ${assignments.length} assignments`);
+    console.log(`Found ${assignments.length} assignments for guide:`, guide.name);
 
     res.status(200).json({
       status: 'success',
@@ -34,9 +49,19 @@ const getGuideAssignments = async (req, res) => {
 // @access  Private (Guide only)
 const getAssignmentById = async (req, res) => {
   try {
+    // First find the guide
+    const guide = await Guide.findOne({ userId: req.userId });
+    
+    if (!guide) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Guide profile not found'
+      });
+    }
+    
     const assignment = await GuideAssignment.findOne({
       _id: req.params.id,
-      guideId: req.userId
+      guideId: guide._id // Use guide._id from Guide model
     });
 
     if (!assignment) {
@@ -74,8 +99,21 @@ const updateAssignmentStatus = async (req, res) => {
       });
     }
 
+    // First find the guide
+    const guide = await Guide.findOne({ userId: req.userId });
+    
+    if (!guide) {
+      return res.status(404).json({
+        status: 'error',
+        message: 'Guide profile not found'
+      });
+    }
+
     const assignment = await GuideAssignment.findOneAndUpdate(
-      { _id: req.params.id, guideId: req.userId },
+      { 
+        _id: req.params.id, 
+        guideId: guide._id // Use guide._id from Guide model
+      },
       { status },
       { new: true, runValidators: true }
     );
@@ -119,9 +157,9 @@ const createAssignment = async (req, res) => {
       });
     }
 
-    // Check if guide exists
-    const guide = await User.findById(guideId);
-    if (!guide || guide.role !== 'guide') {
+    // Check if guide exists in Guide model (not User)
+    const guide = await Guide.findById(guideId);
+    if (!guide) {
       return res.status(404).json({
         status: 'error',
         message: 'Guide not found'
@@ -135,7 +173,7 @@ const createAssignment = async (req, res) => {
 
     // Create assignment
     const assignment = await GuideAssignment.create({
-      guideId: guide._id,
+      guideId: guide._id, // Store Guide model ID
       guideName: guide.name,
       bookingId: booking._id,
       tourId: booking.tourId,

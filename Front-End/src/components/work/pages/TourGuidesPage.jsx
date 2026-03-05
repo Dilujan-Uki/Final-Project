@@ -4,12 +4,12 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import './TourGuidesPage.css';
 
 // Import guide images
-import Rajitha from '/home/uki-dsa-01/LESSONS/Final-Project/Front-End/src/components/work/assets/Rajitha.png';
-import Kamal from '/home/uki-dsa-01/LESSONS/Final-Project/Front-End/src/components/work/assets/Kamal.png';
-import Nimal from '/home/uki-dsa-01/LESSONS/Final-Project/Front-End/src/components/work/assets/Nimal.png';
-import Sanduni from '/home/uki-dsa-01/LESSONS/Final-Project/Front-End/src/components/work/assets/Sanduni.png';
-import Chaminda from '/home/uki-dsa-01/LESSONS/Final-Project/Front-End/src/components/work/assets/Chaminda.png';
-import Priya from '/home/uki-dsa-01/LESSONS/Final-Project/Front-End/src/components/work/assets/Priya.png';
+import Rajitha from '../assets/Rajitha.png';
+import Kamal from '../assets/Kamal.png';
+import Nimal from '../assets/Nimal.png';
+import Sanduni from '../assets/Sanduni.png';
+import Chaminda from '../assets/Chaminda.png';
+import Priya from '../assets/Priya.png';
 
 const TourGuidesPage = () => {
   const location = useLocation();
@@ -161,6 +161,10 @@ const TourGuidesPage = () => {
   };
 
   const handleViewGuideDetails = (guideId) => {
+    const guide = guides.find(g => g.id === guideId);
+    if (guide) {
+      localStorage.setItem('selectedGuideDetail', JSON.stringify(guide));
+    }
     navigate(`/tour-guide/${guideId}`);
   };
 

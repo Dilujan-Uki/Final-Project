@@ -12,7 +12,7 @@
     "seed:all": "npm run seed:admin && npm run seed:tour && npm run seed:details"
   },
   "keywords": [],
-  "author": "",
+  "author": "Dilujan",
   "license": "ISC",
   "description": "",
   "dependencies": {

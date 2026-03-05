@@ -53,6 +53,9 @@ const LoginPage = () => {
         
         localStorage.setItem('token', token);
         localStorage.setItem('user', JSON.stringify(userData));
+
+        // Notify Header immediately so it updates without needing a refresh
+        window.dispatchEvent(new Event('userLogin'));
         
         if (userData.role === 'admin') {
           navigate('/admin');

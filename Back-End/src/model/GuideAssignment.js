@@ -4,7 +4,7 @@ const mongoose = require('mongoose');
 const guideAssignmentSchema = new mongoose.Schema({
   guideId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'User',
+    ref: 'Guide',
     required: true
   },
   guideName: {

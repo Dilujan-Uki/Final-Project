@@ -1,5 +1,5 @@
-// src/components/common/Header.jsx (updated)
-import React, { useState, useEffect, useRef } from 'react';
+// src/components/common/Header.jsx
+import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import './Header.css';
 
@@ -12,6 +12,34 @@ const Header = () => {
   const [showDropdown, setShowDropdown] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
+  // -------- read user from localStorage --------
+  const loadUser = useCallback(() => {
+    try {
+      const data = localStorage.getItem('user');
+      if (data) setUser(JSON.parse(data));
+      else setUser(null);
+    } catch {
+      setUser(null);
+    }
+  }, []);
+
+  // -------- re-load user on every route change --------
+  useEffect(() => {
+    loadUser();
+  }, [location.pathname, loadUser]);
+
+  // -------- also listen for storage events (cross-tab + same-tab login) --------
+  useEffect(() => {
+    // custom event fired by LoginPage right after saving to localStorage
+    const onLogin = () => loadUser();
+    window.addEventListener('userLogin', onLogin);
+    window.addEventListener('storage', onLogin);
+    return () => {
+      window.removeEventListener('userLogin', onLogin);
+      window.removeEventListener('storage', onLogin);
+    };
+  }, [loadUser]);
+
   // -------- scroll shrink --------
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
@@ -19,15 +47,7 @@ const Header = () => {
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  // -------- load user --------
-  useEffect(() => {
-    try {
-      const data = localStorage.getItem('user');
-      if (data) setUser(JSON.parse(data));
-    } catch {}
-  }, []);
-
-  // -------- click outside --------
+  // -------- click outside closes dropdown --------
   useEffect(() => {
     const close = e => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
@@ -40,16 +60,17 @@ const Header = () => {
 
   const logout = () => {
     localStorage.clear();
+    setUser(null);
     navigate('/');
   };
 
-  // -------- nav model --------
+  // -------- nav links --------
   const navLinks = [
-    { to: '/', label: 'Home', show: true },
-    { to: '/tours', label: 'Tours', show: true },
-    { to: '/tour-guides', label: 'Guides', show: true },
-    { to: '/reviews', label: 'Reviews', show: true },
-    { to: '/contact', label: 'Contact', show: true },
+    { to: '/', label: 'Home' },
+    { to: '/tours', label: 'Tours' },
+    { to: '/tour-guides', label: 'Guides' },
+    { to: '/reviews', label: 'Reviews' },
+    { to: '/contact', label: 'Contact' },
   ];
 
   const isAdmin = user?.role === 'admin';
@@ -79,27 +100,33 @@ const Header = () => {
             </Link>
           ))}
 
-          {/* -------- auth area -------- */}
+          {/* -------- not logged in -------- */}
           {!user && (
             <Link to="/login" className="nav-btn login-btn">
               Login
             </Link>
           )}
 
+          {/* -------- logged in -------- */}
           {user && (
             <div className="user-wrap" ref={dropdownRef}>
               <button
                 className="user-btn"
                 onClick={() => setShowDropdown(v => !v)}
               >
-                {user.name?.split(' ')[0] || 'User'}
+                {user.name?.split(' ')[0] || 'User'} ▾
               </button>
 
               {showDropdown && (
                 <div className="dropdown">
-                  <Link to="/account">My Account</Link>
-                  {isAdmin && <Link to="/admin">Admin Dashboard</Link>}
-                  {user?.role === 'guide' && <Link to="/guide-dashboard">Guide Dashboard</Link>}
+                  <Link to="/account" onClick={() => setShowDropdown(false)}>My Account</Link>
+                  <Link to="/my-bookings" onClick={() => setShowDropdown(false)}>My Bookings</Link>
+                  {isAdmin && (
+                    <Link to="/admin" onClick={() => setShowDropdown(false)}>Admin Dashboard</Link>
+                  )}
+                  {user?.role === 'guide' && (
+                    <Link to="/guide-dashboard" onClick={() => setShowDropdown(false)}>Guide Dashboard</Link>
+                  )}
                   <button onClick={logout}>Logout</button>
                 </div>
               )}

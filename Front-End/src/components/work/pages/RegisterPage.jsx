@@ -57,36 +57,11 @@ const RegisterPage = () => {
         throw new Error(data.message || 'Registration failed');
       }
 
-      // Handle both placeholder and real responses
-      if (data.status === 'success') {
-        // Check if this is the placeholder response
-        if (data.message.includes('add controller later')) {
-          // It's placeholder - create dummy token for testing
-          const dummyToken = btoa(JSON.stringify({
-            email: formData.email,
-            name: formData.name,
-            timestamp: Date.now()
-          }));
-          
-          localStorage.setItem('token', dummyToken);
-          localStorage.setItem('user', JSON.stringify({
-            email: formData.email,
-            name: formData.name,
-            phone: formData.phone
-          }));
-          
-          alert('Registration successful! (Test mode - using dummy token)');
-        } else if (data.data && data.data.token) {
-          // It's real response with token
-          localStorage.setItem('token', data.data.token);
-          localStorage.setItem('user', JSON.stringify(data.data));
-          alert('Registration successful!');
-        } else {
-          // Unexpected response
-          throw new Error('Unexpected server response');
-        }
-        
-        // Redirect to home page
+      if (data.status === 'success' && data.data && data.data.token) {
+        const userData = { ...data.data };
+        delete userData.token;
+        localStorage.setItem('token', data.data.token);
+        localStorage.setItem('user', JSON.stringify(userData));
         navigate('/');
       } else {
         throw new Error(data.message || 'Registration failed');

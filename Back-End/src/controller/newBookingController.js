@@ -1,6 +1,9 @@
 // src/controller/newBookingController.js
 const Booking = require('../model/Booking');
+const Guide = require('../model/Guide'); 
 const Tour = require('../model/Tour');
+const User = require('../model/User');
+const GuideAssignment = require('../model/GuideAssignment');
 
 // In src/controller/newBookingController.js - Update the createBooking function
 
@@ -300,7 +303,6 @@ const createGuideAssignment = async (bookingId) => {
 
 
 // Add this to src/controller/newBookingController.js
-
 // @desc    Confirm booking after payment and create guide assignment
 // @route   PATCH /api/new-bookings/:id/confirm
 // @access  Private
@@ -323,10 +325,36 @@ const confirmBooking = async (req, res) => {
 
     // Create guide assignment if guide was selected
     if (booking.guideName) {
-      const guide = await User.findOne({ 
-        name: booking.guideName,
-        role: 'guide'
+      console.log('🔍 Looking for guide with name:', booking.guideName);
+      
+      // FIRST: Try to find in Guide model (new separate model)
+      let guide = await Guide.findOne({ 
+        name: booking.guideName
       });
+
+      // SECOND: If not found in Guide model, try User model with role 'guide' (for backward compatibility)
+      if (!guide) {
+        console.log('⚠️ Guide not found in Guide model, checking User model...');
+        const userGuide = await User.findOne({ 
+          name: booking.guideName,
+          role: 'guide'
+        });
+        
+        if (userGuide) {
+          // Create a Guide profile from the User data
+          guide = await Guide.create({
+            name: userGuide.name,
+            email: userGuide.email,
+            password: userGuide.password, // This will be hashed automatically
+            phone: userGuide.phone || '',
+            userId: userGuide._id,
+            dailyRate: 70, // Default value
+            hourlyRate: 20, // Default value
+            isActive: true
+          });
+          console.log('✅ Created Guide profile from User:', guide._id);
+        }
+      }
 
       if (guide) {
         // Calculate end date
@@ -335,8 +363,8 @@ const confirmBooking = async (req, res) => {
         endDate.setDate(endDate.getDate() + booking.duration);
 
         // Create assignment
-        await GuideAssignment.create({
-          guideId: guide._id,
+        const assignment = await GuideAssignment.create({
+          guideId: guide._id, // Use Guide model's ID
           guideName: guide.name,
           bookingId: booking._id,
           tourId: booking.tourId,
@@ -349,10 +377,14 @@ const confirmBooking = async (req, res) => {
           startDate: booking.bookingDate,
           endDate: endDate,
           specialRequests: booking.specialRequests,
+          meetingPoint: 'To be confirmed with customer',
           status: 'upcoming'
         });
 
         console.log('✅ Guide assignment created for booking:', booking._id);
+        console.log('📋 Assignment details:', assignment);
+      } else {
+        console.log('❌ No guide found with name:', booking.guideName);
       }
     }
 

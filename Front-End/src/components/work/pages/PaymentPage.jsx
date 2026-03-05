@@ -1,4 +1,4 @@
-// src/pages/PaymentPage.jsx - COMPLETE REPLACE
+// src/pages/PaymentPage.jsx - UPDATED (remove tax)
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './PaymentPage.css';
@@ -56,15 +56,15 @@ const PaymentPage = () => {
     loadBookingData();
   }, [location.state]);
 
-  // Calculate prices
+  // Calculate prices - TAX REMOVED, only 15% commission remains
   const calculatePrices = () => {
-    if (!bookingData) return { subtotal: 0, tax: 0, total: 0 };
+    if (!bookingData) return { subtotal: 0, total: 0 };
 
     const basePrice = bookingData.totalPrice || 0;
-    const tax = Math.round(basePrice * 0.1); // 10% tax
-    const total = basePrice + tax;
+    // No tax calculation, total is just the base price
+    const total = basePrice;
 
-    return { subtotal: basePrice, tax, total };
+    return { subtotal: basePrice, total };
   };
 
   const prices = calculatePrices();
@@ -174,6 +174,16 @@ const PaymentPage = () => {
       }
 
       console.log('Booking created successfully:', bookingResult);
+
+      // Confirm the booking (marks as paid + creates guide assignment)
+      const confirmResponse = await fetch(`http://localhost:5000/api/new-bookings/${bookingResult.data.id}/confirm`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      await confirmResponse.json();
 
       // Clear temporary data
       localStorage.removeItem('selectedTour');
@@ -451,7 +461,7 @@ const PaymentPage = () => {
                   </div>
                 )}
 
-                {/* Price Breakdown */}
+                {/* Price Breakdown - TAX REMOVED */}
                 <div className="price-breakdown">
                   <h3 className="summary-subtitle">Price Breakdown</h3>
                   
@@ -459,14 +469,13 @@ const PaymentPage = () => {
                     <span>Subtotal:</span>
                     <span>${prices.subtotal}</span>
                   </div>
-                  <div className="price-row">
-                    <span>Tax (10%):</span>
-                    <span>${prices.tax}</span>
-                  </div>
                   <div className="price-row total">
                     <span>Total Amount:</span>
                     <span>${prices.total}</span>
                   </div>
+                  <p className="price-note" style={{ fontSize: '0.8rem', color: '#6c757d', marginTop: '0.5rem' }}>
+                    * Includes 15% service fee
+                  </p>
                 </div>
 
                 {/* Special Requests */}

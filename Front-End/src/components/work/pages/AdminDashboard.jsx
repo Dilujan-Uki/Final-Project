@@ -1,4 +1,4 @@
-// src/pages/AdminDashboard.jsx - COMPLETE REPLACE
+// src/pages/AdminDashboard.jsx - UPDATED with separate Users and Guides tabs
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './AdminDashboard.css';
@@ -18,6 +18,7 @@ const AdminDashboard = () => {
     cancelledBookings: 0,
     totalRevenue: 0,
     totalUsers: 0,
+    totalGuides: 0,
     activeTours: 0
   });
 
@@ -35,10 +36,19 @@ const AdminDashboard = () => {
 
   // Bookings state
   const [bookings, setBookings] = useState([]);
-  const [users, setUsers] = useState([]);
+  const [reviews, setReviews] = useState([]);
+  const [reviewStats, setReviewStats] = useState({ total: 0, pending: 0, approved: 0 });
+  
+  // Users and Guides state - SEPARATED
+  const [regularUsers, setRegularUsers] = useState([]);
+  const [guides, setGuides] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
+  const [selectedGuide, setSelectedGuide] = useState(null);
+  
+  // Search and filter
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const [guideCategoryFilter, setGuideCategoryFilter] = useState('all');
 
   const navigate = useNavigate();
 
@@ -64,6 +74,7 @@ const AdminDashboard = () => {
         setIsAdmin(true);
         await fetchDashboardData(token);
         await fetchApplications(token);
+        await fetchGuides(token); // NEW: fetch guides separately
       } catch (error) {
         console.error('Error checking admin:', error);
         navigate('/login');
@@ -92,6 +103,24 @@ const AdminDashboard = () => {
     }
   };
 
+  // NEW: Fetch guides from the Guide model
+  const fetchGuides = async (token) => {
+    try {
+      const response = await fetch('http://localhost:5000/api/guides/profiles', {
+        headers: {
+          'Authorization': `Bearer ${token}`
+        }
+      });
+      const data = await response.json();
+      if (data.status === 'success') {
+        setGuides(data.data);
+        setStats(prev => ({ ...prev, totalGuides: data.data.length }));
+      }
+    } catch (error) {
+      console.error('Error fetching guides:', error);
+    }
+  };
+
   const handleUpdateApplication = async (applicationId, newStatus) => {
     const token = localStorage.getItem('token');
 
@@ -115,6 +144,10 @@ const AdminDashboard = () => {
         setSelectedApplication(null);
         setRejectionReason('');
         fetchApplications(token);
+        if (newStatus === 'accepted') {
+          // Refresh guides list if a new guide was created
+          fetchGuides(token);
+        }
       }
     } catch (error) {
       console.error('Error updating application:', error);
@@ -164,27 +197,59 @@ const AdminDashboard = () => {
         }
       }
 
-      // Fetch users
+      // Fetch users - SEPARATE regular users from guides
       const usersRes = await fetch('http://localhost:5000/api/users', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+        headers: { 'Authorization': `Bearer ${token}` }
       });
-
       if (usersRes.ok) {
         const usersData = await usersRes.json();
         if (usersData.status === 'success') {
-          setUsers(usersData.data);
-          setStats(prev => ({
-            ...prev,
-            totalUsers: usersData.data.length
-          }));
+          // Separate regular users (role: 'user') from guides
+          const regular = usersData.data.filter(u => u.role === 'user');
+          setRegularUsers(regular);
+          setStats(prev => ({ ...prev, totalUsers: regular.length }));
+        }
+      }
+
+      // Fetch reviews
+      const reviewsRes = await fetch('http://localhost:5000/api/reviews/all', {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      if (reviewsRes.ok) {
+        const reviewsData = await reviewsRes.json();
+        if (reviewsData.status === 'success') {
+          const allReviews = reviewsData.data || [];
+          setReviews(allReviews);
+          setReviewStats({
+            total: allReviews.length,
+            pending: allReviews.filter(r => !r.isApproved).length,
+            approved: allReviews.filter(r => r.isApproved).length
+          });
         }
       }
 
     } catch (error) {
       console.error('Error fetching dashboard data:', error);
     }
+  };
+
+  const handleApproveReview = async (reviewId, isApproved) => {
+    const token = localStorage.getItem('token');
+    try {
+      const response = await fetch(`http://localhost:5000/api/reviews/${reviewId}/approve`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ isApproved })
+      });
+      if (response.ok) {
+        setReviews(prev => prev.map(r => r._id === reviewId ? { ...r, isApproved } : r));
+        setReviewStats(prev => ({
+          ...prev,
+          pending: prev.pending + (isApproved ? -1 : 1),
+          approved: prev.approved + (isApproved ? 1 : -1)
+        }));
+      }
+    } catch (e) { console.error('Error updating review:', e); }
   };
 
   const handleUpdateBookingStatus = async (bookingId, newStatus) => {
@@ -254,6 +319,10 @@ const AdminDashboard = () => {
     }
   };
 
+  const handleViewGuideDetails = (guide) => {
+    setSelectedGuide(guide);
+  };
+
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-US', {
       year: 'numeric',
@@ -290,6 +359,20 @@ const AdminDashboard = () => {
     }
   };
 
+  const getRatingStars = (rating) => {
+    const stars = [];
+    for (let i = 1; i <= 5; i++) {
+      if (i <= Math.floor(rating)) {
+        stars.push('★');
+      } else if (i - 0.5 <= rating) {
+        stars.push('½');
+      } else {
+        stars.push('☆');
+      }
+    }
+    return stars.join('');
+  };
+
   if (loading) {
     return (
       <div className="admin-dashboard">
@@ -324,7 +407,7 @@ const AdminDashboard = () => {
         </div>
 
         <div className="admin-content">
-          {/* Sidebar - REMOVED BOOKINGS TAB */}
+          {/* Sidebar */}
           <aside className="admin-sidebar">
             <div className="sidebar-profile">
               <div className="profile-avatar admin-avatar">
@@ -352,6 +435,32 @@ const AdminDashboard = () => {
               </button>
 
               <button
+                className={`nav-item ${activeTab === 'users' ? 'active' : ''}`}
+                onClick={() => setActiveTab('users')}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                </svg>
+                Regular Users
+                <span className="nav-badge">{regularUsers.length}</span>
+              </button>
+
+              <button
+                className={`nav-item ${activeTab === 'guides' ? 'active' : ''}`}
+                onClick={() => setActiveTab('guides')}
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <circle cx="12" cy="7" r="4"></circle>
+                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                </svg>
+                Tour Guides
+                <span className="nav-badge">{guides.length}</span>
+              </button>
+
+              <button
                 className={`nav-item ${activeTab === 'applications' ? 'active' : ''}`}
                 onClick={() => setActiveTab('applications')}
               >
@@ -368,17 +477,16 @@ const AdminDashboard = () => {
               </button>
 
               <button
-                className={`nav-item ${activeTab === 'users' ? 'active' : ''}`}
-                onClick={() => setActiveTab('users')}
+                className={`nav-item ${activeTab === 'reviews' ? 'active' : ''}`}
+                onClick={() => setActiveTab('reviews')}
               >
                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                  <circle cx="9" cy="7" r="4"></circle>
-                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
                 </svg>
-                Users
-                <span className="nav-badge">{users.length}</span>
+                Reviews
+                {reviewStats.pending > 0 && (
+                  <span className="nav-badge">{reviewStats.pending}</span>
+                )}
               </button>
 
               <button
@@ -442,15 +550,23 @@ const AdminDashboard = () => {
                   </div>
 
                   <div className="stat-card">
-                    <div className="stat-icon">👥</div>
+                    <div className="stat-icon">👤</div>
                     <div className="stat-content">
                       <h3 className="stat-value">{stats.totalUsers}</h3>
-                      <p className="stat-label">Total Users</p>
+                      <p className="stat-label">Regular Users</p>
+                    </div>
+                  </div>
+
+                  <div className="stat-card">
+                    <div className="stat-icon">👥</div>
+                    <div className="stat-content">
+                      <h3 className="stat-value">{stats.totalGuides}</h3>
+                      <p className="stat-label">Tour Guides</p>
                     </div>
                   </div>
                 </div>
 
-                {/* Recent Bookings - FIXED to show all bookings */}
+                {/* Recent Bookings */}
                 <div className="dashboard-card">
                   <div className="card-header">
                     <h3 className="card-title">
@@ -519,6 +635,303 @@ const AdminDashboard = () => {
                     </div>
                   )}
                 </div>
+              </div>
+            )}
+
+            {/* Regular Users Tab */}
+            {activeTab === 'users' && (
+              <div className="users-tab">
+                <div className="tab-header">
+                  <h3 className="tab-title">Regular Users ({regularUsers.length})</h3>
+                </div>
+
+                <div className="filter-section">
+                  <input
+                    type="text"
+                    placeholder="Search users by name or email..."
+                    className="search-input"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                </div>
+
+                <div className="simple-users-list">
+                  {regularUsers.filter(user =>
+                    user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                    user.email?.toLowerCase().includes(searchTerm.toLowerCase())
+                  ).map((userItem) => (
+                    <div key={userItem._id} className="simple-user-item">
+                      <div className="simple-user-info">
+                        <div className="simple-user-avatar">
+                          {userItem.name?.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="simple-user-details">
+                          <span className="simple-user-name">{userItem.name}</span>
+                          <span className="simple-user-email">{userItem.email}</span>
+                          <span className="simple-user-phone">{userItem.phone || 'No phone'}</span>
+                        </div>
+                        <span className="role-badge-small user">
+                          User
+                        </span>
+                      </div>
+                      <button
+                        className="view-user-btn"
+                        onClick={() => handleViewUserDetails(userItem._id)}
+                      >
+                        View Details
+                      </button>
+                    </div>
+                  ))}
+                </div>
+
+                {/* User Details Modal */}
+                {selectedUser && (
+                  <div className="modal-overlay" onClick={() => setSelectedUser(null)}>
+                    <div className="modal-content small" onClick={e => e.stopPropagation()}>
+                      <div className="modal-header">
+                        <h2>User Details</h2>
+                        <button className="modal-close" onClick={() => setSelectedUser(null)}>×</button>
+                      </div>
+
+                      <div className="modal-body">
+                        <div className="user-profile-card">
+                          <div className="user-avatar-large">
+                            {selectedUser.name?.charAt(0).toUpperCase()}
+                          </div>
+                          <h3 className="user-name-large">{selectedUser.name}</h3>
+                          <span className="role-badge-large user">
+                            Regular User
+                          </span>
+                        </div>
+
+                        <div className="user-info-section">
+                          <h4>Personal Information</h4>
+                          <div className="info-grid">
+                            <div className="info-item">
+                              <label>Full Name</label>
+                              <span>{selectedUser.name}</span>
+                            </div>
+                            <div className="info-item">
+                              <label>Email Address</label>
+                              <span>{selectedUser.email}</span>
+                            </div>
+                            <div className="info-item">
+                              <label>Phone Number</label>
+                              <span>{selectedUser.phone || 'Not provided'}</span>
+                            </div>
+                            <div className="info-item">
+                              <label>Address</label>
+                              <span>{selectedUser.address || 'Not provided'}</span>
+                            </div>
+                            <div className="info-item">
+                              <label>Member Since</label>
+                              <span>{formatDate(selectedUser.createdAt)}</span>
+                            </div>
+                            <div className="info-item">
+                              <label>Preferred Language</label>
+                              <span>{selectedUser.preferences?.language || 'English'}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Guides Tab - NEW */}
+            {activeTab === 'guides' && (
+              <div className="guides-tab">
+                <div className="tab-header">
+                  <h3 className="tab-title">Tour Guides ({guides.length})</h3>
+                </div>
+
+                {/* Filter Section */}
+                <div className="filter-section">
+                  <input
+                    type="text"
+                    placeholder="Search guides by name or email..."
+                    className="search-input"
+                    value={searchTerm}
+                    onChange={(e) => setSearchTerm(e.target.value)}
+                  />
+                  <select
+                    className="filter-select"
+                    value={guideCategoryFilter}
+                    onChange={(e) => setGuideCategoryFilter(e.target.value)}
+                  >
+                    <option value="all">All Categories</option>
+                    <option value="cultural">Cultural</option>
+                    <option value="wildlife">Wildlife</option>
+                    <option value="adventure">Adventure</option>
+                    <option value="beach">Beach</option>
+                    <option value="photography">Photography</option>
+                  </select>
+                </div>
+
+                {/* Guides Grid */}
+                <div className="guides-grid-admin">
+                  {guides
+                    .filter(guide => 
+                      (guide.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+                       guide.email?.toLowerCase().includes(searchTerm.toLowerCase())) &&
+                      (guideCategoryFilter === 'all' || guide.category === guideCategoryFilter)
+                    )
+                    .map((guide) => (
+                      <div key={guide._id} className="guide-card-admin">
+                        <div className="guide-card-header">
+                          <div className="guide-avatar-large">
+                            {guide.name?.charAt(0).toUpperCase()}
+                          </div>
+                          <div className="guide-rating-badge-admin">
+                            {guide.rating} ⭐
+                          </div>
+                        </div>
+                        
+                        <div className="guide-card-body">
+                          <h4 className="guide-name-admin">{guide.name}</h4>
+                          <p className="guide-email-admin">{guide.email}</p>
+                          
+                          <div className="guide-category-tag">
+                            {guide.category || 'Cultural'}
+                          </div>
+
+                          <div className="guide-stats-admin">
+                            <div className="stat">
+                              <span className="stat-label">Experience</span>
+                              <span className="stat-value">{guide.experience || 'N/A'}</span>
+                            </div>
+                            <div className="stat">
+                              <span className="stat-label">Daily Rate</span>
+                              <span className="stat-value">${guide.dailyRate}/day</span>
+                            </div>
+                            <div className="stat">
+                              <span className="stat-label">Reviews</span>
+                              <span className="stat-value">{guide.totalReviews || 0}</span>
+                            </div>
+                          </div>
+
+                          <div className="guide-specialties-admin">
+                            {guide.specialties?.slice(0, 3).map((spec, idx) => (
+                              <span key={idx} className="specialty-tag-small">{spec}</span>
+                            ))}
+                            {guide.specialties?.length > 3 && (
+                              <span className="specialty-tag-small">+{guide.specialties.length - 3}</span>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="guide-card-footer">
+                          <button
+                            className="view-guide-btn"
+                            onClick={() => handleViewGuideDetails(guide)}
+                          >
+                            View Details
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                </div>
+
+                {/* Guide Details Modal */}
+                {selectedGuide && (
+                  <div className="modal-overlay" onClick={() => setSelectedGuide(null)}>
+                    <div className="modal-content" onClick={e => e.stopPropagation()}>
+                      <div className="modal-header">
+                        <h2>Guide Details</h2>
+                        <button className="modal-close" onClick={() => setSelectedGuide(null)}>×</button>
+                      </div>
+
+                      <div className="modal-body">
+                        <div className="guide-profile-header">
+                          <div className="guide-profile-avatar">
+                            {selectedGuide.name?.charAt(0).toUpperCase()}
+                          </div>
+                          <div>
+                            <h3>{selectedGuide.name}</h3>
+                            <p>{selectedGuide.email}</p>
+                            <div className="guide-profile-rating">
+                              <span className="stars">{getRatingStars(selectedGuide.rating)}</span>
+                              <span>({selectedGuide.totalReviews || 0} reviews)</span>
+                            </div>
+                          </div>
+                        </div>
+
+                        <div className="guide-details-grid">
+                          <div className="detail-section">
+                            <h4>Professional Information</h4>
+                            <div className="detail-item">
+                              <label>Experience:</label>
+                              <span>{selectedGuide.experience || 'Not specified'}</span>
+                            </div>
+                            <div className="detail-item">
+                              <label>Category:</label>
+                              <span className="category-badge">{selectedGuide.category}</span>
+                            </div>
+                            <div className="detail-item">
+                              <label>Phone:</label>
+                              <span>{selectedGuide.phone || 'Not provided'}</span>
+                            </div>
+                          </div>
+
+                          <div className="detail-section">
+                            <h4>Rates</h4>
+                            <div className="detail-item">
+                              <label>Hourly Rate:</label>
+                              <span>${selectedGuide.hourlyRate}/hour</span>
+                            </div>
+                            <div className="detail-item">
+                              <label>Daily Rate:</label>
+                              <span>${selectedGuide.dailyRate}/day</span>
+                            </div>
+                          </div>
+
+                          <div className="detail-section full-width">
+                            <h4>Bio</h4>
+                            <p>{selectedGuide.bio || 'No bio provided'}</p>
+                          </div>
+
+                          <div className="detail-section full-width">
+                            <h4>Specialties</h4>
+                            <div className="tag-list">
+                              {selectedGuide.specialties?.map((spec, idx) => (
+                                <span key={idx} className="tag">{spec}</span>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div className="detail-section full-width">
+                            <h4>Languages</h4>
+                            <div className="tag-list">
+                              {selectedGuide.languages?.map((lang, idx) => (
+                                <span key={idx} className="tag">{lang}</span>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div className="detail-section full-width">
+                            <h4>Tour Specialties</h4>
+                            <div className="tag-list">
+                              {selectedGuide.tourSpecialties?.map((tour, idx) => (
+                                <span key={idx} className="tag">{tour}</span>
+                              ))}
+                            </div>
+                          </div>
+
+                          <div className="detail-section full-width">
+                            <h4>Certifications</h4>
+                            <div className="tag-list">
+                              {selectedGuide.certifications?.map((cert, idx) => (
+                                <span key={idx} className="tag">{cert}</span>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
 
@@ -770,103 +1183,82 @@ const AdminDashboard = () => {
               </div>
             )}
 
-            {/* Users Tab */}
-            {activeTab === 'users' && (
-              <div className="users-tab">
-                <div className="tab-header">
-                  <h3 className="tab-title">Users ({users.length})</h3>
+            {/* Reviews Tab */}
+            {activeTab === 'reviews' && (
+              <div className="reviews-tab">
+                <div className="rt-header">
+                  <div>
+                    <h3 className="rt-title">Review Moderation</h3>
+                    <p className="rt-subtitle">Approve or reject customer reviews before they go public</p>
+                  </div>
+                  <div className="rt-pills">
+                    <span className="rt-pill total">📋 Total: {reviewStats.total}</span>
+                    <span className="rt-pill pending">⏳ Pending: {reviewStats.pending}</span>
+                    <span className="rt-pill approved">✅ Approved: {reviewStats.approved}</span>
+                  </div>
                 </div>
 
-                <div className="filter-section">
-                  <input
-                    type="text"
-                    placeholder="Search users by name or email..."
-                    className="search-input"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
-                </div>
-
-                <div className="simple-users-list">
-                  {users.filter(user =>
-                    user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    user.email?.toLowerCase().includes(searchTerm.toLowerCase())
-                  ).map((userItem) => (
-                    <div key={userItem._id} className="simple-user-item">
-                      <div className="simple-user-info">
-                        <div className="simple-user-avatar">
-                          {userItem.name?.charAt(0).toUpperCase()}
-                        </div>
-                        <div className="simple-user-details">
-                          <span className="simple-user-name">{userItem.name}</span>
-                          <span className="simple-user-email">{userItem.email}</span>
-                          <span className="simple-user-phone">{userItem.phone || 'No phone'}</span>
-                        </div>
-                        <span className={`role-badge-small ${userItem.role}`}>
-                          {userItem.role}
-                        </span>
-                      </div>
-                      <button
-                        className="view-user-btn"
-                        onClick={() => handleViewUserDetails(userItem._id)}
-                      >
-                        View Details
-                      </button>
-                    </div>
-                  ))}
-                </div>
-
-                {/* User Details Modal */}
-                {selectedUser && (
-                  <div className="modal-overlay" onClick={() => setSelectedUser(null)}>
-                    <div className="modal-content small" onClick={e => e.stopPropagation()}>
-                      <div className="modal-header">
-                        <h2>User Details</h2>
-                        <button className="modal-close" onClick={() => setSelectedUser(null)}>×</button>
-                      </div>
-
-                      <div className="modal-body">
-                        <div className="user-profile-card">
-                          <div className="user-avatar-large">
-                            {selectedUser.name?.charAt(0).toUpperCase()}
+                {reviews.length === 0 ? (
+                  <div className="rt-empty">
+                    <div className="rt-empty-icon">⭐</div>
+                    <h4>No reviews yet</h4>
+                    <p>Customer reviews will appear here once submitted</p>
+                  </div>
+                ) : (
+                  <div className="rt-grid">
+                    {reviews.map(review => (
+                      <div key={review._id} className={`rt-card ${review.isApproved ? 'rt-card--approved' : 'rt-card--pending'}`}>
+                        <div className="rt-card-top">
+                          <div className="rt-avatar">
+                            {review.user?.name?.charAt(0)?.toUpperCase() || '?'}
                           </div>
-                          <h3 className="user-name-large">{selectedUser.name}</h3>
-                          <span className={`role-badge-large ${selectedUser.role}`}>
-                            {selectedUser.role}
+                          <div className="rt-author-info">
+                            <span className="rt-author-name">{review.user?.name || 'Anonymous'}</span>
+                            <span className="rt-author-email">{review.user?.email || ''}</span>
+                          </div>
+                          <span className={`rt-status-badge ${review.isApproved ? 'rt-badge--approved' : 'rt-badge--pending'}`}>
+                            {review.isApproved ? '✅ Approved' : '⏳ Pending'}
                           </span>
                         </div>
 
-                        <div className="user-info-section">
-                          <h4>Personal Information</h4>
-                          <div className="info-grid">
-                            <div className="info-item">
-                              <label>Full Name</label>
-                              <span>{selectedUser.name}</span>
-                            </div>
-                            <div className="info-item">
-                              <label>Email Address</label>
-                              <span>{selectedUser.email}</span>
-                            </div>
-                            <div className="info-item">
-                              <label>Phone Number</label>
-                              <span>{selectedUser.phone || 'Not provided'}</span>
-                            </div>
-                            <div className="info-item">
-                              <label>Address</label>
-                              <span>{selectedUser.address || 'Not provided'}</span>
-                            </div>
-                            <div className="info-item">
-                              <label>Member Since</label>
-                              <span>{formatDate(selectedUser.createdAt)}</span>
-                            </div>
-                            <div className="info-item">
-                              <label>Preferred Language</label>
-                              <span>{selectedUser.preferences?.language || 'English'}</span>
-                            </div>
+                        <div className="rt-meta">
+                          <div className="rt-stars">
+                            {[1,2,3,4,5].map(s => (
+                              <span key={s} className={s <= review.rating ? 'rt-star filled' : 'rt-star'}>★</span>
+                            ))}
+                            <span className="rt-rating-num">{review.rating}/5</span>
+                          </div>
+                          <span className="rt-tour-tag">🗺️ {review.tour}</span>
+                          {review.guide && <span className="rt-guide-tag">👤 {review.guide}</span>}
+                        </div>
+
+                        <h4 className="rt-review-title">"{review.title}"</h4>
+                        <p className="rt-review-body">{review.comment}</p>
+
+                        <div className="rt-card-footer">
+                          <span className="rt-date">
+                            🗓️ {new Date(review.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
+                          </span>
+                          <div className="rt-actions">
+                            {!review.isApproved ? (
+                              <button
+                                className="rt-btn rt-btn--approve"
+                                onClick={() => handleApproveReview(review._id, true)}
+                              >
+                                ✅ Approve
+                              </button>
+                            ) : (
+                              <button
+                                className="rt-btn rt-btn--unapprove"
+                                onClick={() => handleApproveReview(review._id, false)}
+                              >
+                                ↩ Unapprove
+                              </button>
+                            )}
                           </div>
                         </div>
                       </div>
-                    </div>
+                    ))}
                   </div>
                 )}
               </div>

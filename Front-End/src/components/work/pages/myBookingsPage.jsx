@@ -1,6 +1,7 @@
-// src/components/work/pages/MyBookingsPage.jsx - COMPLETE REPLACE
+// src/components/work/pages/MyBookingsPage.jsx - UPDATED with image mapping
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { getTourImage } from '/home/uki-dsa-01/LESSONS/Final-Project/Front-End/src/utils/tourImageMapping';
 import './MyBookingsPage.css';
 
 const MyBookingsPage = () => {
@@ -106,67 +107,90 @@ const MyBookingsPage = () => {
           </div>
         ) : (
           <div className="bookings-grid">
-            {bookings.map((booking) => (
-              <div key={booking._id} className="booking-card">
-                <div className="booking-image">
-                  <img 
-                    src={booking.tour?.image || 'https://images.unsplash.com/photo-1551632811-561732d1e306?w=400&h=300&fit=crop'} 
-                    alt={booking.tour?.name} 
-                  />
-                </div>
-                <div className="booking-content">
-                  <div className="booking-header">
-                    <h3 className="booking-title">{booking.tour?.name || booking.tourName}</h3>
-                    <span className={`status-badge ${getStatusBadgeClass(booking.status)}`}>
-                      {getStatusDisplay(booking.status)}
-                    </span>
+            {bookings.map((booking) => {
+              // Get the correct tour image using the utility
+              const tourImage = getTourImage({ name: booking.tourName });
+              
+              return (
+                <div key={booking._id} className="booking-card">
+                  <div className="booking-image">
+                    <img 
+                      src={tourImage} 
+                      alt={booking.tourName} 
+                    />
                   </div>
-                  
-                  <div className="booking-details">
-                    <div className="detail">
-                      <span className="detail-label">Booking Date:</span>
-                      <span className="detail-value">
-                        {new Date(booking.bookingDate).toLocaleDateString()}
+                  <div className="booking-content">
+                    <div className="booking-header">
+                      <h3 className="booking-title">{booking.tourName}</h3>
+                      <span className={`status-badge ${getStatusBadgeClass(booking.status)}`}>
+                        {getStatusDisplay(booking.status)}
                       </span>
                     </div>
-                    <div className="detail">
-                      <span className="detail-label">Participants:</span>
-                      <span className="detail-value">{booking.participants} people</span>
+                    
+                    <div className="booking-details">
+                      <div className="detail">
+                        <span className="detail-label">Booking Date:</span>
+                        <span className="detail-value">
+                          {new Date(booking.bookingDate).toLocaleDateString()}
+                        </span>
+                      </div>
+                      <div className="detail">
+                        <span className="detail-label">Participants:</span>
+                        <span className="detail-value">{booking.participants} people</span>
+                      </div>
+                      <div className="detail">
+                        <span className="detail-label">Duration:</span>
+                        <span className="detail-value">{booking.duration} days</span>
+                      </div>
+                      <div className="detail">
+                        <span className="detail-label">Total Price:</span>
+                        <span className="detail-value price">${booking.totalPrice}</span>
+                      </div>
                     </div>
-                    <div className="detail">
-                      <span className="detail-label">Duration:</span>
-                      <span className="detail-value">{booking.duration} days</span>
-                    </div>
-                    <div className="detail">
-                      <span className="detail-label">Total Price:</span>
-                      <span className="detail-value price">${booking.totalPrice}</span>
-                    </div>
-                  </div>
 
-                  {booking.specialRequests && (
-                    <div className="special-requests">
-                      <strong>Special Requests:</strong> {booking.specialRequests}
-                    </div>
-                  )}
+                    {booking.specialRequests && (
+                      <div className="special-requests">
+                        <strong>Special Requests:</strong> {booking.specialRequests}
+                      </div>
+                    )}
 
-                  <div className="booking-actions">
-                    <button 
-                      className="btn-secondary"
-                      onClick={() => navigate(`/booking-detail/${booking._id}`)}
-                    >
-                      View Details
-                    </button>
-                    <button 
-                      className="btn-outline cancel"
-                      onClick={() => console.log('Cancel booking', booking._id)}
-                      disabled={booking.status === 'cancelled' || booking.status === 'completed'}
-                    >
-                      {booking.status === 'cancelled' ? 'Cancelled' : 'Cancel'}
-                    </button>
+                    <div className="booking-actions">
+                      <button 
+                        className="btn-secondary"
+                        onClick={() => navigate(`/booking-detail/${booking._id}`)}
+                      >
+                        View Details
+                      </button>
+                      <button 
+                        className="btn-outline cancel"
+                        onClick={async () => {
+                        if (window.confirm('Are you sure you want to cancel this booking?')) {
+                          try {
+                            const token = localStorage.getItem('token');
+                            const response = await fetch(`http://localhost:5000/api/new-bookings/${booking._id}/cancel`, {
+                              method: 'PATCH',
+                              headers: { 'Authorization': `Bearer ${token}` }
+                            });
+                            const data = await response.json();
+                            if (data.success) {
+                              setBookings(prev => prev.map(b => b._id === booking._id ? {...b, status: 'cancelled'} : b));
+                            } else {
+                              alert(data.message || 'Failed to cancel booking');
+                            }
+                          } catch (err) {
+                            alert('Error cancelling booking');
+                          }
+                        }
+                      }}
+                        disabled={booking.status === 'cancelled' || booking.status === 'completed'}
+                      >
+                        {booking.status === 'cancelled' ? 'Cancelled' : 'Cancel'}
+                      </button>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

@@ -15,8 +15,8 @@ const getAllUsers = async (req, res) => {
     // For each user, get their booking count and recent bookings
     const usersWithDetails = await Promise.all(
       users.map(async (user) => {
-        const bookings = await Booking.find({ user: user._id })
-          .populate('tour', 'name price')
+        const bookings = await Booking.find({ userId: user._id })
+          .populate('tourId', 'name price')
           .sort({ createdAt: -1 });
 
         return {
@@ -57,8 +57,8 @@ const getUserById = async (req, res) => {
     }
 
     // Get all bookings for this user
-    const bookings = await Booking.find({ user: user._id })
-      .populate('tour', 'name price duration image')
+    const bookings = await Booking.find({ userId: user._id })
+      .populate('tourId', 'name price duration image')
       .sort({ createdAt: -1 });
 
     // Calculate statistics
