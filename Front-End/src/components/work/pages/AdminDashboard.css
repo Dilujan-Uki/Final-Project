@@ -2072,3 +2072,86 @@
     text-align: center;
   }
 }
+/* === SUSPEND STYLES === */
+.suspend-btn {
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  border: 1.5px solid;
+  transition: all 0.2s;
+}
+.suspend-btn.suspend { background: #fff5f5; color: #c53030; border-color: #fc8181; }
+.suspend-btn.suspend:hover { background: #c53030; color: #fff; }
+.suspend-btn.unsuspend { background: #f0fff4; color: #276749; border-color: #68d391; }
+.suspend-btn.unsuspend:hover { background: #276749; color: #fff; }
+
+.user-actions, .guide-card-footer { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.guide-card-footer { padding: 12px 16px; border-top: 1px solid #f0f0f0; justify-content: space-between; }
+
+.suspended-item { background: #fff8f8 !important; border-left: 3px solid #fc8181 !important; }
+.suspended-tag { background: #fed7d7; color: #c53030; font-size: 0.7rem; font-weight: 700; padding: 2px 8px; border-radius: 12px; display: inline-block; }
+.suspended-card { opacity: 0.85; position: relative; }
+.suspended-card::before { content: ''; position: absolute; inset: 0; background: rgba(252,129,129,0.05); border-radius: inherit; pointer-events: none; }
+.suspended-overlay-badge { position: absolute; top: 8px; left: 8px; background: #c53030; color: #fff; font-size: 0.65rem; font-weight: 700; padding: 2px 8px; border-radius: 12px; }
+.suspended-notice { background: #fff5f5; border: 1px solid #feb2b2; border-left: 4px solid #c53030; color: #c53030; padding: 12px 16px; border-radius: 8px; margin-bottom: 16px; font-weight: 500; font-size: 0.9rem; }
+
+.btn-danger { background: #c53030; color: #fff; padding: 10px 20px; border-radius: 8px; border: none; font-weight: 600; cursor: pointer; transition: background 0.2s; }
+.btn-danger:hover { background: #9b2c2c; }
+
+.suspend-warning { background: #fff3cd; border: 1px solid #ffc107; border-radius: 8px; padding: 12px; color: #856404; font-size: 0.875rem; margin: 12px 0; }
+
+/* === TOUR COMPLETIONS TAB === */
+.completions-tab .tab-header { margin-bottom: 24px; }
+.tab-subtitle { color: #666; font-size: 0.9rem; margin: 4px 0 0; }
+.completions-list { display: flex; flex-direction: column; gap: 20px; }
+.completion-card { background: #fff; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 2px 8px rgba(0,0,0,0.06); overflow: hidden; }
+.completion-card-header { display: flex; justify-content: space-between; align-items: flex-start; padding: 20px 24px 16px; border-bottom: 1px solid #f0f0f0; }
+.completion-card-header h3 { font-size: 1.1rem; color: #1a202c; margin: 0 0 4px; }
+.guide-tag { font-size: 0.85rem; color: #718096; }
+.pending-badge { background: #e2d9f3; color: #6f42c1; font-size: 0.8rem; font-weight: 600; padding: 4px 12px; border-radius: 20px; white-space: nowrap; }
+.completion-details { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; padding: 16px 24px; }
+.completion-detail { display: flex; flex-direction: column; gap: 2px; }
+.completion-detail span { font-size: 0.8rem; color: #718096; }
+.completion-detail strong { font-size: 0.95rem; color: #2d3748; }
+.guide-note { background: #f7fafc; border-left: 3px solid #6f42c1; margin: 0 24px 16px; padding: 12px 16px; border-radius: 0 8px 8px 0; }
+.guide-note strong { display: block; font-size: 0.85rem; color: #6f42c1; margin-bottom: 4px; }
+.guide-note p { margin: 0; font-size: 0.9rem; color: #4a5568; }
+.completion-actions { display: flex; gap: 12px; padding: 16px 24px; border-top: 1px solid #f0f0f0; }
+.confirm-btn { background: #28a745 !important; border-color: #28a745 !important; }
+.reject-btn { border-color: #dc3545 !important; color: #dc3545 !important; }
+
+/* === DASHBOARD ALERT CARD === */
+.alert-card { border: 1px solid #e2d9f3 !important; background: linear-gradient(135deg, #f8f5ff, #fff) !important; }
+.alert-card .card-header { display: flex; align-items: center; gap: 12px; }
+.alert-badge { background: #6f42c1; color: #fff; font-size: 0.8rem; font-weight: 700; padding: 3px 10px; border-radius: 20px; }
+.card-description { color: #666; font-size: 0.9rem; margin: 8px 0 16px; }
+
+/* === BOOKING STATUS SELECT FIX === */
+.simple-booking-footer { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; gap: 12px; }
+.status-select-small { padding: 5px 10px; border-radius: 6px; border: 1.5px solid #dee2e6; font-size: 0.85rem; background: #fff; cursor: pointer; outline: none; }
+.status-select-small.status-pending { border-color: #ffc107; color: #856404; }
+.status-select-small.status-confirmed { border-color: #17a2b8; color: #0c5460; }
+.status-select-small.status-completed { border-color: #28a745; color: #155724; }
+.status-select-small.status-cancelled { border-color: #dc3545; color: #721c24; }
+
+/* === SIMPLE BOOKING STATUS FIX === */
+.simple-status.pending { background: #fff3cd; color: #856404; }
+.simple-status.confirmed { background: #cff4fc; color: #0c5460; }
+.simple-status.completed { background: #d1e7dd; color: #0f5132; }
+.simple-status.cancelled { background: #f8d7da; color: #721c24; }
+
+/* === MODAL FIX === */
+.modal-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; z-index: 9999; padding: 20px; }
+.modal-content { background: #fff; border-radius: 16px; width: 100%; max-width: 700px; max-height: 90vh; overflow-y: auto; box-shadow: 0 20px 60px rgba(0,0,0,0.2); }
+.modal-content.small { max-width: 500px; }
+.modal-header { display: flex; justify-content: space-between; align-items: center; padding: 20px 24px; border-bottom: 1px solid #f0f0f0; position: sticky; top: 0; background: #fff; z-index: 1; }
+.modal-header h2 { font-size: 1.25rem; color: #1a202c; margin: 0; }
+.modal-close { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: #718096; width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; border-radius: 50%; transition: background 0.2s; }
+.modal-close:hover { background: #f0f0f0; color: #333; }
+.modal-body { padding: 24px; }
+.modal-actions { display: flex; gap: 12px; margin-top: 24px; justify-content: flex-end; }
+
+.simple-price-col { display: flex; flex-direction: column; gap: 2px; }
+.refund-tag { font-size: 0.75rem; color: #28a745; font-weight: 600; background: #d1fae5; padding: 2px 8px; border-radius: 10px; }

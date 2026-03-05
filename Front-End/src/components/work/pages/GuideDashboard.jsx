@@ -1,4 +1,3 @@
-// src/pages/GuideDashboard.jsx - FIXED version
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './GuideDashboard.css';
@@ -10,370 +9,198 @@ const GuideDashboard = () => {
   const [error, setError] = useState('');
   const [selectedAssignment, setSelectedAssignment] = useState(null);
   const [activeTab, setActiveTab] = useState('upcoming');
-  const [stats, setStats] = useState({
-    totalEarnings: 0,
-    completedTours: 0,
-    upcomingTours: 0,
-    ongoingTours: 0,
-    totalCustomers: 0,
-    averageRating: 0,
-    monthlyEarnings: 0
-  });
+  const [stats, setStats] = useState({ totalEarnings: 0, completedTours: 0, upcomingTours: 0, ongoingTours: 0, totalCustomers: 0, averageRating: 0, monthlyEarnings: 0 });
   const [showProfileEdit, setShowProfileEdit] = useState(false);
-  const [profileForm, setProfileForm] = useState({
-    phone: '',
-    bio: '',
-    languages: [],
-    specialties: [],
-    hourlyRate: 0,
-    dailyRate: 0,
-    availability: ''
-  });
+  const [profileForm, setProfileForm] = useState({ phone: '', bio: '', languages: [], specialties: [], dailyRate: 0, availability: '' });
   const [updateSuccess, setUpdateSuccess] = useState(false);
-
+  const [showCompletionModal, setShowCompletionModal] = useState(false);
+  const [completionNote, setCompletionNote] = useState('');
+  const [completingAssignment, setCompletingAssignment] = useState(null);
   const navigate = useNavigate();
 
-  // Define calculateStats with useCallback
   const calculateStats = useCallback((assignmentsData) => {
     const completed = assignmentsData.filter(a => a.status === 'completed');
     const upcoming = assignmentsData.filter(a => a.status === 'upcoming');
     const ongoing = assignmentsData.filter(a => a.status === 'ongoing');
-    
-    // Calculate earnings (assuming $70 per day for completed tours)
     const earnings = completed.reduce((sum, a) => sum + (a.duration * 70), 0);
-    
-    // Get current month's earnings
     const currentMonth = new Date().getMonth();
-    const monthlyEarnings = completed
-      .filter(a => new Date(a.startDate).getMonth() === currentMonth)
-      .reduce((sum, a) => sum + (a.duration * 70), 0);
-
-    // Count unique customers
+    const monthlyEarnings = completed.filter(a => new Date(a.startDate).getMonth() === currentMonth).reduce((sum, a) => sum + (a.duration * 70), 0);
     const uniqueCustomers = new Set(completed.map(a => a.customerEmail)).size;
-
-    setStats({
-      totalEarnings: earnings,
-      completedTours: completed.length,
-      upcomingTours: upcoming.length,
-      ongoingTours: ongoing.length,
-      totalCustomers: uniqueCustomers,
-      averageRating: guide?.rating || 4.8,
-      monthlyEarnings: monthlyEarnings
-    });
-  }, [guide?.rating]); // Add guide?.rating as dependency
-
-  // Define fetchAssignments with useCallback - now includes calculateStats in dependencies
-  const fetchAssignments = useCallback(async () => {
-    const token = localStorage.getItem('token');
-    
-    try {
-      const response = await fetch('http://localhost:5000/api/guides/assignments', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      const data = await response.json();
-
-      if (data.status === 'success') {
-        setAssignments(data.data);
-        calculateStats(data.data); // This now has calculateStats in dependencies
-      } else {
-        setError('Failed to fetch assignments');
-      }
-    } catch (err) {
-      setError('Error loading assignments');
-      console.error(err);
-    } finally {
-      setLoading(false);
-    }
-  }, [calculateStats]); // Add calculateStats as dependency
-
-  // Define fetchGuideProfile with useCallback
-  const fetchGuideProfile = useCallback(async () => {
-    const token = localStorage.getItem('token');
-    
-    try {
-      const response = await fetch('http://localhost:5000/api/guides/profile/me', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-
-      const data = await response.json();
-
-      if (data.status === 'success') {
-        setGuide(data.data);
-        setProfileForm({
-          phone: data.data.phone || '',
-          bio: data.data.bio || '',
-          languages: data.data.languages || [],
-          specialties: data.data.specialties || [],
-          hourlyRate: data.data.hourlyRate || 20,
-          dailyRate: data.data.dailyRate || 70,
-          availability: data.data.availability || 'Available for bookings 7 days a week'
-        });
-      }
-    } catch (err) {
-      console.error('Error fetching guide profile:', err);
-    }
+    setStats({ totalEarnings: earnings, completedTours: completed.length, upcomingTours: upcoming.length, ongoingTours: ongoing.length, totalCustomers: uniqueCustomers, averageRating: 0, monthlyEarnings });
   }, []);
 
-  // Update useEffect with proper dependencies
+  const fetchAssignments = useCallback(async () => {
+    const token = localStorage.getItem('token');
+    try {
+      const response = await fetch('http://localhost:5000/api/guides/assignments', { headers: { 'Authorization': `Bearer ${token}` } });
+      const data = await response.json();
+      if (data.status === 'success') { setAssignments(data.data); calculateStats(data.data); }
+      else setError('Failed to fetch assignments');
+    } catch (err) { setError('Error loading assignments'); }
+    finally { setLoading(false); }
+  }, [calculateStats]);
+
+  const fetchGuideProfile = useCallback(async () => {
+    const token = localStorage.getItem('token');
+    try {
+      const response = await fetch('http://localhost:5000/api/guides/profile/me', { headers: { 'Authorization': `Bearer ${token}` } });
+      const data = await response.json();
+      if (data.status === 'success') {
+        setGuide(data.data);
+        setStats(prev => ({ ...prev, averageRating: data.data.rating || 0 }));
+        setProfileForm({ phone: data.data.phone || '', bio: data.data.bio || '', languages: data.data.languages || [], specialties: data.data.specialties || [], dailyRate: data.data.dailyRate || 70, availability: data.data.availability || '' });
+      }
+    } catch (err) { console.error('Error fetching guide profile:', err); }
+  }, []);
+
   useEffect(() => {
     const token = localStorage.getItem('token');
     const user = JSON.parse(localStorage.getItem('user') || '{}');
-
-    if (!token || user.role !== 'guide') {
-      navigate('/login');
-      return;
-    }
-
+    if (!token || user.role !== 'guide') { navigate('/login'); return; }
     fetchGuideProfile();
     fetchAssignments();
   }, [navigate, fetchGuideProfile, fetchAssignments]);
 
-  const updateStatus = async (assignmentId, newStatus) => {
+  const updateStatus = async (assignmentId, newStatus, note = '') => {
     const token = localStorage.getItem('token');
-    
     try {
       const response = await fetch(`http://localhost:5000/api/guides/assignments/${assignmentId}/status`, {
         method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ status: newStatus })
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ status: newStatus, completionNote: note })
       });
-
       const data = await response.json();
-
       if (data.status === 'success') {
-        alert(`✅ Assignment marked as ${newStatus}`);
-        fetchAssignments(); // Refresh
+        fetchAssignments();
+        setShowCompletionModal(false);
+        setCompletionNote('');
+        setCompletingAssignment(null);
+        if (newStatus === 'completed') {
+          alert('Tour completion reported! The admin will review and confirm it.');
+        }
       }
-    } catch (err) {
-      alert('Failed to update status');
+    } catch (err) { alert('Failed to update status'); }
+  };
+
+  const handleStartTour = async (assignment) => {
+    if (window.confirm(`Start the tour "${assignment.tourName}" now? This will notify the customer.`)) {
+      await updateStatus(assignment._id, 'ongoing');
     }
+  };
+
+  const handleReportCompletion = (assignment) => {
+    setCompletingAssignment(assignment);
+    setShowCompletionModal(true);
   };
 
   const updateProfile = async () => {
     const token = localStorage.getItem('token');
-    
     try {
       const response = await fetch('http://localhost:5000/api/guides/profile', {
         method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify(profileForm)
       });
-
       const data = await response.json();
-
-      if (data.status === 'success') {
-        setUpdateSuccess(true);
-        setShowProfileEdit(false);
-        fetchGuideProfile();
-        setTimeout(() => setUpdateSuccess(false), 3000);
-      }
-    } catch (err) {
-      alert('Failed to update profile');
-    }
+      if (data.status === 'success') { setUpdateSuccess(true); setShowProfileEdit(false); fetchGuideProfile(); setTimeout(() => setUpdateSuccess(false), 3000); }
+      else alert('Failed to update profile');
+    } catch (err) { alert('Failed to update profile'); }
   };
 
-  const handleLanguageToggle = (language) => {
-    setProfileForm(prev => ({
-      ...prev,
-      languages: prev.languages.includes(language)
-        ? prev.languages.filter(l => l !== language)
-        : [...prev.languages, language]
-    }));
+  const handleLanguageToggle = (lang) => {
+    setProfileForm(prev => ({ ...prev, languages: prev.languages.includes(lang) ? prev.languages.filter(l => l !== lang) : [...prev.languages, lang] }));
   };
 
-  const handleSpecialtyToggle = (specialty) => {
-    setProfileForm(prev => ({
-      ...prev,
-      specialties: prev.specialties.includes(specialty)
-        ? prev.specialties.filter(s => s !== specialty)
-        : [...prev.specialties, specialty]
-    }));
+  const handleSpecialtyToggle = (spec) => {
+    setProfileForm(prev => ({ ...prev, specialties: prev.specialties.includes(spec) ? prev.specialties.filter(s => s !== spec) : [...prev.specialties, spec] }));
   };
 
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  };
+  const formatDate = (d) => new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' });
+  const formatCurrency = (a) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(a);
+  const getFilteredAssignments = () => activeTab === 'all' ? assignments : assignments.filter(a => a.status === activeTab);
 
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(amount);
-  };
+  if (loading) return (
+    <div className="loading-page">
+      <div className="loading-spinner"></div>
+      <p>Loading your dashboard...</p>
+    </div>
+  );
 
-  const getFilteredAssignments = () => {
-    if (activeTab === 'all') return assignments;
-    return assignments.filter(a => a.status === activeTab);
-  };
+  const isSuspended = guide?.isSuspended;
 
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'upcoming': return '#ffc107';
-      case 'ongoing': return '#17a2b8';
-      case 'completed': return '#28a745';
-      case 'cancelled': return '#dc3545';
-      default: return '#6c757d';
-    }
-  };
-
-  if (loading) {
-    return (
-      <div className="loading-page">
-        <div className="loading-spinner"></div>
-        <p>Loading your dashboard...</p>
-      </div>
-    );
-  }
-
-  // Rest of your JSX remains exactly the same...
   return (
     <div className="guide-dashboard">
       <div className="container">
-        {/* Header with Guide Info */}
+
+        {isSuspended && (
+          <div className="suspension-banner">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+            Your account has been suspended. {guide?.suspendedReason && `Reason: ${guide.suspendedReason}`} Please contact admin for assistance.
+          </div>
+        )}
+
         <div className="guide-header">
           <div className="guide-header-content">
-            <div className="guide-avatar-large">
-              {guide?.name?.charAt(0).toUpperCase()}
-            </div>
+            <div className="guide-avatar-large">{guide?.name?.charAt(0).toUpperCase()}</div>
             <div className="guide-header-info">
-              <h1 className="guide-title">Welcome, {guide?.name?.split(' ')[0]}! 👋</h1>
+              <h1 className="guide-title">Welcome, {guide?.name?.split(' ')[0]}!</h1>
               <p className="guide-subtitle">{guide?.email}</p>
               <div className="guide-rating-badge">
                 <span className="stars">{'★'.repeat(Math.floor(guide?.rating || 0))}</span>
-                <span className="rating-text">{guide?.rating.toFixed(1)} • {guide?.totalReviews || 0} reviews</span>
+                <span className="rating-text">{(guide?.rating || 0).toFixed(1)} &bull; {guide?.totalReviews || 0} reviews</span>
               </div>
             </div>
-            <button 
-              className="edit-profile-btn"
-              onClick={() => setShowProfileEdit(true)}
-            >
-              ✏️ Edit Profile
+            <button className="edit-profile-btn" onClick={() => setShowProfileEdit(true)}>
+              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 14.66V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5.34"/><polygon points="18 2 22 6 12 16 8 16 8 12 18 2"/></svg>
+              Edit Profile
             </button>
           </div>
         </div>
 
-        {/* Success Message */}
-        {updateSuccess && (
-          <div className="success-message">
-            ✅ Profile updated successfully!
-          </div>
-        )}
+        {updateSuccess && <div className="success-message">Profile updated successfully!</div>}
 
-        {/* Stats Cards */}
         <div className="stats-grid">
-          <div className="stat-card">
-            <div className="stat-icon">💰</div>
-            <div className="stat-content">
-              <h3 className="stat-value">{formatCurrency(stats.totalEarnings)}</h3>
-              <p className="stat-label">Total Earnings</p>
+          {[
+            { label: 'Total Earnings', value: formatCurrency(stats.totalEarnings) },
+            { label: 'Completed Tours', value: stats.completedTours },
+            { label: 'Upcoming', value: stats.upcomingTours },
+            { label: 'Ongoing', value: stats.ongoingTours || 0 },
+            { label: 'Happy Customers', value: stats.totalCustomers },
+            { label: 'Avg Rating', value: (stats.averageRating || 0).toFixed(1) },
+          ].map(({ label, value }) => (
+            <div key={label} className="stat-card">
+              <div className="stat-content">
+                <h3 className="stat-value">{value}</h3>
+                <p className="stat-label">{label}</p>
+              </div>
             </div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-icon">📅</div>
-            <div className="stat-content">
-              <h3 className="stat-value">{stats.completedTours}</h3>
-              <p className="stat-label">Completed Tours</p>
-            </div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-icon">⏳</div>
-            <div className="stat-content">
-              <h3 className="stat-value">{stats.upcomingTours}</h3>
-              <p className="stat-label">Upcoming</p>
-            </div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-icon">🔄</div>
-            <div className="stat-content">
-              <h3 className="stat-value">{stats.ongoingTours || 0}</h3>
-              <p className="stat-label">Ongoing</p>
-            </div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-icon">👥</div>
-            <div className="stat-content">
-              <h3 className="stat-value">{stats.totalCustomers}</h3>
-              <p className="stat-label">Happy Customers</p>
-            </div>
-          </div>
-          <div className="stat-card">
-            <div className="stat-icon">⭐</div>
-            <div className="stat-content">
-              <h3 className="stat-value">{stats.averageRating}</h3>
-              <p className="stat-label">Average Rating</p>
-            </div>
-          </div>
+          ))}
         </div>
 
-        {/* Monthly Earnings Card */}
         <div className="monthly-earnings-card">
           <div className="earnings-header">
             <h3>This Month's Earnings</h3>
             <span className="earnings-amount">{formatCurrency(stats.monthlyEarnings)}</span>
           </div>
           <div className="earnings-progress">
-            <div 
-              className="progress-bar" 
-              style={{ width: `${Math.min((stats.monthlyEarnings / 2000) * 100, 100)}%` }}
-            ></div>
+            <div className="progress-bar" style={{ width: `${Math.min((stats.monthlyEarnings / 2000) * 100, 100)}%` }}></div>
           </div>
           <p className="earnings-target">Target: $2,000</p>
         </div>
 
-        {/* Tabs */}
         <div className="dashboard-tabs">
-          <button
-            className={`tab-btn ${activeTab === 'upcoming' ? 'active' : ''}`}
-            onClick={() => setActiveTab('upcoming')}
-          >
-            📅 Upcoming ({stats.upcomingTours})
-          </button>
-          <button
-            className={`tab-btn ${activeTab === 'ongoing' ? 'active' : ''}`}
-            onClick={() => setActiveTab('ongoing')}
-          >
-            🔄 Ongoing ({stats.ongoingTours || 0})
-          </button>
-          <button
-            className={`tab-btn ${activeTab === 'completed' ? 'active' : ''}`}
-            onClick={() => setActiveTab('completed')}
-          >
-            ✅ Completed ({stats.completedTours})
-          </button>
-          <button
-            className={`tab-btn ${activeTab === 'all' ? 'active' : ''}`}
-            onClick={() => setActiveTab('all')}
-          >
-            📋 All ({assignments.length})
-          </button>
+          {[['upcoming','Upcoming'], ['ongoing','Ongoing'], ['completed','Completed'], ['all','All']].map(([tab, label]) => (
+            <button key={tab} className={`tab-btn ${activeTab === tab ? 'active' : ''}`} onClick={() => setActiveTab(tab)}>
+              {label} ({tab === 'all' ? assignments.length : assignments.filter(a => a.status === tab).length})
+            </button>
+          ))}
         </div>
 
         {error && <div className="error-message">{error}</div>}
 
-        {/* Assignments Grid */}
         {getFilteredAssignments().length === 0 ? (
           <div className="empty-state">
-            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-              <circle cx="12" cy="7" r="4"></circle>
-            </svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
             <h3>No {activeTab} assignments</h3>
             <p>You don't have any {activeTab} tours at the moment.</p>
           </div>
@@ -384,115 +211,64 @@ const GuideDashboard = () => {
                 <div className="assignment-header">
                   <div>
                     <h3 className="tour-name">{assignment.tourName}</h3>
-                    <span className="assignment-id">ID: {assignment._id.slice(-6).toUpperCase()}</span>
+                    <span className="assignment-id">#{assignment._id.slice(-6).toUpperCase()}</span>
                   </div>
-                  <span className={`status-badge ${assignment.status}`} style={{backgroundColor: getStatusColor(assignment.status) + '20', color: getStatusColor(assignment.status)}}>
-                    {assignment.status === 'upcoming' ? '📅 Booked' : assignment.status}
+                  <span className={`status-badge status-${assignment.status}${assignment.guideMarkedCompleted && !assignment.adminConfirmedCompleted ? ' pending-confirm' : ''}`}>
+                    {assignment.guideMarkedCompleted && !assignment.adminConfirmedCompleted ? 'Pending Confirmation' : assignment.status.charAt(0).toUpperCase() + assignment.status.slice(1)}
                   </span>
                 </div>
 
                 <div className="customer-info">
-                  <h4>
-                    <span className="customer-icon">👤</span>
-                    Customer Details
-                  </h4>
+                  <h4>Customer Details</h4>
                   <div className="customer-details-grid">
-                    <div className="detail-item">
-                      <span className="detail-label">Name:</span>
-                      <span className="detail-value">{assignment.customerName}</span>
-                    </div>
-                    <div className="detail-item">
-                      <span className="detail-label">Email:</span>
-                      <span className="detail-value">{assignment.customerEmail}</span>
-                    </div>
-                    <div className="detail-item">
-                      <span className="detail-label">Phone:</span>
-                      <span className="detail-value">{assignment.customerPhone || 'Not provided'}</span>
-                    </div>
+                    <div className="detail-item"><span className="detail-label">Name:</span><span className="detail-value">{assignment.customerName}</span></div>
+                    <div className="detail-item"><span className="detail-label">Email:</span><span className="detail-value">{assignment.customerEmail}</span></div>
+                    <div className="detail-item"><span className="detail-label">Phone:</span><span className="detail-value">{assignment.customerPhone || 'Not provided'}</span></div>
                   </div>
                 </div>
 
                 <div className="tour-details">
-                  <div className="detail-row">
-                    <span>📅 Start:</span>
-                    <strong>{formatDate(assignment.startDate)}</strong>
-                  </div>
-                  <div className="detail-row">
-                    <span>📅 End:</span>
-                    <strong>{formatDate(assignment.endDate)}</strong>
-                  </div>
-                  <div className="detail-row">
-                    <span>👥 Group:</span>
-                    <strong>{assignment.participants} people</strong>
-                  </div>
-                  <div className="detail-row">
-                    <span>⏱️ Duration:</span>
-                    <strong>{assignment.duration} days</strong>
-                  </div>
+                  <div className="detail-row"><span>Start:</span><strong>{formatDate(assignment.startDate)}</strong></div>
+                  <div className="detail-row"><span>End:</span><strong>{formatDate(assignment.endDate)}</strong></div>
+                  <div className="detail-row"><span>Group:</span><strong>{assignment.participants} people</strong></div>
+                  <div className="detail-row"><span>Duration:</span><strong>{assignment.duration} days</strong></div>
                   {assignment.status === 'completed' && (
-                    <div className="detail-row earnings">
-                      <span>💰 Earnings:</span>
-                      <strong>{formatCurrency(assignment.duration * 70)}</strong>
-                    </div>
+                    <div className="detail-row earnings-row"><span>Earnings:</span><strong>{formatCurrency(assignment.duration * 70)}</strong></div>
                   )}
                 </div>
 
                 {assignment.specialRequests && (
-                  <div className="special-requests">
-                    <strong>📝 Special Requests:</strong>
-                    <p>{assignment.specialRequests}</p>
+                  <div className="special-requests"><strong>Special Requests:</strong><p>{assignment.specialRequests}</p></div>
+                )}
+
+                {assignment.guideMarkedCompleted && !assignment.adminConfirmedCompleted && (
+                  <div className="completion-pending-notice">
+                    Tour completion reported. Awaiting admin confirmation.
+                    {assignment.guideCompletionNote && <p>Note: {assignment.guideCompletionNote}</p>}
                   </div>
                 )}
 
                 <div className="assignment-actions">
                   {assignment.status === 'upcoming' && (
                     <>
-                      <button 
-                        onClick={() => updateStatus(assignment._id, 'ongoing')}
-                        className="btn-primary start-btn"
-                      >
-                        🚀 Start Tour
-                      </button>
-                      <button 
-                        onClick={() => window.location.href = `mailto:${assignment.customerEmail}`}
-                        className="btn-outline contact-btn"
-                      >
-                        📧 Contact
-                      </button>
+                      <button onClick={() => handleStartTour(assignment)} className="btn-primary start-btn">Start Tour</button>
+                      <button onClick={() => setSelectedAssignment(assignment)} className="btn-outline details-btn">Details</button>
                     </>
                   )}
-                  {assignment.status === 'ongoing' && (
+                  {assignment.status === 'ongoing' && !assignment.guideMarkedCompleted && (
                     <>
-                      <button 
-                        onClick={() => updateStatus(assignment._id, 'completed')}
-                        className="btn-secondary complete-btn"
-                      >
-                        ✅ Mark Complete
-                      </button>
-                      <button 
-                        onClick={() => window.location.href = `tel:${assignment.customerPhone}`}
-                        className="btn-outline call-btn"
-                        disabled={!assignment.customerPhone}
-                      >
-                        📞 Call
-                      </button>
+                      <button onClick={() => handleReportCompletion(assignment)} className="btn-secondary complete-btn">Report Completion</button>
+                      <button onClick={() => window.location.href = `tel:${assignment.customerPhone}`} className="btn-outline call-btn" disabled={!assignment.customerPhone}>Call Customer</button>
                     </>
+                  )}
+                  {assignment.status === 'ongoing' && assignment.guideMarkedCompleted && !assignment.adminConfirmedCompleted && (
+                    <button className="btn-outline disabled-btn" disabled>Awaiting Admin Confirmation</button>
                   )}
                   {assignment.status === 'completed' && (
-                    <button 
-                      onClick={() => setSelectedAssignment(assignment)}
-                      className="btn-outline view-btn"
-                    >
-                      👁️ View Summary
-                    </button>
+                    <button onClick={() => setSelectedAssignment(assignment)} className="btn-outline view-btn">View Summary</button>
                   )}
                   {assignment.status === 'upcoming' && (
-                    <button 
-                      onClick={() => setSelectedAssignment(assignment)}
-                      className="btn-outline details-btn"
-                    >
-                      📋 Details
-                    </button>
+                    <button onClick={() => window.location.href = `mailto:${assignment.customerEmail}`} className="btn-outline contact-btn">Contact Customer</button>
                   )}
                 </div>
               </div>
@@ -500,7 +276,41 @@ const GuideDashboard = () => {
           </div>
         )}
 
-        {/* Details Modal */}
+        {/* Completion Report Modal */}
+        {showCompletionModal && completingAssignment && (
+          <div className="modal-overlay" onClick={() => setShowCompletionModal(false)}>
+            <div className="modal-content" onClick={e => e.stopPropagation()}>
+              <div className="modal-header">
+                <h2>Report Tour Completion</h2>
+                <button className="modal-close" onClick={() => setShowCompletionModal(false)}>×</button>
+              </div>
+              <div className="modal-body">
+                <div className="completion-info">
+                  <p>You are reporting completion for:</p>
+                  <h3>{completingAssignment.tourName}</h3>
+                  <p>Customer: {completingAssignment.customerName}</p>
+                </div>
+                <div className="form-group">
+                  <label>Completion Notes (optional)</label>
+                  <textarea
+                    value={completionNote}
+                    onChange={(e) => setCompletionNote(e.target.value)}
+                    placeholder="Add any notes about the tour completion..."
+                    rows="4"
+                    className="form-textarea"
+                  />
+                </div>
+                <p className="completion-notice">The admin will review and confirm the completion. Once confirmed, the booking will be marked as completed.</p>
+                <div className="modal-actions">
+                  <button className="btn-primary" onClick={() => updateStatus(completingAssignment._id, 'completed', completionNote)}>Submit Report</button>
+                  <button className="btn-outline" onClick={() => setShowCompletionModal(false)}>Cancel</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Assignment Details Modal */}
         {selectedAssignment && (
           <div className="modal-overlay" onClick={() => setSelectedAssignment(null)}>
             <div className="modal-content" onClick={e => e.stopPropagation()}>
@@ -511,85 +321,40 @@ const GuideDashboard = () => {
               <div className="modal-body">
                 <div className="modal-tour-header">
                   <h3>{selectedAssignment.tourName}</h3>
-                  <span className={`status-badge ${selectedAssignment.status}`}>
-                    {selectedAssignment.status}
-                  </span>
+                  <span className={`status-badge status-${selectedAssignment.status}`}>{selectedAssignment.status}</span>
                 </div>
-                
                 <div className="detail-section">
-                  <h4>👤 Customer Information</h4>
+                  <h4>Customer Information</h4>
                   <div className="detail-grid">
-                    <div className="detail-item">
-                      <span className="detail-label">Name:</span>
-                      <span className="detail-value">{selectedAssignment.customerName}</span>
-                    </div>
-                    <div className="detail-item">
-                      <span className="detail-label">Email:</span>
-                      <span className="detail-value">{selectedAssignment.customerEmail}</span>
-                    </div>
-                    <div className="detail-item">
-                      <span className="detail-label">Phone:</span>
-                      <span className="detail-value">{selectedAssignment.customerPhone || 'N/A'}</span>
-                    </div>
+                    <div className="detail-item"><span className="detail-label">Name:</span><span className="detail-value">{selectedAssignment.customerName}</span></div>
+                    <div className="detail-item"><span className="detail-label">Email:</span><span className="detail-value">{selectedAssignment.customerEmail}</span></div>
+                    <div className="detail-item"><span className="detail-label">Phone:</span><span className="detail-value">{selectedAssignment.customerPhone || 'N/A'}</span></div>
                   </div>
                 </div>
-
                 <div className="detail-section">
-                  <h4>📅 Tour Schedule</h4>
+                  <h4>Tour Schedule</h4>
                   <div className="detail-grid">
-                    <div className="detail-item">
-                      <span className="detail-label">Start Date:</span>
-                      <span className="detail-value">{formatDate(selectedAssignment.startDate)}</span>
-                    </div>
-                    <div className="detail-item">
-                      <span className="detail-label">End Date:</span>
-                      <span className="detail-value">{formatDate(selectedAssignment.endDate)}</span>
-                    </div>
-                    <div className="detail-item">
-                      <span className="detail-label">Duration:</span>
-                      <span className="detail-value">{selectedAssignment.duration} days</span>
-                    </div>
-                    <div className="detail-item">
-                      <span className="detail-label">Participants:</span>
-                      <span className="detail-value">{selectedAssignment.participants}</span>
-                    </div>
+                    <div className="detail-item"><span className="detail-label">Start Date:</span><span className="detail-value">{formatDate(selectedAssignment.startDate)}</span></div>
+                    <div className="detail-item"><span className="detail-label">End Date:</span><span className="detail-value">{formatDate(selectedAssignment.endDate)}</span></div>
+                    <div className="detail-item"><span className="detail-label">Duration:</span><span className="detail-value">{selectedAssignment.duration} days</span></div>
+                    <div className="detail-item"><span className="detail-label">Participants:</span><span className="detail-value">{selectedAssignment.participants}</span></div>
                   </div>
                 </div>
-
                 {selectedAssignment.specialRequests && (
-                  <div className="detail-section">
-                    <h4>📝 Special Requests</h4>
-                    <p className="requests-text">{selectedAssignment.specialRequests}</p>
-                  </div>
+                  <div className="detail-section"><h4>Special Requests</h4><p className="requests-text">{selectedAssignment.specialRequests}</p></div>
                 )}
-
-                <div className="detail-section">
-                  <h4>📍 Meeting Point</h4>
-                  <p className="meeting-point">{selectedAssignment.meetingPoint}</p>
-                </div>
-
+                <div className="detail-section"><h4>Meeting Point</h4><p className="meeting-point">{selectedAssignment.meetingPoint}</p></div>
                 {selectedAssignment.status === 'completed' && (
                   <div className="detail-section earnings-section">
-                    <h4>💰 Earnings</h4>
+                    <h4>Earnings</h4>
                     <p className="earnings-amount">{formatCurrency(selectedAssignment.duration * 70)}</p>
-                    <p className="earnings-note">* Based on daily rate of $70</p>
+                    <p className="earnings-note">Based on daily rate of $70</p>
                   </div>
                 )}
-
                 <div className="modal-actions">
-                  <button 
-                    className="btn-primary"
-                    onClick={() => window.location.href = `mailto:${selectedAssignment.customerEmail}`}
-                  >
-                    📧 Email Customer
-                  </button>
+                  <button className="btn-primary" onClick={() => window.location.href = `mailto:${selectedAssignment.customerEmail}`}>Email Customer</button>
                   {selectedAssignment.customerPhone && (
-                    <button 
-                      className="btn-secondary"
-                      onClick={() => window.location.href = `tel:${selectedAssignment.customerPhone}`}
-                    >
-                      📞 Call Customer
-                    </button>
+                    <button className="btn-outline" onClick={() => window.location.href = `tel:${selectedAssignment.customerPhone}`}>Call Customer</button>
                   )}
                 </div>
               </div>
@@ -609,105 +374,45 @@ const GuideDashboard = () => {
                 <div className="profile-edit-form">
                   <div className="form-group">
                     <label>Phone Number</label>
-                    <input
-                      type="tel"
-                      value={profileForm.phone}
-                      onChange={(e) => setProfileForm({...profileForm, phone: e.target.value})}
-                      placeholder="+94 77 123 4567"
-                      className="form-input"
-                    />
+                    <input type="tel" value={profileForm.phone} onChange={(e) => setProfileForm({...profileForm, phone: e.target.value})} placeholder="+94 77 123 4567" className="form-input" />
                   </div>
-
                   <div className="form-group">
                     <label>Bio</label>
-                    <textarea
-                      value={profileForm.bio}
-                      onChange={(e) => setProfileForm({...profileForm, bio: e.target.value})}
-                      placeholder="Tell customers about yourself..."
-                      rows="4"
-                      className="form-textarea"
-                    />
+                    <textarea value={profileForm.bio} onChange={(e) => setProfileForm({...profileForm, bio: e.target.value})} placeholder="Tell customers about yourself..." rows="4" className="form-textarea" />
                   </div>
-
-                  <div className="form-row">
-                    <div className="form-group">
-                      <label>Hourly Rate ($)</label>
-                      <input
-                        type="number"
-                        value={profileForm.hourlyRate}
-                        onChange={(e) => setProfileForm({...profileForm, hourlyRate: parseInt(e.target.value)})}
-                        min="10"
-                        max="100"
-                        className="form-input"
-                      />
-                    </div>
-                    <div className="form-group">
-                      <label>Daily Rate ($)</label>
-                      <input
-                        type="number"
-                        value={profileForm.dailyRate}
-                        onChange={(e) => setProfileForm({...profileForm, dailyRate: parseInt(e.target.value)})}
-                        min="50"
-                        max="500"
-                        className="form-input"
-                      />
-                    </div>
+                  <div className="form-group">
+                    <label>Daily Rate ($)</label>
+                    <input type="number" value={profileForm.dailyRate} onChange={(e) => setProfileForm({...profileForm, dailyRate: parseInt(e.target.value)})} min="50" max="500" className="form-input" />
                   </div>
-
                   <div className="form-group">
                     <label>Availability</label>
-                    <input
-                      type="text"
-                      value={profileForm.availability}
-                      onChange={(e) => setProfileForm({...profileForm, availability: e.target.value})}
-                      placeholder="e.g., Available 7 days a week"
-                      className="form-input"
-                    />
+                    <input type="text" value={profileForm.availability} onChange={(e) => setProfileForm({...profileForm, availability: e.target.value})} placeholder="e.g., Available 7 days a week" className="form-input" />
                   </div>
-
                   <div className="form-group">
                     <label>Languages</label>
                     <div className="checkbox-group">
                       {['English', 'Sinhala', 'Tamil', 'French', 'German', 'Japanese', 'Chinese', 'Russian'].map(lang => (
                         <label key={lang} className="checkbox">
-                          <input
-                            type="checkbox"
-                            checked={profileForm.languages.includes(lang)}
-                            onChange={() => handleLanguageToggle(lang)}
-                          />
+                          <input type="checkbox" checked={profileForm.languages.includes(lang)} onChange={() => handleLanguageToggle(lang)} />
                           {lang}
                         </label>
                       ))}
                     </div>
                   </div>
-
                   <div className="form-group">
                     <label>Specialties</label>
                     <div className="checkbox-group">
-                      {[
-                        'Cultural Heritage', 'Wildlife', 'Adventure', 
-                        'Beach Tours', 'Photography', 'History', 
-                        'Food & Cuisine', 'Hiking', 'Temple Tours'
-                      ].map(spec => (
+                      {['Cultural Heritage', 'Wildlife', 'Adventure', 'Beach Tours', 'Photography', 'History', 'Food & Cuisine', 'Hiking', 'Temple Tours'].map(spec => (
                         <label key={spec} className="checkbox">
-                          <input
-                            type="checkbox"
-                            checked={profileForm.specialties.includes(spec)}
-                            onChange={() => handleSpecialtyToggle(spec)}
-                          />
+                          <input type="checkbox" checked={profileForm.specialties.includes(spec)} onChange={() => handleSpecialtyToggle(spec)} />
                           {spec}
                         </label>
                       ))}
                     </div>
                   </div>
-
                   <div className="form-actions">
-                    <button className="btn-primary" onClick={updateProfile}>
-                      Save Changes
-                    </button>
-                    <button className="btn-outline" onClick={() => setShowProfileEdit(false)}>
-                      Cancel
-                    </button>
+                    <button className="btn-primary" onClick={updateProfile}>Save Changes</button>
+                    <button className="btn-outline" onClick={() => setShowProfileEdit(false)}>Cancel</button>
                   </div>
                 </div>
               </div>

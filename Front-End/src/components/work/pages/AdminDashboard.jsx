@@ -1,4 +1,3 @@
-// src/pages/AdminDashboard.jsx - UPDATED with separate Users and Guides tabs
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './AdminDashboard.css';
@@ -9,46 +8,27 @@ const AdminDashboard = () => {
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('dashboard');
 
-  // Stats state
-  const [stats, setStats] = useState({
-    totalBookings: 0,
-    pendingBookings: 0,
-    confirmedBookings: 0,
-    completedBookings: 0,
-    cancelledBookings: 0,
-    totalRevenue: 0,
-    totalUsers: 0,
-    totalGuides: 0,
-    activeTours: 0
-  });
-
-  // Applications state
+  const [stats, setStats] = useState({ totalBookings: 0, pendingBookings: 0, confirmedBookings: 0, completedBookings: 0, cancelledBookings: 0, totalRevenue: 0, totalUsers: 0, totalGuides: 0 });
   const [applications, setApplications] = useState([]);
-  const [applicationStats, setApplicationStats] = useState({
-    total: 0,
-    pending: 0,
-    interview: 0,
-    accepted: 0,
-    rejected: 0
-  });
+  const [applicationStats, setApplicationStats] = useState({ total: 0, pending: 0, interview: 0, accepted: 0, rejected: 0 });
   const [selectedApplication, setSelectedApplication] = useState(null);
   const [rejectionReason, setRejectionReason] = useState('');
 
-  // Bookings state
   const [bookings, setBookings] = useState([]);
   const [reviews, setReviews] = useState([]);
   const [reviewStats, setReviewStats] = useState({ total: 0, pending: 0, approved: 0 });
-  
-  // Users and Guides state - SEPARATED
   const [regularUsers, setRegularUsers] = useState([]);
   const [guides, setGuides] = useState([]);
   const [selectedUser, setSelectedUser] = useState(null);
   const [selectedGuide, setSelectedGuide] = useState(null);
-  
-  // Search and filter
+
+  const [pendingCompletions, setPendingCompletions] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [guideCategoryFilter, setGuideCategoryFilter] = useState('all');
+
+  const [suspendModalData, setSuspendModalData] = useState(null);
+  const [suspendReason, setSuspendReason] = useState('');
 
   const navigate = useNavigate();
 
@@ -56,349 +36,233 @@ const AdminDashboard = () => {
     const checkAdmin = async () => {
       const userData = localStorage.getItem('user');
       const token = localStorage.getItem('token');
-
-      if (!userData || !token) {
-        navigate('/login');
-        return;
-      }
-
+      if (!userData || !token) { navigate('/login'); return; }
       try {
-        const user = JSON.parse(userData);
-        setUser(user);
-
-        if (user.role !== 'admin') {
-          navigate('/account');
-          return;
-        }
-
+        const u = JSON.parse(userData);
+        setUser(u);
+        if (u.role !== 'admin') { navigate('/account'); return; }
         setIsAdmin(true);
-        await fetchDashboardData(token);
-        await fetchApplications(token);
-        await fetchGuides(token); // NEW: fetch guides separately
+        await Promise.all([
+          fetchDashboardData(token),
+          fetchApplications(token),
+          fetchGuides(token),
+          fetchPendingCompletions(token)
+        ]);
       } catch (error) {
-        console.error('Error checking admin:', error);
         navigate('/login');
       } finally {
         setLoading(false);
       }
     };
-
     checkAdmin();
   }, [navigate]);
 
   const fetchApplications = async (token) => {
     try {
-      const response = await fetch('http://localhost:5000/api/guide-applications', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      const data = await response.json();
-      if (data.status === 'success') {
-        setApplications(data.data);
-        setApplicationStats(data.stats);
-      }
-    } catch (error) {
-      console.error('Error fetching applications:', error);
-    }
+      const res = await fetch('http://localhost:5000/api/guide-applications', { headers: { 'Authorization': `Bearer ${token}` } });
+      const data = await res.json();
+      if (data.status === 'success') { setApplications(data.data); setApplicationStats(data.stats); }
+    } catch (e) { console.error(e); }
   };
 
-  // NEW: Fetch guides from the Guide model
   const fetchGuides = async (token) => {
     try {
-      const response = await fetch('http://localhost:5000/api/guides/profiles', {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      const data = await response.json();
-      if (data.status === 'success') {
-        setGuides(data.data);
-        setStats(prev => ({ ...prev, totalGuides: data.data.length }));
-      }
-    } catch (error) {
-      console.error('Error fetching guides:', error);
-    }
+      const res = await fetch('http://localhost:5000/api/guides/profiles-admin', { headers: { 'Authorization': `Bearer ${token}` } });
+      const data = await res.json();
+      if (data.status === 'success') { setGuides(data.data); setStats(prev => ({ ...prev, totalGuides: data.data.length })); }
+    } catch (e) { console.error(e); }
   };
 
-  const handleUpdateApplication = async (applicationId, newStatus) => {
-    const token = localStorage.getItem('token');
-
+  const fetchPendingCompletions = async (token) => {
     try {
-      const response = await fetch(`http://localhost:5000/api/guide-applications/${applicationId}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          status: newStatus,
-          rejectionReason: newStatus === 'rejected' ? rejectionReason : ''
-        })
-      });
-
-      const data = await response.json();
-
-      if (data.status === 'success') {
-        alert(`✅ Application ${newStatus}`);
-        setSelectedApplication(null);
-        setRejectionReason('');
-        fetchApplications(token);
-        if (newStatus === 'accepted') {
-          // Refresh guides list if a new guide was created
-          fetchGuides(token);
-        }
-      }
-    } catch (error) {
-      console.error('Error updating application:', error);
-      alert('Failed to update application');
-    }
-  };
-
-  const handleApplicationAction = (app) => {
-    setSelectedApplication(app);
-    setRejectionReason(app.rejectionReason || '');
+      const res = await fetch('http://localhost:5000/api/guides/assignments/pending-completions', { headers: { 'Authorization': `Bearer ${token}` } });
+      const data = await res.json();
+      if (data.status === 'success') setPendingCompletions(data.data);
+    } catch (e) { console.error(e); }
   };
 
   const fetchDashboardData = async (token) => {
     try {
-      // Fetch all bookings
-      const bookingsRes = await fetch('http://localhost:5000/api/bookings/all', {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-          'Content-Type': 'application/json'
-        }
-      });
+      const [bookingsRes, usersRes, reviewsRes] = await Promise.all([
+        fetch('http://localhost:5000/api/bookings/all', { headers: { 'Authorization': `Bearer ${token}` } }),
+        fetch('http://localhost:5000/api/users', { headers: { 'Authorization': `Bearer ${token}` } }),
+        fetch('http://localhost:5000/api/reviews/all', { headers: { 'Authorization': `Bearer ${token}` } })
+      ]);
 
       if (bookingsRes.ok) {
-        const bookingsData = await bookingsRes.json();
-        console.log('Bookings data received:', bookingsData);
-
-        if (bookingsData.status === 'success') {
-          setBookings(bookingsData.data);
-
-          // Calculate stats
-          const pending = bookingsData.data.filter(b => b.status === 'pending').length;
-          const confirmed = bookingsData.data.filter(b => b.status === 'confirmed').length;
-          const completed = bookingsData.data.filter(b => b.status === 'completed').length;
-          const cancelled = bookingsData.data.filter(b => b.status === 'cancelled').length;
-          const revenue = bookingsData.data.reduce((sum, b) => sum + (b.totalPrice || 0), 0);
-
+        const bd = await bookingsRes.json();
+        if (bd.status === 'success') {
+          setBookings(bd.data);
           setStats(prev => ({
             ...prev,
-            totalBookings: bookingsData.data.length,
-            pendingBookings: pending,
-            confirmedBookings: confirmed,
-            completedBookings: completed,
-            cancelledBookings: cancelled,
-            totalRevenue: revenue,
-            activeTours: pending + confirmed
+            totalBookings: bd.data.length,
+            pendingBookings: bd.data.filter(b => b.status === 'pending').length,
+            confirmedBookings: bd.data.filter(b => b.status === 'confirmed').length,
+            completedBookings: bd.data.filter(b => b.status === 'completed').length,
+            cancelledBookings: bd.data.filter(b => b.status === 'cancelled').length,
+            totalRevenue: bd.data.reduce((s, b) => s + (b.totalPrice || 0), 0)
           }));
         }
       }
 
-      // Fetch users - SEPARATE regular users from guides
-      const usersRes = await fetch('http://localhost:5000/api/users', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
       if (usersRes.ok) {
-        const usersData = await usersRes.json();
-        if (usersData.status === 'success') {
-          // Separate regular users (role: 'user') from guides
-          const regular = usersData.data.filter(u => u.role === 'user');
+        const ud = await usersRes.json();
+        if (ud.status === 'success') {
+          const regular = ud.data.filter(u => u.role === 'user');
           setRegularUsers(regular);
           setStats(prev => ({ ...prev, totalUsers: regular.length }));
         }
       }
 
-      // Fetch reviews
-      const reviewsRes = await fetch('http://localhost:5000/api/reviews/all', {
-        headers: { 'Authorization': `Bearer ${token}` }
-      });
       if (reviewsRes.ok) {
-        const reviewsData = await reviewsRes.json();
-        if (reviewsData.status === 'success') {
-          const allReviews = reviewsData.data || [];
+        const rd = await reviewsRes.json();
+        if (rd.status === 'success') {
+          const allReviews = rd.data || [];
           setReviews(allReviews);
-          setReviewStats({
-            total: allReviews.length,
-            pending: allReviews.filter(r => !r.isApproved).length,
-            approved: allReviews.filter(r => r.isApproved).length
-          });
+          setReviewStats({ total: allReviews.length, pending: allReviews.filter(r => !r.isApproved).length, approved: allReviews.filter(r => r.isApproved).length });
         }
       }
+    } catch (e) { console.error(e); }
+  };
 
-    } catch (error) {
-      console.error('Error fetching dashboard data:', error);
-    }
+  const handleUpdateApplication = async (applicationId, newStatus) => {
+    const token = localStorage.getItem('token');
+    try {
+      const res = await fetch(`http://localhost:5000/api/guide-applications/${applicationId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ status: newStatus, rejectionReason: newStatus === 'rejected' ? rejectionReason : '' })
+      });
+      const data = await res.json();
+      if (data.status === 'success') {
+        setSelectedApplication(null);
+        setRejectionReason('');
+        fetchApplications(token);
+        if (newStatus === 'accepted') fetchGuides(token);
+      }
+    } catch (e) { console.error(e); }
+  };
+
+  const handleUpdateBookingStatus = async (bookingId, newStatus) => {
+    const token = localStorage.getItem('token');
+    try {
+      const res = await fetch(`http://localhost:5000/api/bookings/${bookingId}/status`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ status: newStatus })
+      });
+      const data = await res.json();
+      if (data.status === 'success') {
+        setBookings(prev => prev.map(b => b._id === bookingId ? { ...b, status: newStatus } : b));
+        setStats(prev => {
+          const updated = bookings.map(b => b._id === bookingId ? { ...b, status: newStatus } : b);
+          return { ...prev, pendingBookings: updated.filter(b => b.status === 'pending').length, confirmedBookings: updated.filter(b => b.status === 'confirmed').length, completedBookings: updated.filter(b => b.status === 'completed').length, cancelledBookings: updated.filter(b => b.status === 'cancelled').length };
+        });
+      }
+    } catch (e) { console.error(e); }
   };
 
   const handleApproveReview = async (reviewId, isApproved) => {
     const token = localStorage.getItem('token');
     try {
-      const response = await fetch(`http://localhost:5000/api/reviews/${reviewId}/approve`, {
+      const res = await fetch(`http://localhost:5000/api/reviews/${reviewId}/approve`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({ isApproved })
       });
-      if (response.ok) {
+      if (res.ok) {
         setReviews(prev => prev.map(r => r._id === reviewId ? { ...r, isApproved } : r));
-        setReviewStats(prev => ({
-          ...prev,
-          pending: prev.pending + (isApproved ? -1 : 1),
-          approved: prev.approved + (isApproved ? 1 : -1)
-        }));
+        setReviewStats(prev => ({ ...prev, pending: prev.pending + (isApproved ? -1 : 1), approved: prev.approved + (isApproved ? 1 : -1) }));
       }
-    } catch (e) { console.error('Error updating review:', e); }
-  };
-
-  const handleUpdateBookingStatus = async (bookingId, newStatus) => {
-    const token = localStorage.getItem('token');
-
-    try {
-      const response = await fetch(`http://localhost:5000/api/bookings/${bookingId}/status`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({ status: newStatus })
-      });
-
-      const data = await response.json();
-
-      if (data.status === 'success') {
-        // Update local state
-        setBookings(prev => prev.map(booking =>
-          booking._id === bookingId ? { ...booking, status: newStatus } : booking
-        ));
-
-        // Update stats
-        const updatedBookings = bookings.map(b =>
-          b._id === bookingId ? { ...b, status: newStatus } : b
-        );
-
-        const pending = updatedBookings.filter(b => b.status === 'pending').length;
-        const confirmed = updatedBookings.filter(b => b.status === 'confirmed').length;
-        const completed = updatedBookings.filter(b => b.status === 'completed').length;
-        const cancelled = updatedBookings.filter(b => b.status === 'cancelled').length;
-
-        setStats(prev => ({
-          ...prev,
-          pendingBookings: pending,
-          confirmedBookings: confirmed,
-          completedBookings: completed,
-          cancelledBookings: cancelled
-        }));
-
-        alert(`✅ Booking status updated to ${newStatus}`);
-      }
-    } catch (error) {
-      console.error('Error updating booking:', error);
-      alert('Failed to update booking status');
-    }
+    } catch (e) { console.error(e); }
   };
 
   const handleViewUserDetails = async (userId) => {
     const token = localStorage.getItem('token');
-
     try {
-      const response = await fetch(`http://localhost:5000/api/users/${userId}`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
+      const res = await fetch(`http://localhost:5000/api/users/${userId}`, { headers: { 'Authorization': `Bearer ${token}` } });
+      const data = await res.json();
+      if (data.status === 'success') setSelectedUser(data.data.user);
+    } catch (e) { console.error(e); }
+  };
+
+  const handleSuspendAction = (entity, type) => {
+    setSuspendModalData({ entity, type });
+    setSuspendReason('');
+  };
+
+  const confirmSuspend = async () => {
+    if (!suspendModalData) return;
+    const { entity, type } = suspendModalData;
+    const token = localStorage.getItem('token');
+    const isSuspending = !entity.isSuspended;
+    try {
+      const url = type === 'user'
+        ? `http://localhost:5000/api/users/${entity._id}/suspend`
+        : `http://localhost:5000/api/guides/profiles/${entity._id}/suspend`;
+      const res = await fetch(url, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ isSuspended: isSuspending, reason: suspendReason })
       });
-
-      const data = await response.json();
-
+      const data = await res.json();
       if (data.status === 'success') {
-        setSelectedUser(data.data.user);
+        if (type === 'user') {
+          setRegularUsers(prev => prev.map(u => u._id === entity._id ? { ...u, isSuspended: isSuspending, suspendedReason: suspendReason } : u));
+          if (selectedUser?._id === entity._id) setSelectedUser(prev => ({ ...prev, isSuspended: isSuspending, suspendedReason: suspendReason }));
+        } else {
+          setGuides(prev => prev.map(g => g._id === entity._id ? { ...g, isSuspended: isSuspending, suspendedReason: suspendReason } : g));
+          if (selectedGuide?._id === entity._id) setSelectedGuide(prev => ({ ...prev, isSuspended: isSuspending, suspendedReason: suspendReason }));
+        }
+        setSuspendModalData(null);
       }
-    } catch (error) {
-      console.error('Error fetching user details:', error);
-    }
+    } catch (e) { console.error(e); }
   };
 
-  const handleViewGuideDetails = (guide) => {
-    setSelectedGuide(guide);
-  };
-
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'short',
-      day: 'numeric'
-    });
-  };
-
-  const formatCurrency = (amount) => {
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0
-    }).format(amount);
-  };
-
-  const getCurrentDate = () => {
-    return new Date().toLocaleDateString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  };
-
-  const getStatusColor = (status) => {
-    switch (status) {
-      case 'pending': return '#ffc107';
-      case 'confirmed': return '#17a2b8';
-      case 'completed': return '#28a745';
-      case 'cancelled': return '#dc3545';
-      default: return '#6c757d';
-    }
-  };
-
-  const getRatingStars = (rating) => {
-    const stars = [];
-    for (let i = 1; i <= 5; i++) {
-      if (i <= Math.floor(rating)) {
-        stars.push('★');
-      } else if (i - 0.5 <= rating) {
-        stars.push('½');
-      } else {
-        stars.push('☆');
+  const handleConfirmCompletion = async (assignmentId, confirm) => {
+    const token = localStorage.getItem('token');
+    try {
+      const res = await fetch(`http://localhost:5000/api/guides/assignments/${assignmentId}/confirm-completion`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ confirm })
+      });
+      const data = await res.json();
+      if (data.status === 'success') {
+        setPendingCompletions(prev => prev.filter(a => a._id !== assignmentId));
+        if (confirm) fetchDashboardData(token);
       }
-    }
-    return stars.join('');
+    } catch (e) { console.error(e); }
   };
 
-  if (loading) {
-    return (
-      <div className="admin-dashboard">
-        <div className="container">
-          <div className="loading-page">
-            <div className="loading-spinner"></div>
-            <p>Loading admin dashboard...</p>
-          </div>
-        </div>
+  const formatDate = (d) => new Date(d).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+  const formatCurrency = (a) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0 }).format(a);
+  const getCurrentDate = () => new Date().toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+
+  if (loading) return (
+    <div className="admin-dashboard">
+      <div className="container">
+        <div className="loading-page"><div className="loading-spinner"></div><p>Loading admin dashboard...</p></div>
       </div>
-    );
-  }
+    </div>
+  );
+  if (!isAdmin) return null;
 
-  if (!isAdmin) {
-    return null;
-  }
+  const navItems = [
+    { key: 'dashboard', label: 'Dashboard', badge: null },
+    { key: 'users', label: 'Regular Users', badge: regularUsers.length },
+    { key: 'guides', label: 'Tour Guides', badge: guides.length },
+    { key: 'applications', label: 'Applications', badge: applicationStats.pending || null },
+    { key: 'completions', label: 'Tour Completions', badge: pendingCompletions.length || null },
+    { key: 'reviews', label: 'Reviews', badge: reviewStats.pending || null },
+  ];
 
   return (
     <div className="admin-dashboard">
       <div className="container">
-        {/* Header */}
         <div className="admin-header">
           <div className="admin-header-content">
-            <h1 className="admin-title">
-              Welcome back, <span>{user?.name?.split(' ')[0]}</span>
-            </h1>
+            <h1 className="admin-title">Welcome back, <span>{user?.name?.split(' ')[0]}</span></h1>
             <p className="admin-subtitle">
               <span className="admin-badge">Administrator</span>
               <span className="admin-date">{getCurrentDate()}</span>
@@ -407,223 +271,102 @@ const AdminDashboard = () => {
         </div>
 
         <div className="admin-content">
-          {/* Sidebar */}
           <aside className="admin-sidebar">
             <div className="sidebar-profile">
-              <div className="profile-avatar admin-avatar">
-                <span>👑</span>
-              </div>
+              <div className="profile-avatar admin-avatar"><span>A</span></div>
               <div className="profile-info">
                 <h3 className="profile-name">{user?.name}</h3>
                 <span className="profile-role">Administrator</span>
                 <p className="profile-email">{user?.email}</p>
               </div>
             </div>
-
             <nav className="sidebar-nav">
-              <button
-                className={`nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}
-                onClick={() => setActiveTab('dashboard')}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <rect x="3" y="3" width="7" height="9"></rect>
-                  <rect x="14" y="3" width="7" height="5"></rect>
-                  <rect x="3" y="15" width="7" height="6"></rect>
-                  <rect x="14" y="13" width="7" height="8"></rect>
-                </svg>
-                Dashboard
-              </button>
-
-              <button
-                className={`nav-item ${activeTab === 'users' ? 'active' : ''}`}
-                onClick={() => setActiveTab('users')}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                  <circle cx="12" cy="7" r="4"></circle>
-                </svg>
-                Regular Users
-                <span className="nav-badge">{regularUsers.length}</span>
-              </button>
-
-              <button
-                className={`nav-item ${activeTab === 'guides' ? 'active' : ''}`}
-                onClick={() => setActiveTab('guides')}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                  <circle cx="12" cy="7" r="4"></circle>
-                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                </svg>
-                Tour Guides
-                <span className="nav-badge">{guides.length}</span>
-              </button>
-
-              <button
-                className={`nav-item ${activeTab === 'applications' ? 'active' : ''}`}
-                onClick={() => setActiveTab('applications')}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-                  <polyline points="14 2 14 8 20 8"></polyline>
-                  <line x1="16" y1="13" x2="8" y2="13"></line>
-                  <line x1="16" y1="17" x2="8" y2="17"></line>
-                </svg>
-                Applications
-                {applicationStats.pending > 0 && (
-                  <span className="nav-badge">{applicationStats.pending}</span>
-                )}
-              </button>
-
-              <button
-                className={`nav-item ${activeTab === 'reviews' ? 'active' : ''}`}
-                onClick={() => setActiveTab('reviews')}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                </svg>
-                Reviews
-                {reviewStats.pending > 0 && (
-                  <span className="nav-badge">{reviewStats.pending}</span>
-                )}
-              </button>
-
-              <button
-                className="nav-item"
-                onClick={() => navigate('/account')}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                  <circle cx="12" cy="7" r="4"></circle>
-                </svg>
-                My Account
-              </button>
+              {navItems.map(({ key, label, badge }) => (
+                <button key={key} className={`nav-item ${activeTab === key ? 'active' : ''}`} onClick={() => setActiveTab(key)}>
+                  {label}
+                  {badge != null && badge > 0 && <span className="nav-badge">{badge}</span>}
+                </button>
+              ))}
+              <button className="nav-item" onClick={() => navigate('/account')}>My Account</button>
             </nav>
           </aside>
 
-          {/* Main Content */}
           <main className="admin-main">
-            {/* Dashboard Tab */}
+
+            {/* DASHBOARD TAB */}
             {activeTab === 'dashboard' && (
               <div className="dashboard-tab">
-                {/* Stats Grid */}
                 <div className="stats-grid">
-                  <div className="stat-card">
-                    <div className="stat-icon">📊</div>
-                    <div className="stat-content">
-                      <h3 className="stat-value">{stats.totalBookings}</h3>
-                      <p className="stat-label">Total Bookings</p>
+                  {[
+                    { label: 'Total Bookings', value: stats.totalBookings },
+                    { label: 'Pending', value: stats.pendingBookings },
+                    { label: 'Confirmed', value: stats.confirmedBookings },
+                    { label: 'Completed', value: stats.completedBookings },
+                    { label: 'Cancelled', value: stats.cancelledBookings },
+                    { label: 'Total Revenue', value: formatCurrency(stats.totalRevenue) },
+                    { label: 'Regular Users', value: stats.totalUsers },
+                    { label: 'Tour Guides', value: stats.totalGuides },
+                  ].map(({ label, value }) => (
+                    <div key={label} className="stat-card">
+                      <div className="stat-content">
+                        <h3 className="stat-value">{value}</h3>
+                        <p className="stat-label">{label}</p>
+                      </div>
                     </div>
-                  </div>
-
-                  <div className="stat-card">
-                    <div className="stat-icon">⏳</div>
-                    <div className="stat-content">
-                      <h3 className="stat-value">{stats.pendingBookings}</h3>
-                      <p className="stat-label">Pending</p>
-                    </div>
-                  </div>
-
-                  <div className="stat-card">
-                    <div className="stat-icon">✅</div>
-                    <div className="stat-content">
-                      <h3 className="stat-value">{stats.confirmedBookings}</h3>
-                      <p className="stat-label">Confirmed</p>
-                    </div>
-                  </div>
-
-                  <div className="stat-card">
-                    <div className="stat-icon">🎉</div>
-                    <div className="stat-content">
-                      <h3 className="stat-value">{stats.completedBookings}</h3>
-                      <p className="stat-label">Completed</p>
-                    </div>
-                  </div>
-
-                  <div className="stat-card">
-                    <div className="stat-icon">💰</div>
-                    <div className="stat-content">
-                      <h3 className="stat-value">{formatCurrency(stats.totalRevenue)}</h3>
-                      <p className="stat-label">Total Revenue</p>
-                    </div>
-                  </div>
-
-                  <div className="stat-card">
-                    <div className="stat-icon">👤</div>
-                    <div className="stat-content">
-                      <h3 className="stat-value">{stats.totalUsers}</h3>
-                      <p className="stat-label">Regular Users</p>
-                    </div>
-                  </div>
-
-                  <div className="stat-card">
-                    <div className="stat-icon">👥</div>
-                    <div className="stat-content">
-                      <h3 className="stat-value">{stats.totalGuides}</h3>
-                      <p className="stat-label">Tour Guides</p>
-                    </div>
-                  </div>
+                  ))}
                 </div>
 
-                {/* Recent Bookings */}
+                {pendingCompletions.length > 0 && (
+                  <div className="dashboard-card alert-card">
+                    <div className="card-header">
+                      <h3 className="card-title">Pending Tour Completion Confirmations</h3>
+                      <span className="alert-badge">{pendingCompletions.length}</span>
+                    </div>
+                    <p className="card-description">These tours have been reported as completed by guides and need your confirmation.</p>
+                    <button className="btn-primary" onClick={() => setActiveTab('completions')}>Review Completions</button>
+                  </div>
+                )}
+
                 <div className="dashboard-card">
                   <div className="card-header">
-                    <h3 className="card-title">
-                      <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                        <line x1="16" y1="2" x2="16" y2="6"></line>
-                        <line x1="8" y1="2" x2="8" y2="6"></line>
-                        <line x1="3" y1="10" x2="21" y2="10"></line>
-                      </svg>
-                      All Bookings
-                    </h3>
+                    <h3 className="card-title">All Bookings</h3>
                   </div>
-
                   {bookings.length === 0 ? (
-                    <div className="empty-state">
-                      <p>No bookings found in the system</p>
-                    </div>
+                    <div className="empty-state"><p>No bookings found</p></div>
                   ) : (
                     <div className="simple-bookings-list">
                       {bookings.map((booking) => (
                         <div key={booking._id} className="simple-booking-item">
                           <div className="simple-booking-info">
                             <div className="simple-booking-header">
-                              <span className="simple-tour-name">
-                                {booking.tour?.name || booking.tourName || 'Unknown Tour'}
-                              </span>
-                              <span className={`simple-status ${booking.status || 'pending'}`}>
-                                {booking.status === 'pending' ? 'booked' : (booking.status || 'pending')}
+                              <span className="simple-tour-name">{booking.tour?.name || booking.tourName || 'Unknown Tour'}</span>
+                              <span className={`simple-status ${booking.status}`}>
+                                {booking.status === 'pending' ? 'Booked' : booking.status}
                               </span>
                             </div>
                             <div className="simple-customer-details">
-                              <span className="customer-name">
-                                👤 {booking.user?.name || booking.userId?.name || 'Unknown'}
-                              </span>
-                              <span className="customer-email">
-                                {booking.user?.email || booking.userId?.email || ''}
-                              </span>
+                              <span className="customer-name">{booking.user?.name || booking.userId?.name || 'Unknown'}</span>
+                              <span className="customer-email">{booking.user?.email || booking.userId?.email || ''}</span>
                             </div>
                             <div className="simple-booking-meta">
-                              <span>📅 {formatDate(booking.bookingDate || booking.createdAt)}</span>
-                              <span>👥 {booking.participants || 1} people</span>
-                              <span>⏱️ {booking.duration || 1} days</span>
-                              {booking.guideName && (
-                                <span>👤 Guide: {booking.guideName}</span>
-                              )}
+                              <span>{formatDate(booking.bookingDate || booking.createdAt)}</span>
+                              <span>{booking.participants || 1} people</span>
+                              <span>{booking.duration || 1} days</span>
+                              {booking.guideName && <span>Guide: {booking.guideName}</span>}
                             </div>
-                            <div className="simple-price">
-                              💰 {formatCurrency(booking.totalPrice || 0)}
-                            </div>
-                            <div className="simple-price-status">
+                            <div className="simple-booking-footer">
+                              <div className="simple-price-col">
+                                <span className="simple-price">{formatCurrency(booking.totalPrice || 0)}</span>
+                                {booking.status === 'cancelled' && booking.refundAmount > 0 && (
+                                  <span className="refund-tag">Refund: {formatCurrency(booking.refundAmount)}</span>
+                                )}
+                              </div>
                               <select
-                                className="status-select-small"
+                                className={`status-select-small status-${booking.status}`}
                                 value={booking.status}
                                 onChange={(e) => handleUpdateBookingStatus(booking._id, e.target.value)}
-                                style={{ borderColor: getStatusColor(booking.status) }}
                               >
-                                <option value="pending">booked</option>
+                                <option value="pending">Booked</option>
                                 <option value="confirmed">Confirmed</option>
                                 <option value="completed">Completed</option>
                                 <option value="cancelled">Cancelled</option>
@@ -638,53 +381,41 @@ const AdminDashboard = () => {
               </div>
             )}
 
-            {/* Regular Users Tab */}
+            {/* USERS TAB */}
             {activeTab === 'users' && (
               <div className="users-tab">
                 <div className="tab-header">
                   <h3 className="tab-title">Regular Users ({regularUsers.length})</h3>
                 </div>
-
                 <div className="filter-section">
-                  <input
-                    type="text"
-                    placeholder="Search users by name or email..."
-                    className="search-input"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
+                  <input type="text" placeholder="Search users by name or email..." className="search-input" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
                 </div>
-
                 <div className="simple-users-list">
-                  {regularUsers.filter(user =>
-                    user.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                    user.email?.toLowerCase().includes(searchTerm.toLowerCase())
-                  ).map((userItem) => (
-                    <div key={userItem._id} className="simple-user-item">
+                  {regularUsers.filter(u => u.name?.toLowerCase().includes(searchTerm.toLowerCase()) || u.email?.toLowerCase().includes(searchTerm.toLowerCase())).map((userItem) => (
+                    <div key={userItem._id} className={`simple-user-item ${userItem.isSuspended ? 'suspended-item' : ''}`}>
                       <div className="simple-user-info">
-                        <div className="simple-user-avatar">
-                          {userItem.name?.charAt(0).toUpperCase()}
-                        </div>
+                        <div className="simple-user-avatar">{userItem.name?.charAt(0).toUpperCase()}</div>
                         <div className="simple-user-details">
                           <span className="simple-user-name">{userItem.name}</span>
                           <span className="simple-user-email">{userItem.email}</span>
                           <span className="simple-user-phone">{userItem.phone || 'No phone'}</span>
+                          {userItem.isSuspended && <span className="suspended-tag">Suspended</span>}
                         </div>
-                        <span className="role-badge-small user">
-                          User
-                        </span>
+                        <span className="role-badge-small user">User</span>
                       </div>
-                      <button
-                        className="view-user-btn"
-                        onClick={() => handleViewUserDetails(userItem._id)}
-                      >
-                        View Details
-                      </button>
+                      <div className="user-actions">
+                        <button className="view-user-btn" onClick={() => handleViewUserDetails(userItem._id)}>View Details</button>
+                        <button
+                          className={`suspend-btn ${userItem.isSuspended ? 'unsuspend' : 'suspend'}`}
+                          onClick={() => handleSuspendAction(userItem, 'user')}
+                        >
+                          {userItem.isSuspended ? 'Unsuspend' : 'Suspend'}
+                        </button>
+                      </div>
                     </div>
                   ))}
                 </div>
 
-                {/* User Details Modal */}
                 {selectedUser && (
                   <div className="modal-overlay" onClick={() => setSelectedUser(null)}>
                     <div className="modal-content small" onClick={e => e.stopPropagation()}>
@@ -692,46 +423,40 @@ const AdminDashboard = () => {
                         <h2>User Details</h2>
                         <button className="modal-close" onClick={() => setSelectedUser(null)}>×</button>
                       </div>
-
                       <div className="modal-body">
-                        <div className="user-profile-card">
-                          <div className="user-avatar-large">
-                            {selectedUser.name?.charAt(0).toUpperCase()}
+                        {selectedUser.isSuspended && (
+                          <div className="suspended-notice">
+                            Account Suspended {selectedUser.suspendedReason && `— ${selectedUser.suspendedReason}`}
                           </div>
+                        )}
+                        <div className="user-profile-card">
+                          <div className="user-avatar-large">{selectedUser.name?.charAt(0).toUpperCase()}</div>
                           <h3 className="user-name-large">{selectedUser.name}</h3>
-                          <span className="role-badge-large user">
-                            Regular User
-                          </span>
+                          <span className="role-badge-large user">Regular User</span>
                         </div>
-
                         <div className="user-info-section">
                           <h4>Personal Information</h4>
                           <div className="info-grid">
-                            <div className="info-item">
-                              <label>Full Name</label>
-                              <span>{selectedUser.name}</span>
-                            </div>
-                            <div className="info-item">
-                              <label>Email Address</label>
-                              <span>{selectedUser.email}</span>
-                            </div>
-                            <div className="info-item">
-                              <label>Phone Number</label>
-                              <span>{selectedUser.phone || 'Not provided'}</span>
-                            </div>
-                            <div className="info-item">
-                              <label>Address</label>
-                              <span>{selectedUser.address || 'Not provided'}</span>
-                            </div>
-                            <div className="info-item">
-                              <label>Member Since</label>
-                              <span>{formatDate(selectedUser.createdAt)}</span>
-                            </div>
-                            <div className="info-item">
-                              <label>Preferred Language</label>
-                              <span>{selectedUser.preferences?.language || 'English'}</span>
-                            </div>
+                            {[
+                              { label: 'Full Name', value: selectedUser.name },
+                              { label: 'Email Address', value: selectedUser.email },
+                              { label: 'Phone Number', value: selectedUser.phone || 'Not provided' },
+                              { label: 'Address', value: selectedUser.address || 'Not provided' },
+                              { label: 'Member Since', value: formatDate(selectedUser.createdAt) },
+                              { label: 'Preferred Language', value: selectedUser.preferences?.language || 'English' },
+                            ].map(({ label, value }) => (
+                              <div key={label} className="info-item"><label>{label}</label><span>{value}</span></div>
+                            ))}
                           </div>
+                        </div>
+                        <div className="modal-actions">
+                          <button
+                            className={`btn-${selectedUser.isSuspended ? 'secondary' : 'danger'}`}
+                            onClick={() => { setSelectedUser(null); handleSuspendAction(selectedUser, 'user'); }}
+                          >
+                            {selectedUser.isSuspended ? 'Unsuspend Account' : 'Suspend Account'}
+                          </button>
+                          <button className="btn-outline" onClick={() => setSelectedUser(null)}>Close</button>
                         </div>
                       </div>
                     </div>
@@ -740,101 +465,58 @@ const AdminDashboard = () => {
               </div>
             )}
 
-            {/* Guides Tab - NEW */}
+            {/* GUIDES TAB */}
             {activeTab === 'guides' && (
               <div className="guides-tab">
                 <div className="tab-header">
                   <h3 className="tab-title">Tour Guides ({guides.length})</h3>
                 </div>
-
-                {/* Filter Section */}
                 <div className="filter-section">
-                  <input
-                    type="text"
-                    placeholder="Search guides by name or email..."
-                    className="search-input"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
-                  <select
-                    className="filter-select"
-                    value={guideCategoryFilter}
-                    onChange={(e) => setGuideCategoryFilter(e.target.value)}
-                  >
+                  <input type="text" placeholder="Search guides by name or email..." className="search-input" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+                  <select className="filter-select" value={guideCategoryFilter} onChange={(e) => setGuideCategoryFilter(e.target.value)}>
                     <option value="all">All Categories</option>
-                    <option value="cultural">Cultural</option>
-                    <option value="wildlife">Wildlife</option>
-                    <option value="adventure">Adventure</option>
-                    <option value="beach">Beach</option>
-                    <option value="photography">Photography</option>
+                    {['cultural', 'wildlife', 'adventure', 'beach', 'photography'].map(c => (
+                      <option key={c} value={c}>{c.charAt(0).toUpperCase() + c.slice(1)}</option>
+                    ))}
                   </select>
                 </div>
-
-                {/* Guides Grid */}
                 <div className="guides-grid-admin">
-                  {guides
-                    .filter(guide => 
-                      (guide.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                       guide.email?.toLowerCase().includes(searchTerm.toLowerCase())) &&
-                      (guideCategoryFilter === 'all' || guide.category === guideCategoryFilter)
-                    )
-                    .map((guide) => (
-                      <div key={guide._id} className="guide-card-admin">
-                        <div className="guide-card-header">
-                          <div className="guide-avatar-large">
-                            {guide.name?.charAt(0).toUpperCase()}
-                          </div>
-                          <div className="guide-rating-badge-admin">
-                            {guide.rating} ⭐
-                          </div>
+                  {guides.filter(g =>
+                    (g.name?.toLowerCase().includes(searchTerm.toLowerCase()) || g.email?.toLowerCase().includes(searchTerm.toLowerCase())) &&
+                    (guideCategoryFilter === 'all' || g.category === guideCategoryFilter)
+                  ).map((g) => (
+                    <div key={g._id} className={`guide-card-admin ${g.isSuspended ? 'suspended-card' : ''}`}>
+                      <div className="guide-card-header">
+                        <div className="guide-avatar-large">{g.name?.charAt(0).toUpperCase()}</div>
+                        <div className="guide-rating-badge-admin">{g.rating} ★</div>
+                        {g.isSuspended && <div className="suspended-overlay-badge">Suspended</div>}
+                      </div>
+                      <div className="guide-card-body">
+                        <h4 className="guide-name-admin">{g.name}</h4>
+                        <p className="guide-email-admin">{g.email}</p>
+                        <div className="guide-category-tag">{g.category || 'Cultural'}</div>
+                        <div className="guide-stats-admin">
+                          <div className="stat"><span className="stat-label">Daily Rate</span><span className="stat-value">${g.dailyRate}/day</span></div>
+                          <div className="stat"><span className="stat-label">Reviews</span><span className="stat-value">{g.totalReviews || 0}</span></div>
                         </div>
-                        
-                        <div className="guide-card-body">
-                          <h4 className="guide-name-admin">{guide.name}</h4>
-                          <p className="guide-email-admin">{guide.email}</p>
-                          
-                          <div className="guide-category-tag">
-                            {guide.category || 'Cultural'}
-                          </div>
-
-                          <div className="guide-stats-admin">
-                            <div className="stat">
-                              <span className="stat-label">Experience</span>
-                              <span className="stat-value">{guide.experience || 'N/A'}</span>
-                            </div>
-                            <div className="stat">
-                              <span className="stat-label">Daily Rate</span>
-                              <span className="stat-value">${guide.dailyRate}/day</span>
-                            </div>
-                            <div className="stat">
-                              <span className="stat-label">Reviews</span>
-                              <span className="stat-value">{guide.totalReviews || 0}</span>
-                            </div>
-                          </div>
-
-                          <div className="guide-specialties-admin">
-                            {guide.specialties?.slice(0, 3).map((spec, idx) => (
-                              <span key={idx} className="specialty-tag-small">{spec}</span>
-                            ))}
-                            {guide.specialties?.length > 3 && (
-                              <span className="specialty-tag-small">+{guide.specialties.length - 3}</span>
-                            )}
-                          </div>
-                        </div>
-
-                        <div className="guide-card-footer">
-                          <button
-                            className="view-guide-btn"
-                            onClick={() => handleViewGuideDetails(guide)}
-                          >
-                            View Details
-                          </button>
+                        <div className="guide-specialties-admin">
+                          {g.specialties?.slice(0, 3).map((s, i) => <span key={i} className="specialty-tag-small">{s}</span>)}
+                          {g.specialties?.length > 3 && <span className="specialty-tag-small">+{g.specialties.length - 3}</span>}
                         </div>
                       </div>
-                    ))}
+                      <div className="guide-card-footer">
+                        <button className="view-guide-btn" onClick={() => { setSelectedGuide(g); }}>View Details</button>
+                        <button
+                          className={`suspend-btn ${g.isSuspended ? 'unsuspend' : 'suspend'}`}
+                          onClick={() => handleSuspendAction(g, 'guide')}
+                        >
+                          {g.isSuspended ? 'Unsuspend' : 'Suspend'}
+                        </button>
+                      </div>
+                    </div>
+                  ))}
                 </div>
 
-                {/* Guide Details Modal */}
                 {selectedGuide && (
                   <div className="modal-overlay" onClick={() => setSelectedGuide(null)}>
                     <div className="modal-content" onClick={e => e.stopPropagation()}>
@@ -842,91 +524,52 @@ const AdminDashboard = () => {
                         <h2>Guide Details</h2>
                         <button className="modal-close" onClick={() => setSelectedGuide(null)}>×</button>
                       </div>
-
                       <div className="modal-body">
-                        <div className="guide-profile-header">
-                          <div className="guide-profile-avatar">
-                            {selectedGuide.name?.charAt(0).toUpperCase()}
+                        {selectedGuide.isSuspended && (
+                          <div className="suspended-notice">
+                            Account Suspended {selectedGuide.suspendedReason && `— ${selectedGuide.suspendedReason}`}
                           </div>
+                        )}
+                        <div className="guide-profile-header">
+                          <div className="guide-profile-avatar">{selectedGuide.name?.charAt(0).toUpperCase()}</div>
                           <div>
                             <h3>{selectedGuide.name}</h3>
                             <p>{selectedGuide.email}</p>
                             <div className="guide-profile-rating">
-                              <span className="stars">{getRatingStars(selectedGuide.rating)}</span>
+                              <span className="stars">{'★'.repeat(Math.floor(selectedGuide.rating || 0))}</span>
                               <span>({selectedGuide.totalReviews || 0} reviews)</span>
                             </div>
                           </div>
                         </div>
-
                         <div className="guide-details-grid">
                           <div className="detail-section">
                             <h4>Professional Information</h4>
-                            <div className="detail-item">
-                              <label>Experience:</label>
-                              <span>{selectedGuide.experience || 'Not specified'}</span>
-                            </div>
-                            <div className="detail-item">
-                              <label>Category:</label>
-                              <span className="category-badge">{selectedGuide.category}</span>
-                            </div>
-                            <div className="detail-item">
-                              <label>Phone:</label>
-                              <span>{selectedGuide.phone || 'Not provided'}</span>
-                            </div>
+                            <div className="detail-item"><label>Experience:</label><span>{selectedGuide.experience || 'Not specified'}</span></div>
+                            <div className="detail-item"><label>Category:</label><span className="category-badge">{selectedGuide.category}</span></div>
+                            <div className="detail-item"><label>Phone:</label><span>{selectedGuide.phone || 'Not provided'}</span></div>
                           </div>
-
                           <div className="detail-section">
                             <h4>Rates</h4>
-                            <div className="detail-item">
-                              <label>Hourly Rate:</label>
-                              <span>${selectedGuide.hourlyRate}/hour</span>
-                            </div>
-                            <div className="detail-item">
-                              <label>Daily Rate:</label>
-                              <span>${selectedGuide.dailyRate}/day</span>
-                            </div>
+                            <div className="detail-item"><label>Daily Rate:</label><span>${selectedGuide.dailyRate}/day</span></div>
                           </div>
-
-                          <div className="detail-section full-width">
-                            <h4>Bio</h4>
-                            <p>{selectedGuide.bio || 'No bio provided'}</p>
-                          </div>
-
+                          <div className="detail-section full-width"><h4>Bio</h4><p>{selectedGuide.bio || 'No bio provided'}</p></div>
                           <div className="detail-section full-width">
                             <h4>Specialties</h4>
-                            <div className="tag-list">
-                              {selectedGuide.specialties?.map((spec, idx) => (
-                                <span key={idx} className="tag">{spec}</span>
-                              ))}
-                            </div>
+                            <div className="tag-list">{selectedGuide.specialties?.map((s, i) => <span key={i} className="tag">{s}</span>)}</div>
                           </div>
-
                           <div className="detail-section full-width">
                             <h4>Languages</h4>
-                            <div className="tag-list">
-                              {selectedGuide.languages?.map((lang, idx) => (
-                                <span key={idx} className="tag">{lang}</span>
-                              ))}
-                            </div>
+                            <div className="tag-list">{selectedGuide.languages?.map((l, i) => <span key={i} className="tag">{l}</span>)}</div>
                           </div>
-
-                          <div className="detail-section full-width">
-                            <h4>Tour Specialties</h4>
-                            <div className="tag-list">
-                              {selectedGuide.tourSpecialties?.map((tour, idx) => (
-                                <span key={idx} className="tag">{tour}</span>
-                              ))}
-                            </div>
-                          </div>
-
-                          <div className="detail-section full-width">
-                            <h4>Certifications</h4>
-                            <div className="tag-list">
-                              {selectedGuide.certifications?.map((cert, idx) => (
-                                <span key={idx} className="tag">{cert}</span>
-                              ))}
-                            </div>
-                          </div>
+                        </div>
+                        <div className="modal-actions">
+                          <button
+                            className={`btn-${selectedGuide.isSuspended ? 'secondary' : 'danger'}`}
+                            onClick={() => { setSelectedGuide(null); handleSuspendAction(selectedGuide, 'guide'); }}
+                          >
+                            {selectedGuide.isSuspended ? 'Unsuspend Account' : 'Suspend Account'}
+                          </button>
+                          <button className="btn-outline" onClick={() => setSelectedGuide(null)}>Close</button>
                         </div>
                       </div>
                     </div>
@@ -935,66 +578,18 @@ const AdminDashboard = () => {
               </div>
             )}
 
-            {/* Applications Tab */}
+            {/* APPLICATIONS TAB */}
             {activeTab === 'applications' && (
               <div className="applications-tab">
-                <div className="tab-header">
-                  <h3 className="tab-title">Guide Applications</h3>
-                </div>
-
-                {/* Stats Cards */}
+                <div className="tab-header"><h3 className="tab-title">Guide Applications</h3></div>
                 <div className="stats-grid small">
-                  <div className="stat-card">
-                    <div className="stat-icon">📝</div>
-                    <div className="stat-content">
-                      <h3 className="stat-value">{applicationStats.total}</h3>
-                      <p className="stat-label">Total</p>
-                    </div>
-                  </div>
-                  <div className="stat-card">
-                    <div className="stat-icon">⏳</div>
-                    <div className="stat-content">
-                      <h3 className="stat-value">{applicationStats.pending}</h3>
-                      <p className="stat-label">Pending</p>
-                    </div>
-                  </div>
-                  <div className="stat-card">
-                    <div className="stat-icon">📞</div>
-                    <div className="stat-content">
-                      <h3 className="stat-value">{applicationStats.interview}</h3>
-                      <p className="stat-label">Interview</p>
-                    </div>
-                  </div>
-                  <div className="stat-card">
-                    <div className="stat-icon">✅</div>
-                    <div className="stat-content">
-                      <h3 className="stat-value">{applicationStats.accepted}</h3>
-                      <p className="stat-label">Accepted</p>
-                    </div>
-                  </div>
-                  <div className="stat-card">
-                    <div className="stat-icon">❌</div>
-                    <div className="stat-content">
-                      <h3 className="stat-value">{applicationStats.rejected}</h3>
-                      <p className="stat-label">Rejected</p>
-                    </div>
-                  </div>
+                  {[['Total', applicationStats.total], ['Pending', applicationStats.pending], ['Interview', applicationStats.interview], ['Accepted', applicationStats.accepted], ['Rejected', applicationStats.rejected]].map(([l, v]) => (
+                    <div key={l} className="stat-card"><div className="stat-content"><h3 className="stat-value">{v}</h3><p className="stat-label">{l}</p></div></div>
+                  ))}
                 </div>
-
-                {/* Filter Section */}
                 <div className="filter-section">
-                  <input
-                    type="text"
-                    placeholder="Search applications..."
-                    className="search-input"
-                    value={searchTerm}
-                    onChange={(e) => setSearchTerm(e.target.value)}
-                  />
-                  <select
-                    className="filter-select styled-select"
-                    value={statusFilter}
-                    onChange={(e) => setStatusFilter(e.target.value)}
-                  >
+                  <input type="text" placeholder="Search applications..." className="search-input" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
+                  <select className="filter-select" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
                     <option value="all">All Status</option>
                     <option value="pending">Pending</option>
                     <option value="interview">Interview</option>
@@ -1002,178 +597,61 @@ const AdminDashboard = () => {
                     <option value="rejected">Rejected</option>
                   </select>
                 </div>
-
-                {/* Applications Table */}
                 <div className="applications-table">
-                  <div className="table-header">
-                    <div>Name & Contact</div>
-                    <div>Details</div>
-                    <div>Experience</div>
-                    <div>Status</div>
-                    <div>Actions</div>
-                  </div>
-
+                  <div className="table-header"><div>Name & Contact</div><div>Details</div><div>Experience</div><div>Status</div><div>Actions</div></div>
                   <div className="table-body">
-                    {applications.map(app => (
+                    {applications.filter(app =>
+                      (statusFilter === 'all' || app.status === statusFilter) &&
+                      (app.fullName?.toLowerCase().includes(searchTerm.toLowerCase()) || app.email?.toLowerCase().includes(searchTerm.toLowerCase()))
+                    ).map(app => (
                       <div key={app._id} className="table-row">
-                        <div className="table-col" data-label="Name">
-                          <p className="customer-name">{app.fullName}</p>
-                          <p className="customer-email">{app.email}</p>
-                          <p className="customer-phone">{app.phone}</p>
-                        </div>
-                        <div className="table-col" data-label="Details">
-                          <p>Age: {app.age} | {app.gender}</p>
-                          <p>Languages: {app.languages?.length || 0}</p>
-                          <p>Specialties: {app.specialties?.length || 0}</p>
-                        </div>
-                        <div className="table-col" data-label="Experience">
-                          <p>{app.experience}</p>
-                          <p className="cert-preview">{app.certifications?.substring(0, 30)}...</p>
-                        </div>
-                        <div className="table-col" data-label="Status">
-                          <span className={`status-badge ${app.status}`}>
-                            {app.status}
-                          </span>
-                        </div>
-                        <div className="table-col" data-label="Actions">
-                          <button
-                            className="action-btn view-btn"
-                            onClick={() => handleApplicationAction(app)}
-                          >
-                            Review
-                          </button>
-                        </div>
+                        <div className="table-col"><p className="customer-name">{app.fullName}</p><p className="customer-email">{app.email}</p><p className="customer-phone">{app.phone}</p></div>
+                        <div className="table-col"><p>Age: {app.age} | {app.gender}</p><p>Languages: {app.languages?.length || 0}</p></div>
+                        <div className="table-col"><p>{app.experience}</p></div>
+                        <div className="table-col"><span className={`status-badge ${app.status}`}>{app.status}</span></div>
+                        <div className="table-col"><button className="action-btn view-btn" onClick={() => { setSelectedApplication(app); setRejectionReason(app.rejectionReason || ''); }}>Review</button></div>
                       </div>
                     ))}
                   </div>
                 </div>
 
-                {/* Application Review Modal */}
                 {selectedApplication && (
                   <div className="modal-overlay" onClick={() => setSelectedApplication(null)}>
                     <div className="modal-content" onClick={e => e.stopPropagation()}>
-                      <div className="modal-header">
-                        <h2>Review Application</h2>
-                        <button className="modal-close" onClick={() => setSelectedApplication(null)}>×</button>
-                      </div>
-
+                      <div className="modal-header"><h2>Review Application</h2><button className="modal-close" onClick={() => setSelectedApplication(null)}>×</button></div>
                       <div className="modal-body">
                         <div className="application-detail-section">
                           <h4>Personal Information</h4>
                           <div className="detail-grid">
-                            <div className="detail-item">
-                              <label>Name:</label>
-                              <span>{selectedApplication.fullName}</span>
-                            </div>
-                            <div className="detail-item">
-                              <label>Email:</label>
-                              <span>{selectedApplication.email}</span>
-                            </div>
-                            <div className="detail-item">
-                              <label>Phone:</label>
-                              <span>{selectedApplication.phone}</span>
-                            </div>
-                            <div className="detail-item">
-                              <label>Age/Gender:</label>
-                              <span>{selectedApplication.age} / {selectedApplication.gender}</span>
-                            </div>
+                            {[['Name', selectedApplication.fullName], ['Email', selectedApplication.email], ['Phone', selectedApplication.phone], ['Age/Gender', `${selectedApplication.age} / ${selectedApplication.gender}`]].map(([l, v]) => (
+                              <div key={l} className="detail-item"><label>{l}:</label><span>{v}</span></div>
+                            ))}
                           </div>
                         </div>
-
                         <div className="application-detail-section">
                           <h4>Professional Details</h4>
-                          <div className="detail-item full-width">
-                            <label>Experience:</label>
-                            <p>{selectedApplication.experience}</p>
-                          </div>
-                          <div className="detail-item full-width">
-                            <label>Certifications:</label>
-                            <p>{selectedApplication.certifications}</p>
-                          </div>
-                          <div className="detail-item full-width">
-                            <label>Languages:</label>
-                            <div className="tag-list">
-                              {selectedApplication.languages?.map(lang => (
-                                <span key={lang} className="tag">{lang}</span>
-                              ))}
-                            </div>
-                          </div>
-                          <div className="detail-item full-width">
-                            <label>Specialties:</label>
-                            <div className="tag-list">
-                              {selectedApplication.specialties?.map(spec => (
-                                <span key={spec} className="tag">{spec}</span>
-                              ))}
-                            </div>
-                          </div>
+                          <div className="detail-item full-width"><label>Experience:</label><p>{selectedApplication.experience}</p></div>
+                          <div className="detail-item full-width"><label>Certifications:</label><p>{selectedApplication.certifications}</p></div>
+                          <div className="detail-item full-width"><label>Languages:</label><div className="tag-list">{selectedApplication.languages?.map(l => <span key={l} className="tag">{l}</span>)}</div></div>
+                          <div className="detail-item full-width"><label>Specialties:</label><div className="tag-list">{selectedApplication.specialties?.map(s => <span key={s} className="tag">{s}</span>)}</div></div>
                         </div>
-
                         <div className="status-update-section">
                           <label>Update Status:</label>
                           <div className="status-buttons">
-                            <button
-                              className={`status-btn ${selectedApplication.status === 'pending' ? 'active' : ''}`}
-                              onClick={() => setSelectedApplication({ ...selectedApplication, status: 'pending' })}
-                            >
-                              ⏳ Pending
-                            </button>
-                            <button
-                              className={`status-btn ${selectedApplication.status === 'interview' ? 'active' : ''}`}
-                              onClick={() => setSelectedApplication({ ...selectedApplication, status: 'interview' })}
-                            >
-                              📞 Interview
-                            </button>
-                            <button
-                              className={`status-btn ${selectedApplication.status === 'accepted' ? 'active' : ''}`}
-                              onClick={() => setSelectedApplication({ ...selectedApplication, status: 'accepted' })}
-                            >
-                              ✅ Accept
-                            </button>
-                            <button
-                              className={`status-btn ${selectedApplication.status === 'rejected' ? 'active' : ''}`}
-                              onClick={() => setSelectedApplication({ ...selectedApplication, status: 'rejected' })}
-                            >
-                              ❌ Reject
-                            </button>
+                            {[['pending', 'Pending'], ['interview', 'Interview'], ['accepted', 'Accept'], ['rejected', 'Reject']].map(([val, label]) => (
+                              <button key={val} className={`status-btn ${selectedApplication.status === val ? 'active' : ''}`} onClick={() => setSelectedApplication({ ...selectedApplication, status: val })}>{label}</button>
+                            ))}
                           </div>
-
                           {selectedApplication.status === 'rejected' && (
                             <div className="rejection-reason">
                               <label>Rejection Reason:</label>
-                              <textarea
-                                placeholder="Why is this application being rejected?"
-                                value={rejectionReason}
-                                onChange={(e) => setRejectionReason(e.target.value)}
-                                rows="3"
-                              />
+                              <textarea placeholder="Why is this application being rejected?" value={rejectionReason} onChange={(e) => setRejectionReason(e.target.value)} rows="3" />
                             </div>
                           )}
-
-                          {selectedApplication.status === 'accepted' && (
-                            <div className="success-message small">
-                              ✅ When accepted, a guide account will be created and an email will be sent with login details.
-                            </div>
-                          )}
-
-                          {selectedApplication.status === 'interview' && (
-                            <div className="info-message">
-                              📞 Set to Interview - The applicant will be contacted for an interview.
-                            </div>
-                          )}
-
+                          {selectedApplication.status === 'accepted' && <div className="success-message small">When accepted, a guide account will be created automatically.</div>}
                           <div className="action-buttons">
-                            <button
-                              className="btn-primary"
-                              onClick={() => handleUpdateApplication(selectedApplication._id, selectedApplication.status)}
-                            >
-                              Update Status
-                            </button>
-                            <button
-                              className="btn-outline"
-                              onClick={() => setSelectedApplication(null)}
-                            >
-                              Cancel
-                            </button>
+                            <button className="btn-primary" onClick={() => handleUpdateApplication(selectedApplication._id, selectedApplication.status)}>Update Status</button>
+                            <button className="btn-outline" onClick={() => setSelectedApplication(null)}>Cancel</button>
                           </div>
                         </div>
                       </div>
@@ -1183,7 +661,60 @@ const AdminDashboard = () => {
               </div>
             )}
 
-            {/* Reviews Tab */}
+            {/* TOUR COMPLETIONS TAB */}
+            {activeTab === 'completions' && (
+              <div className="completions-tab">
+                <div className="tab-header">
+                  <h3 className="tab-title">Tour Completion Confirmations</h3>
+                  <p className="tab-subtitle">Review and confirm tour completions reported by guides</p>
+                </div>
+                {pendingCompletions.length === 0 ? (
+                  <div className="empty-state">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    <h3>No Pending Completions</h3>
+                    <p>All tour completions have been confirmed.</p>
+                  </div>
+                ) : (
+                  <div className="completions-list">
+                    {pendingCompletions.map((assignment) => (
+                      <div key={assignment._id} className="completion-card">
+                        <div className="completion-card-header">
+                          <div>
+                            <h3>{assignment.tourName}</h3>
+                            <span className="guide-tag">Guide: {assignment.guideName}</span>
+                          </div>
+                          <span className="pending-badge">Pending Confirmation</span>
+                        </div>
+                        <div className="completion-details">
+                          <div className="completion-detail"><span>Customer:</span><strong>{assignment.customerName}</strong></div>
+                          <div className="completion-detail"><span>Start Date:</span><strong>{formatDate(assignment.startDate)}</strong></div>
+                          <div className="completion-detail"><span>End Date:</span><strong>{formatDate(assignment.endDate)}</strong></div>
+                          <div className="completion-detail"><span>Duration:</span><strong>{assignment.duration} days</strong></div>
+                          <div className="completion-detail"><span>Participants:</span><strong>{assignment.participants} people</strong></div>
+                          <div className="completion-detail"><span>Reported At:</span><strong>{assignment.guideCompletedAt ? formatDate(assignment.guideCompletedAt) : 'N/A'}</strong></div>
+                        </div>
+                        {assignment.guideCompletionNote && (
+                          <div className="guide-note">
+                            <strong>Guide's Note:</strong>
+                            <p>{assignment.guideCompletionNote}</p>
+                          </div>
+                        )}
+                        <div className="completion-actions">
+                          <button className="btn-primary confirm-btn" onClick={() => handleConfirmCompletion(assignment._id, true)}>
+                            Confirm Completed
+                          </button>
+                          <button className="btn-outline reject-btn" onClick={() => handleConfirmCompletion(assignment._id, false)}>
+                            Reject (Set Back to Ongoing)
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* REVIEWS TAB */}
             {activeTab === 'reviews' && (
               <div className="reviews-tab">
                 <div className="rt-header">
@@ -1192,68 +723,40 @@ const AdminDashboard = () => {
                     <p className="rt-subtitle">Approve or reject customer reviews before they go public</p>
                   </div>
                   <div className="rt-pills">
-                    <span className="rt-pill total">📋 Total: {reviewStats.total}</span>
-                    <span className="rt-pill pending">⏳ Pending: {reviewStats.pending}</span>
-                    <span className="rt-pill approved">✅ Approved: {reviewStats.approved}</span>
+                    <span className="rt-pill total">Total: {reviewStats.total}</span>
+                    <span className="rt-pill pending">Pending: {reviewStats.pending}</span>
+                    <span className="rt-pill approved">Approved: {reviewStats.approved}</span>
                   </div>
                 </div>
-
                 {reviews.length === 0 ? (
-                  <div className="rt-empty">
-                    <div className="rt-empty-icon">⭐</div>
-                    <h4>No reviews yet</h4>
-                    <p>Customer reviews will appear here once submitted</p>
-                  </div>
+                  <div className="rt-empty"><div className="rt-empty-icon">★</div><h4>No reviews yet</h4><p>Customer reviews will appear here once submitted</p></div>
                 ) : (
                   <div className="rt-grid">
                     {reviews.map(review => (
                       <div key={review._id} className={`rt-card ${review.isApproved ? 'rt-card--approved' : 'rt-card--pending'}`}>
                         <div className="rt-card-top">
-                          <div className="rt-avatar">
-                            {review.user?.name?.charAt(0)?.toUpperCase() || '?'}
-                          </div>
+                          <div className="rt-avatar">{review.user?.name?.charAt(0)?.toUpperCase() || '?'}</div>
                           <div className="rt-author-info">
                             <span className="rt-author-name">{review.user?.name || 'Anonymous'}</span>
                             <span className="rt-author-email">{review.user?.email || ''}</span>
                           </div>
                           <span className={`rt-status-badge ${review.isApproved ? 'rt-badge--approved' : 'rt-badge--pending'}`}>
-                            {review.isApproved ? '✅ Approved' : '⏳ Pending'}
+                            {review.isApproved ? 'Approved' : 'Pending'}
                           </span>
                         </div>
-
                         <div className="rt-meta">
-                          <div className="rt-stars">
-                            {[1,2,3,4,5].map(s => (
-                              <span key={s} className={s <= review.rating ? 'rt-star filled' : 'rt-star'}>★</span>
-                            ))}
-                            <span className="rt-rating-num">{review.rating}/5</span>
-                          </div>
-                          <span className="rt-tour-tag">🗺️ {review.tour}</span>
-                          {review.guide && <span className="rt-guide-tag">👤 {review.guide}</span>}
+                          <div className="rt-stars">{[1,2,3,4,5].map(s => <span key={s} className={s <= review.rating ? 'rt-star filled' : 'rt-star'}>★</span>)}<span className="rt-rating-num">{review.rating}/5</span></div>
+                          <span className="rt-tour-tag">{review.tour}</span>
                         </div>
-
                         <h4 className="rt-review-title">"{review.title}"</h4>
                         <p className="rt-review-body">{review.comment}</p>
-
                         <div className="rt-card-footer">
-                          <span className="rt-date">
-                            🗓️ {new Date(review.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}
-                          </span>
+                          <span className="rt-date">{new Date(review.createdAt).toLocaleDateString('en-US', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
                           <div className="rt-actions">
                             {!review.isApproved ? (
-                              <button
-                                className="rt-btn rt-btn--approve"
-                                onClick={() => handleApproveReview(review._id, true)}
-                              >
-                                ✅ Approve
-                              </button>
+                              <button className="rt-btn rt-btn--approve" onClick={() => handleApproveReview(review._id, true)}>Approve</button>
                             ) : (
-                              <button
-                                className="rt-btn rt-btn--unapprove"
-                                onClick={() => handleApproveReview(review._id, false)}
-                              >
-                                ↩ Unapprove
-                              </button>
+                              <button className="rt-btn rt-btn--unapprove" onClick={() => handleApproveReview(review._id, false)}>Unapprove</button>
                             )}
                           </div>
                         </div>
@@ -1263,9 +766,42 @@ const AdminDashboard = () => {
                 )}
               </div>
             )}
+
           </main>
         </div>
       </div>
+
+      {/* Suspend Modal */}
+      {suspendModalData && (
+        <div className="modal-overlay" onClick={() => setSuspendModalData(null)}>
+          <div className="modal-content small" onClick={e => e.stopPropagation()}>
+            <div className="modal-header">
+              <h2>{suspendModalData.entity.isSuspended ? 'Unsuspend' : 'Suspend'} {suspendModalData.type === 'user' ? 'User' : 'Guide'}</h2>
+              <button className="modal-close" onClick={() => setSuspendModalData(null)}>×</button>
+            </div>
+            <div className="modal-body">
+              <p>Are you sure you want to {suspendModalData.entity.isSuspended ? 'unsuspend' : 'suspend'} <strong>{suspendModalData.entity.name}</strong>?</p>
+              {!suspendModalData.entity.isSuspended && (
+                <div className="form-group">
+                  <label>Reason for suspension (optional)</label>
+                  <input type="text" className="form-input" value={suspendReason} onChange={(e) => setSuspendReason(e.target.value)} placeholder="Enter reason..." />
+                </div>
+              )}
+              {!suspendModalData.entity.isSuspended && (
+                <div className="suspend-warning">
+                  {suspendModalData.type === 'user' ? 'The user will not be able to book any tours while suspended.' : 'The guide account will be suspended. Their profile will not be publicly visible.'}
+                </div>
+              )}
+              <div className="modal-actions">
+                <button className={`btn-${suspendModalData.entity.isSuspended ? 'secondary' : 'danger'}`} onClick={confirmSuspend}>
+                  {suspendModalData.entity.isSuspended ? 'Unsuspend Account' : 'Suspend Account'}
+                </button>
+                <button className="btn-outline" onClick={() => setSuspendModalData(null)}>Cancel</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

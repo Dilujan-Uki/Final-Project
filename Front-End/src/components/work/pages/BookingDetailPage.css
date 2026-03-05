@@ -562,3 +562,54 @@
     font-size: 1.5rem;
   }
 }
+/* === REFUND INFO BOX === */
+.refund-info-box {
+  background: #f0fff4;
+  border: 1px solid #68d391;
+  border-left: 4px solid #28a745;
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin: 16px 0;
+}
+.refund-info-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  color: #276749;
+  margin-bottom: 10px;
+  font-size: 0.95rem;
+}
+.refund-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.9rem;
+  color: #2d3748;
+  padding: 4px 0;
+}
+.refund-amount {
+  font-weight: 700;
+  color: #28a745;
+  font-size: 1rem;
+}
+.refund-notice {
+  margin: 10px 0 0;
+  font-size: 0.8rem;
+  color: #4a5568;
+  font-style: italic;
+}
+.no-refund-box {
+  background: #fff5f5;
+  border: 1px solid #feb2b2;
+  border-radius: 10px;
+  padding: 12px 16px;
+  font-size: 0.875rem;
+  color: #c53030;
+  margin: 16px 0;
+}
+
+/* === PAYMENT STATUS BADGES === */
+.payment-status.partial_refund { color: #b7791f; background: #fefcbf; padding: 3px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
+.payment-status.paid { color: #276749; background: #c6f6d5; padding: 3px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
+.payment-status.refunded { color: #2b6cb0; background: #bee3f8; padding: 3px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
+.payment-status.pending { color: #744210; background: #fefcbf; padding: 3px 10px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }

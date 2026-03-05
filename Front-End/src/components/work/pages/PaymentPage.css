@@ -684,3 +684,30 @@
     gap: 0.5rem;
   }
 }
+/* === REFUND POLICY BOX === */
+.refund-policy-box {
+  background: #f0fff4 !important;
+  border: 1px solid #68d391 !important;
+  border-left: 4px solid #28a745 !important;
+}
+.refund-list {
+  list-style: none;
+  padding: 0;
+  margin: 6px 0 0;
+}
+.refund-list li {
+  font-size: 0.85rem;
+  color: #2d3748;
+  padding: 3px 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.refund-list li::before {
+  content: '•';
+  color: #28a745;
+  font-weight: bold;
+}
+.refund-list strong {
+  color: #276749;
+}

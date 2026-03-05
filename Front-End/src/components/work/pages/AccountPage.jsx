@@ -1,8 +1,8 @@
 // src/components/work/pages/AccountPage.jsx - COMPLETE REPLACE
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { newBookingsAPI } from '/home/uki-dsa-01/LESSONS/Final-Project/Front-End/src/services/api.js';
-import { getTourImage } from '/home/uki-dsa-01/LESSONS/Final-Project/Front-End/src/utils/tourImageMapping';
+import { newBookingsAPI } from '../../../services/api.js';
+import { getTourImage } from '../../../utils/tourImageMapping';
 import './AccountPage.css';
 
 const AccountPage = () => {
@@ -67,13 +67,37 @@ const AccountPage = () => {
     setLoadingBookings(true);
     try {
       const response = await newBookingsAPI.getMyBookings();
-      console.log('User bookings:', response.data);
-      setBookings(response.data || []);
+      // Filter out cancelled bookings from display
+      const visible = (response.data || []).filter(b => b.status !== 'cancelled');
+      setBookings(visible);
     } catch (error) {
       console.error('Error fetching bookings:', error);
       setBookings([]);
     } finally {
       setLoadingBookings(false);
+    }
+  };
+
+  const handleCancelBooking = async (bookingId) => {
+    if (!window.confirm('Are you sure you want to cancel this booking?\n\nNote: A 50% refund will be issued if payment was completed.')) return;
+    const token = localStorage.getItem('token');
+    try {
+      const response = await fetch(`http://localhost:5000/api/new-bookings/${bookingId}/cancel`, {
+        method: 'PATCH',
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+      const data = await response.json();
+      if (data.success) {
+        // Immediately remove from UI
+        setBookings(prev => prev.filter(b => b._id !== bookingId));
+        if (data.data?.refundMessage) {
+          alert(`Booking cancelled.\n\n${data.data.refundMessage}`);
+        }
+      } else {
+        alert(data.message || 'Failed to cancel booking');
+      }
+    } catch (err) {
+      alert('Error cancelling booking');
     }
   };
   
@@ -626,6 +650,14 @@ const AccountPage = () => {
                               >
                                 View Details
                               </Link>
+                              {booking.status !== 'completed' && (
+                                <button
+                                  className="btn-outline cancel-booking-btn"
+                                  onClick={() => handleCancelBooking(booking._id)}
+                                >
+                                  Cancel
+                                </button>
+                              )}
                             </div>
                           </div>
                         </div>

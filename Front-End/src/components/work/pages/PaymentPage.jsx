@@ -488,12 +488,18 @@ const PaymentPage = () => {
               </>
             )}
 
-            {/* Money Back Guarantee */}
-            <div className="guarantee-box">
-              <div className="guarantee-icon">💰</div>
+            {/* Refund Policy */}
+            <div className="guarantee-box refund-policy-box">
+              <div className="guarantee-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+              </div>
               <div className="guarantee-text">
-                <h4>Money-Back Guarantee</h4>
-                <p>Free cancellation up to 7 days before the tour</p>
+                <h4>Cancellation &amp; Refund Policy</h4>
+                <ul className="refund-list">
+                  <li>Cancel before tour starts → <strong>50% refund</strong></li>
+                  <li>Refund processed in 5–7 business days</li>
+                  <li>No refund after tour has started</li>
+                </ul>
               </div>
             </div>
           </div>

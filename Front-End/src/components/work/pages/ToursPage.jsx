@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './ToursPage.css';
-import { getTourImage } from '/home/uki-dsa-01/LESSONS/Final-Project/Front-End/src/utils/tourImageMapping';
+import { getTourImage } from '../../../utils/tourImageMapping';
 
 const ToursPage = () => {
   const navigate = useNavigate();

@@ -1,6 +1,7 @@
 // src/controller/guideApplicationController.js
 const GuideApplication = require('../model/GuideApplication');
 const User = require('../model/User');
+const Guide = require('../model/Guide');
 
 // @desc    Submit guide application
 // @route   POST /api/guide-applications
@@ -115,22 +116,40 @@ const updateApplicationStatus = async (req, res) => {
 
     if (status === 'accepted') {
       // Create user account for the guide
-      const userExists = await User.findOne({ email: application.email });
+      let userRecord = await User.findOne({ email: application.email });
       
-      if (!userExists) {
-        // Generate a random password (guide will reset on first login)
+      if (!userRecord) {
         const tempPassword = Math.random().toString(36).slice(-8);
-        
-        await User.create({
+        userRecord = await User.create({
           name: application.fullName,
           email: application.email,
           password: tempPassword,
           phone: application.phone,
           role: 'guide'
         });
+        console.log(`Guide user account created for ${application.email} with password: ${tempPassword}`);
+      }
 
-        // In production, send email with temporary password
-        console.log(`🔑 Guide account created for ${application.email} with password: ${tempPassword}`);
+      // Also create or update Guide profile
+      const guideExists = await Guide.findOne({ email: application.email });
+      if (!guideExists && userRecord) {
+        const tempPassword2 = Math.random().toString(36).slice(-8);
+        await Guide.create({
+          name: application.fullName,
+          email: application.email,
+          password: tempPassword2,
+          phone: application.phone,
+          languages: application.languages || [],
+          specialties: application.specialties || [],
+          experience: application.experience || '',
+          certifications: Array.isArray(application.certifications)
+            ? application.certifications
+            : (application.certifications ? [application.certifications] : []),
+          dailyRate: 70,
+          isActive: true,
+          userId: userRecord._id
+        });
+        console.log(`Guide profile created for ${application.email}`);
       }
     }
 
