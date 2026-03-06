@@ -19,7 +19,6 @@ const TourGuideDetailPage = () => {
         setGuide(data.data);
         
         // For now, just log that we're fetching
-        console.log(`Fetching guide with ID: ${id}`);
         
         // Simulate loading
         setTimeout(() => {
@@ -65,7 +64,7 @@ const TourGuideDetailPage = () => {
     availability: "Available for bookings 7 days a week",
     responseTime: "Usually responds within 1 hour",
     contactInfo: {
-      email: "rajitha@ceylontours.lk",
+      email: "rajitha@islandquests.lk",
       phone: "+94 77 123 4567"
     }
   };

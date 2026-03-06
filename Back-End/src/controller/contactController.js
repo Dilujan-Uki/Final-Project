@@ -26,13 +26,7 @@ const submitContactForm = async (req, res) => {
       message
     });
 
-    // In production, you would send an email here
-    console.log('📧 Contact form submitted:', {
-      name,
-      email,
-      subject,
-      message
-    });
+   
 
     res.status(201).json({
       status: 'success',

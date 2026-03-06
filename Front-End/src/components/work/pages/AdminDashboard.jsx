@@ -248,10 +248,16 @@ const AdminDashboard = () => {
   );
   if (!isAdmin) return null;
 
+  // Count users/guides/bookings registered/created in the last 24 hours
+  const now = Date.now();
+  const oneDayMs = 24 * 60 * 60 * 1000;
+  const newUsersCount = regularUsers.filter(u => u.createdAt && (now - new Date(u.createdAt).getTime()) < oneDayMs).length;
+  const newGuidesCount = guides.filter(g => g.createdAt && (now - new Date(g.createdAt).getTime()) < oneDayMs).length;
+
   const navItems = [
     { key: 'dashboard', label: 'Dashboard', badge: null },
-    { key: 'users', label: 'Regular Users', badge: regularUsers.length },
-    { key: 'guides', label: 'Tour Guides', badge: guides.length },
+    { key: 'users', label: 'Regular Users', badge: newUsersCount || null },
+    { key: 'guides', label: 'Tour Guides', badge: newGuidesCount || null },
     { key: 'applications', label: 'Applications', badge: applicationStats.pending || null },
     { key: 'completions', label: 'Tour Completions', badge: pendingCompletions.length || null },
     { key: 'reviews', label: 'Reviews', badge: reviewStats.pending || null },

@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const Tour = require('../model/Tour');
 const TourDetail = require('../model/TourDetail');
 require('dotenv').config({ path: path.join(__dirname, '..', '..', '.env') });
-import Sigiriya from '/home/uki-dsa-01/LESSONS/Final-Project/Back-End/src/assets/Sigiriya-Rock.png';
+
 
 const seedTourDetails = async () => {
   try {
@@ -45,7 +45,7 @@ const seedTourDetails = async () => {
             ],
             meals: ["Lunch", "Dinner"],
             accommodation: "Heritance Kandalama - 5* Luxury Resort",
-            image: Sigiriya
+            image: "https://images.unsplash.com/photo-1551632811-561732d1e306"
           },
           {
             day: 2,

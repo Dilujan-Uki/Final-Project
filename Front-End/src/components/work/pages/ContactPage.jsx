@@ -39,7 +39,6 @@ const ContactPage = () => {
       
       setTimeout(() => setSuccess(false), 5000);
       
-      console.log('Contact form submitted successfully:', data);
     } catch (err) {
       setError(err.message || 'Failed to send message. Please try again.');
       console.error('Contact form error:', err);
@@ -66,8 +65,8 @@ const ContactPage = () => {
       <section className="contact-hero">
         <div className="container">
           <div className="hero-content">
-            <h1 className="hero-title">Contact Us</h1>
-            <p className="hero-subtitle">
+            <h1 className="hero-title1">Contact Us</h1>
+            <p className="hero-subtitle1">
               Get in touch with our team for inquiries, bookings, and custom tour requests
             </p>
           </div>
@@ -197,9 +196,9 @@ const ContactPage = () => {
                   <span className="method-icon">✉️</span>
                   <h3 className="method-title">Email</h3>
                 </div>
-                <p className="method-detail">info@ceylontours.lk</p>
-                <p className="method-detail">booking@ceylontours.lk</p>
-                <p className="method-detail">support@ceylontours.lk</p>
+                <p className="method-detail">info@islandquests.lk</p>
+                <p className="method-detail">booking@islandquests.lk</p>
+                <p className="method-detail">support@islandquests.lk</p>
               </div>
               
               <div className="contact-method">

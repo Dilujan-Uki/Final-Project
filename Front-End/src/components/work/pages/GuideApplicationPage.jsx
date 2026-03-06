@@ -159,7 +159,7 @@ const GuideApplicationPage = () => {
           <div className="success-card">
             <div className="success-icon">✨</div>
             <h2>Application Submitted!</h2>
-            <p>Thank you for applying to become a tour guide with Ceylon Tours.</p>
+            <p>Thank you for applying to become a tour guide with Island Quest.</p>
             <p className="success-message">We will review your application and contact you within 3-5 business days.</p>
             <div className="success-details">
               <p>📧 Check your email for confirmation</p>
@@ -544,7 +544,7 @@ const GuideApplicationPage = () => {
                     </label>
                     <label className="checkbox">
                       <input type="checkbox" required />
-                      <span>I agree to be contacted by Ceylon Tours regarding my application</span>
+                      <span>I agree to be contacted by Island Quest regarding my application</span>
                     </label>
                   </div>
                 </div>

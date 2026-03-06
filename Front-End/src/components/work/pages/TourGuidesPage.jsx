@@ -178,8 +178,8 @@ const TourGuidesPage = () => {
       <section className="guides-hero">
         <div className="container">
           <div className="hero-content">
-            <h1 className="hero-title">Our Expert Tour Guides</h1>
-            <p className="hero-subtitle">
+            <h1 className="hero-title1">Our Expert Tour Guides</h1>
+            <p className="hero-subtitle1">
               Meet our certified local guides who will make your Sri Lankan journey unforgettable
             </p>
           </div>

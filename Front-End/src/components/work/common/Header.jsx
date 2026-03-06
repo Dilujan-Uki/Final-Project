@@ -82,7 +82,7 @@ const Header = () => {
         {/* -------- logo -------- */}
         <Link to="/" className="logo">
           <div className="logo-text">
-            <span className="logo-title">Ceylon Tours</span>
+            <span className="logo-title">Island Quests</span>
             <span className="logo-sub">Pearl of the Indian Ocean</span>
           </div>
         </Link>

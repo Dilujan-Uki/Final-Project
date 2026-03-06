@@ -194,6 +194,7 @@
 /* main content offset (no change) */
 main {
   margin-top: 76px;
+  isolation: isolate;
 }
 
 /* ---------- responsive (mobile) ---------- */

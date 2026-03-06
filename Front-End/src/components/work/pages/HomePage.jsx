@@ -164,7 +164,7 @@ const HomePage = () => {
             <h1 className="hero-title">
               Discover <span>Sri Lanka</span>
             </h1>
-            <p className="hero-subtitle">
+            <p className="hero-subtitle1">
               The Pearl of the Indian Ocean Awaits Your Exploration
             </p>
             <div className="hero-buttons">
@@ -184,7 +184,7 @@ const HomePage = () => {
       <section className="why-choose-section">
         <div className="container">
           <div className="section-header">
-            <h2 className="section-title">Why Choose Ceylon Tours?</h2>
+            <h2 className="section-title">Why Choose Island Quest?</h2>
             <p className="section-subtitle">
               Experience Sri Lanka through the eyes of locals, with authentic tours crafted with love and expertise
             </p>

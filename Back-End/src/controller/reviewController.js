@@ -197,7 +197,6 @@ const deleteReview = async (req, res) => {
     await review.deleteOne();
 
     // Log for admin (in real app, you'd save this to a deletion log)
-    console.log(`🗑️ REVIEW DELETED - User: ${deletedReview.userName} deleted review for ${deletedReview.tour} (Rating: ${deletedReview.rating})`);
 
     res.status(200).json({
       status: 'success',

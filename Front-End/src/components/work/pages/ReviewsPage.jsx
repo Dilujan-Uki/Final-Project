@@ -57,7 +57,6 @@ const ReviewsPage = () => {
           email: user.email || ''
         }));
       } catch (err) {
-        console.log('Error parsing user data', err);
       }
     }
   }, []);
@@ -185,9 +184,9 @@ const ReviewsPage = () => {
       <section className="reviews-hero">
         <div className="container">
           <div className="hero-content">
-            <h1 className="hero-title">Traveler Reviews</h1>
-            <p className="hero-subtitle">
-              Share your experience and read what others say about Ceylon Tours and our guides
+            <h1 className="hero-title1">Traveler Reviews</h1>
+            <p className="hero-subtitle1">
+              Share your experience and read what others say about Island Quest and our guides
             </p>
           </div>
         </div>
@@ -200,7 +199,7 @@ const ReviewsPage = () => {
             <div className="section-header">
               <h2 className="section-title">Share Your Experience</h2>
               <p className="section-subtitle">
-                Help other travelers by sharing your Ceylon Tours experience
+                Help other travelers by sharing your Island Quest experience
               </p>
             </div>
 

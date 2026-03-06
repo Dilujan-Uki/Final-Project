@@ -173,7 +173,7 @@ main .btn-primary::before {
   opacity: 0;
   z-index: -1;
   transition: opacity 0.3s ease;
-  border-radius: 50px;
+  border-radius: 12px;
 }
 
 main .btn-primary:hover::before {
@@ -206,7 +206,7 @@ main .btn-secondary::before {
   opacity: 0;
   z-index: -1;
   transition: opacity 0.3s ease;
-  border-radius: 50px;
+  border-radius: 12px;
 }
 
 main .btn-secondary:hover::before {

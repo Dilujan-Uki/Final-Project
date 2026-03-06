@@ -13,7 +13,7 @@ const Footer = () => {
           {/* Company Info */}
           <div className="footer-section">
             <div className="footer-brand">
-              <h3 className="footer-logo">Ceylon Tours</h3>
+              <h3 className="footer-logo">Island Quests</h3>
               <p className="footer-description">
                 Experience the pearl of the Indian Ocean with our expert guides 
                 and personalized tour packages.
@@ -57,7 +57,7 @@ const Footer = () => {
         {/* Footer Bottom - REMOVED LEGAL LINKS */}
         <div className="footer-bottom">
           <p className="copyright">
-            © {currentYear} Ceylon Tours. All rights reserved.
+            © {currentYear} Island Quests. All rights reserved.
           </p>
           {/* REMOVED LEGAL LINKS SECTION */}
         </div>

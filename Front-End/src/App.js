@@ -1,4 +1,4 @@
-// src/App.js - Add the new route
+// src/App.js
 import React from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Header from './components/work/common/Header';
@@ -17,11 +17,12 @@ import ReviewsPage from './components/work/pages/ReviewsPage';
 import BookingPage from './components/work/pages/BookingPage';
 import AdminDashboard from './components/work/pages/AdminDashboard';
 import MyBookingsPage from './components/work/pages/myBookingsPage';
-import TourDetailPage from './components/work/pages/TourDetailPage'; 
+import TourDetailPage from './components/work/pages/TourDetailPage';
 import GuideDashboard from './components/work/pages/GuideDashboard';
-import GuideApplicationPage from './components/work/pages/GuideApplicationPage'; 
-import BookingDetailPage from './components/work/pages/BookingDetailPage'; 
-import './utils/tourImageMapping' 
+import GuideApplicationPage from './components/work/pages/GuideApplicationPage';
+import BookingDetailPage from './components/work/pages/BookingDetailPage';
+import BookingConfirmationPage from './components/work/pages/BookingConfirmationPage'; // NEW
+import './utils/tourImageMapping'
 import './components/work/styles/GlobalStyles.css'
 
 const App = () => {
@@ -49,6 +50,7 @@ const App = () => {
             <Route path="/guide-dashboard" element={<GuideDashboard />} /> 
             <Route path="/guide-application" element={<GuideApplicationPage />} /> 
             <Route path="/booking-detail/:id" element={<BookingDetailPage />} />
+            <Route path="/booking-confirmation" element={<BookingConfirmationPage />} /> {/* NEW */}
             <Route path="*" element={
               <div className="not-found">
                 <div className="container">

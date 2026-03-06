@@ -1,15 +1,25 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import Cultural from '../assets/Cultural-Triangle.png';
+import Hill from '../assets/Hill-Country.png';
+import Safari from '../assets/Wild-Safari.png';
+import Coastal from '../assets/Coastal-Paradise.png';  
+import Ella from '../assets/Ella-Train.png';
+import Complete from '../assets/Complete-Experience.png';
+import Tea from '../assets/Tea-Plantation.png';
+
 import './MyBookingsPage.css';
 
 const getTourImage = (tourName) => {
   const images = {
-    'Cultural Triangle Explorer': 'https://images.unsplash.com/photo-1586816001966-79b736744398?w=400',
-    'Hill Country Adventure': 'https://images.unsplash.com/photo-1564760055775-d63b17a55c44?w=400',
-    'Wildlife Safari Experience': 'https://images.unsplash.com/photo-1580666756564-c39e3f33b2a1?w=400',
-    'Coastal Paradise Tour': 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=400',
+    'Cultural Triangle Explorer': Cultural,
+    'Hill Country Adventure': Hill,
+    'Wildlife Safari Experience': Safari,
+    'Coastal Paradise Tour': Coastal,
+    'Complete Sri Lanka Experience': Complete,
+    'Tea Country Journey': Tea
   };
-  return images[tourName] || 'https://images.unsplash.com/photo-1501854140801-50d01698950b?w=400';
+  return images[tourName];
 };
 
 const MyBookingsPage = () => {

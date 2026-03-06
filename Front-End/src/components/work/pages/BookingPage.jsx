@@ -125,7 +125,6 @@ const handleSubmit = async (e) => {
       specialRequests: bookingData.specialRequests || ''
     };
 
-    console.log('Sending to payment:', bookingPayload);
 
     // Save booking data to localStorage for payment page
     localStorage.setItem('pendingBooking', JSON.stringify(bookingPayload));

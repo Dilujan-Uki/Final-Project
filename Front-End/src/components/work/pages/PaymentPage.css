@@ -354,6 +354,25 @@
   cursor: not-allowed;
 }
 
+.back-to-booking-btn {
+  background: transparent;
+  color: #1a4d1a;
+  border: 2px solid #1a4d1a;
+  padding: 0.75rem 1.5rem;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.back-to-booking-btn:hover {
+  background: #1a4d1a;
+  color: white;
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(26, 77, 26, 0.3);
+}
+
 /* Processing Spinner */
 .processing-spinner {
   display: inline-block;

@@ -141,14 +141,14 @@ const TourDetailPage = () => {
       <section 
         className="detail-hero"
         style={{
-          backgroundImage: `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(${localImage})`,
+          backgroundImage: `url(${localImage})`,
           backgroundSize: 'cover',
           backgroundPosition: 'center'
         }}
       >
         <div className="container">
           <div className="hero-content">
-            <h1 className="hero-title">{tour.name}</h1>
+            <h1 className="hero-title1">{tour.name}</h1>
             <div className="hero-meta">
               <span className="meta-item">
                 <span role="img" aria-label="duration">⏱️</span> {tour.duration}
@@ -165,14 +165,14 @@ const TourDetailPage = () => {
               <span className="price-value">{formatPrice(tour.price)}</span>
               <span className="price-period">per person</span>
             </div>
-            <button onClick={handleBookNow} className="btn-primary hero-btn">
+            <button onClick={handleBookNow} className="hero-btn">
               Book This Tour
             </button>
           </div>
         </div>
       </section>
 
-      <div className="container">
+      <div className="tour-detail-body">
         {/* Navigation Tabs */}
         <div className="detail-tabs">
           <button 
@@ -523,7 +523,7 @@ const TourDetailPage = () => {
             <span className="price-amount">{formatPrice(tour.price)}</span>
             <span className="price-note">per person</span>
           </div>
-          <button onClick={handleBookNow} className="btn-primary cta-btn">
+          <button onClick={handleBookNow} className="cta-btn">
             Book This Tour Now
           </button>
           <p className="guarantee">✓ Best Price Guarantee • ✓ Free Cancellation • ✓ Secure Booking</p>

@@ -351,12 +351,6 @@ const GuideDashboard = () => {
                     <p className="earnings-note">Based on daily rate of $70</p>
                   </div>
                 )}
-                <div className="modal-actions">
-                  <button className="btn-primary" onClick={() => window.location.href = `mailto:${selectedAssignment.customerEmail}`}>Email Customer</button>
-                  {selectedAssignment.customerPhone && (
-                    <button className="btn-outline" onClick={() => window.location.href = `tel:${selectedAssignment.customerPhone}`}>Call Customer</button>
-                  )}
-                </div>
               </div>
             </div>
           </div>
@@ -379,10 +373,6 @@ const GuideDashboard = () => {
                   <div className="form-group">
                     <label>Bio</label>
                     <textarea value={profileForm.bio} onChange={(e) => setProfileForm({...profileForm, bio: e.target.value})} placeholder="Tell customers about yourself..." rows="4" className="form-textarea" />
-                  </div>
-                  <div className="form-group">
-                    <label>Daily Rate ($)</label>
-                    <input type="number" value={profileForm.dailyRate} onChange={(e) => setProfileForm({...profileForm, dailyRate: parseInt(e.target.value)})} min="50" max="500" className="form-input" />
                   </div>
                   <div className="form-group">
                     <label>Availability</label>

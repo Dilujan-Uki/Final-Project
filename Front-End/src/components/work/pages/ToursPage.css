@@ -97,12 +97,14 @@
   position: relative;
   display: flex;
   flex-direction: column;
+  isolation: isolate;
 }
 
 .tour-card:hover {
   transform: translateY(-12px);
   box-shadow: 0 30px 60px rgba(30, 76, 36, 0.15);
   border-color: rgba(30, 76, 36, 0.2);
+  z-index: 1;
 }
 
 .tour-image {
@@ -305,16 +307,22 @@
 }
 
 .sort-select {
-  padding: 0.6rem 1.5rem;
+  padding: 0.6rem 2.5rem 0.6rem 1rem;
   border-radius: 50px;
-  border: 1px solid #dee2e6;
+  border: 1.5px solid #d0dbd1;
   font-size: 0.9rem;
   font-weight: 500;
-  color: #495057;
+  color: #2c4a2e;
   background: white;
   cursor: pointer;
   outline: none;
-  transition: all 0.3s ease;
+  transition: all 0.25s ease;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%231e4c24' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 10px;
 }
 
 .sort-select:hover,

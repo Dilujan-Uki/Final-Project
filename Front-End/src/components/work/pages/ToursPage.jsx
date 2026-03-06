@@ -68,8 +68,8 @@ const ToursPage = () => {
       <section className="tours-hero">
         <div className="container">
           <div className="hero-content">
-            <h1 className="hero-title">Our Tour Packages</h1>
-            <p className="hero-subtitle">
+            <h1 className="hero-title1">Our Tour Packages</h1>
+            <p className="hero-subtitle1">
               Carefully curated experiences to showcase the best of Sri Lanka
             </p>
           </div>
@@ -125,7 +125,7 @@ const ToursPage = () => {
                           flex: 1,
                           background: 'transparent',
                           border: '2px solid #1e4c24',
-                          color: '#1e4c24'
+                          color: '#ea5915'
                         }}
                       >
                         View Details

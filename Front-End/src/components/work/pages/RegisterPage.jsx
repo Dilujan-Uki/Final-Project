@@ -51,7 +51,6 @@ const RegisterPage = () => {
       });
 
       const data = await response.json();
-      console.log('Registration response:', data); // Debug log
       
       if (!response.ok) {
         throw new Error(data.message || 'Registration failed');
@@ -89,7 +88,7 @@ const RegisterPage = () => {
           {/* Left Side - Brand Info */}
           <div className="auth-brand">
             <div className="brand-content">
-              <h1 className="brand-title">Welcome to Ceylon Tours</h1>
+              <h1 className="brand-title">Welcome to Island Quest</h1>
               <p className="brand-subtitle">
                 Your gateway to unforgettable Sri Lankan adventures.
               </p>

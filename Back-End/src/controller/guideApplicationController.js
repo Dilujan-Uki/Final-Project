@@ -127,7 +127,6 @@ const updateApplicationStatus = async (req, res) => {
           phone: application.phone,
           role: 'guide'
         });
-        console.log(`Guide user account created for ${application.email} with password: ${tempPassword}`);
       }
 
       // Also create or update Guide profile
@@ -149,7 +148,6 @@ const updateApplicationStatus = async (req, res) => {
           isActive: true,
           userId: userRecord._id
         });
-        console.log(`Guide profile created for ${application.email}`);
       }
     }
 

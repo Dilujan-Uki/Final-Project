@@ -507,12 +507,6 @@
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(255, 180, 0, 0.3);
 }
-
-.view-btn::before {
-  content: '👁️';
-  font-size: 0.9rem;
-}
-
 /* Empty States */
 .empty-state {
   text-align: center;
@@ -1299,7 +1293,7 @@
   font-size: 0.9rem;
 }
 
-.btn-primary {
+.admin-dashboard .btn-primary {
   background: linear-gradient(135deg, #1e4c24, #2c5f2d);
   color: white;
   border: none;
@@ -1309,15 +1303,16 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
+  min-width: unset;
 }
 
-.btn-primary:hover {
+.admin-dashboard .btn-primary:hover {
   background: linear-gradient(135deg, #ffb400, #ff6b35);
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(255, 180, 0, 0.2);
 }
 
-.btn-outline {
+.admin-dashboard .btn-outline {
   background: transparent;
   border: 2px solid #1e4c24;
   color: #1e4c24;
@@ -1327,9 +1322,10 @@
   font-weight: 600;
   cursor: pointer;
   transition: all 0.3s ease;
+  min-width: unset;
 }
 
-.btn-outline:hover {
+.admin-dashboard .btn-outline:hover {
   background: #1e4c24;
   color: white;
   transform: translateY(-2px);

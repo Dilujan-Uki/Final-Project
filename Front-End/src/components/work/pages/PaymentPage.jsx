@@ -28,7 +28,6 @@ const PaymentPage = () => {
       try {
         // First check if we have data from navigation state
         if (location.state?.bookingData) {
-          console.log('Using booking data from navigation:', location.state.bookingData);
           setBookingData(location.state.bookingData);
           setLoading(false);
           return;
@@ -37,7 +36,6 @@ const PaymentPage = () => {
         // If not, try localStorage
         const pendingBooking = localStorage.getItem('pendingBooking');
         if (pendingBooking) {
-          console.log('Using booking data from localStorage');
           setBookingData(JSON.parse(pendingBooking));
           setLoading(false);
           return;
@@ -155,7 +153,6 @@ const PaymentPage = () => {
     }
 
     try {
-      console.log('Creating booking with data:', bookingData);
 
       // Create the booking in database
       const bookingResponse = await fetch('http://localhost:5000/api/new-bookings', {
@@ -173,7 +170,6 @@ const PaymentPage = () => {
         throw new Error(bookingResult.message || 'Failed to create booking');
       }
 
-      console.log('Booking created successfully:', bookingResult);
 
       // Confirm the booking (marks as paid + creates guide assignment)
       const confirmResponse = await fetch(`http://localhost:5000/api/new-bookings/${bookingResult.data.id}/confirm`, {
@@ -190,9 +186,23 @@ const PaymentPage = () => {
       localStorage.removeItem('selectedGuide');
       localStorage.removeItem('pendingBooking');
 
-      // Show success and redirect to my-bookings
-      alert('✅ Payment Successful! Your booking is confirmed.');
-      navigate('/my-bookings');
+      // Build confirmation data to pass to the confirmation page
+      const confirmationData = {
+        bookingId: bookingResult.data?.id || bookingResult.data?.bookingId || null,
+        tourName: bookingData.tourName,
+        guideName: bookingData.guideName || null,
+        bookingDate: bookingData.bookingDate,
+        participants: bookingData.participants,
+        duration: bookingData.duration || bookingData.selectedDuration,
+        totalAmount: prices.total,
+        specialRequests: bookingData.specialRequests || null,
+      };
+
+      // Save as fallback in localStorage
+      localStorage.setItem('lastBookingDetails', JSON.stringify(confirmationData));
+
+      // Navigate to confirmation page
+      navigate('/booking-confirmation', { state: { confirmationData } });
 
     } catch (err) {
       console.error('Payment error:', err);

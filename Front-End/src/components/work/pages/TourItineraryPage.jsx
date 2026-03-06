@@ -94,7 +94,10 @@ const TourItineraryPage = () => {
       <section className="itinerary-hero">
         <div className="container">
           <h1 className="hero-title">{tour.name}</h1>
-          <p className="hero-subtitle">{tour.duration} • {tour.groupSize}</p>
+          <p className="hero-subtitle">
+            <span>{tour.duration}</span>
+            <span>{tour.groupSize}</span>
+          </p>
         </div>
       </section>
 
@@ -122,43 +125,46 @@ const TourItineraryPage = () => {
           <div className="daily-itinerary">
             <h2 className="section-title">Daily Itinerary</h2>
             
-            {Object.entries(itinerary).map(([day, details]) => (
-              <div key={day} className="day-card">
-                <div className="day-header">
-                  <span className="day-number">{day.replace('day', 'Day ')}</span>
-                  <h3 className="day-title">{details.title}</h3>
-                </div>
-                
-                <div className="day-content">
-                  <div className="activities">
-                    <h4>Activities:</h4>
-                    <ul>
-                      {details.activities.map((activity, index) => (
-                        <li key={index}>{activity}</li>
-                      ))}
-                    </ul>
+            <div className="itinerary-timeline">
+              {Object.entries(itinerary).map(([day, details]) => (
+                <div key={day} className="day-card">
+                  <div className="day-header">
+                    <span className="day-number">{day.replace('day', 'Day ')}</span>
+                    <h3 className="day-title">{details.title}</h3>
                   </div>
                   
-                  <div className="day-details">
-                    <div className="detail-item">
-                      <span className="detail-label">Meals:</span>
-                      <span className="detail-value">{details.meals.join(', ')}</span>
+                  <div className="day-content">
+                    <div className="activities">
+                      <h4>Activities</h4>
+                      <ul>
+                        {details.activities.map((activity, index) => (
+                          <li key={index}>{activity}</li>
+                        ))}
+                      </ul>
                     </div>
-                    <div className="detail-item">
-                      <span className="detail-label">Accommodation:</span>
-                      <span className="detail-value">{details.accommodation}</span>
+                    
+                    <div className="day-details">
+                      <div className="detail-item">
+                        <span className="detail-label">Meals</span>
+                        <span className="detail-value">{details.meals.join(', ')}</span>
+                      </div>
+                      <div className="detail-item">
+                        <span className="detail-label">Accommodation</span>
+                        <span className="detail-value">{details.accommodation}</span>
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
 
           {/* Inclusions & Exclusions */}
           <div className="inclusions-section">
+            <h2 className="section-title">What's Included</h2>
             <div className="inclusions-grid">
               <div className="inclusions-card">
-                <h3 className="card-title green">✓ What's Included</h3>
+                <h3 className="card-title green">Included</h3>
                 <ul>
                   <li>Accommodation as per itinerary</li>
                   <li>All meals as specified</li>
@@ -170,7 +176,7 @@ const TourItineraryPage = () => {
               </div>
               
               <div className="inclusions-card">
-                <h3 className="card-title orange">✗ What's Not Included</h3>
+                <h3 className="card-title orange">Not Included</h3>
                 <ul>
                   <li>International flights</li>
                   <li>Visa fees</li>
@@ -192,7 +198,7 @@ const TourItineraryPage = () => {
             </div>
             
             <button 
-              className="btn-primary book-now-btn"
+              className="book-now-btn"
               onClick={() => {
                 const days = parseInt(tour.duration.split(' ')[0]);
                 navigate(`/tour-guides?tour=${tour._id}&name=${encodeURIComponent(tour.name)}&duration=${days}&pricePerDay=${tour.price / days}`);
