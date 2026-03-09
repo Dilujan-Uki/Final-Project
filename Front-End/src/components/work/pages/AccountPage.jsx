@@ -1,12 +1,10 @@
-// src/components/work/pages/AccountPage.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { newBookingsAPI } from '../../../services/api.js';
 import { getTourImage } from '../../../utils/tourImageMapping';
 import './AccountPage.css';
 
-// ─── Badge helpers ────────────────────────────────────────────────────────────
-// Key pattern: "ceylon_seen_bookings_<userId>"  /  "ceylon_seen_reviews_<userId>"
+// Badge helpers 
 const getSeenKey = (tab, userId) => `ceylon_seen_${tab}_${userId}`;
 
 /** Count items created within last 24 h AND after the last-seen timestamp */

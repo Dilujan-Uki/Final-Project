@@ -4,9 +4,9 @@ const { protect, adminOnly } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
-// @desc    Get all bookings (Admin only)
-// @route   GET /api/bookings/all
-// @access  Private/Admin
+// Get all bookings (Admin only)
+// GET /api/bookings/all
+// Private/Admin
 router.get('/all', protect, adminOnly, async (req, res) => {
   try {
     const bookings = await Booking.find({})
@@ -28,9 +28,9 @@ router.get('/all', protect, adminOnly, async (req, res) => {
   }
 });
 
-// @desc    Update booking status (Admin only)
-// @route   PATCH /api/bookings/:id/status
-// @access  Private/Admin
+// Update booking status (Admin only)
+// PATCH /api/bookings/:id/status
+// Private/Admin
 router.patch('/:id/status', protect, adminOnly, async (req, res) => {
   try {
     const { status } = req.body;

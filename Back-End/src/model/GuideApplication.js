@@ -1,4 +1,4 @@
-// src/model/GuideApplication.js
+
 const mongoose = require('mongoose');
 
 const guideApplicationSchema = new mongoose.Schema({

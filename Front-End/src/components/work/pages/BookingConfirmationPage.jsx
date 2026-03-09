@@ -1,4 +1,3 @@
-// src/pages/BookingConfirmationPage.jsx
 import React, { useEffect, useState, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './BookingConfirmationPage.css';

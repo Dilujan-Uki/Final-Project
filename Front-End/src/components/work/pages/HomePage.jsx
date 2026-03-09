@@ -1,4 +1,3 @@
-// src/pages/HomePage.jsx - FIXED with real tour data
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './HomePage.css';

@@ -5,9 +5,9 @@ const { protect, adminOnly } = require('../middleware/authMiddleware');
 
 const router = express.Router();
 
-// @desc    Get tour details by tour ID
-// @route   GET /api/tour-details/:tourId
-// @access  Public
+//  Get tour details by tour ID
+//  GET /api/tour-details/:tourId
+//  Public
 router.get('/:tourId', async (req, res) => {
   try {
     const tourDetail = await TourDetail.findOne({ tourId: req.params.tourId })
@@ -33,9 +33,9 @@ router.get('/:tourId', async (req, res) => {
   }
 });
 
-// @desc    Create or update tour details (Admin only)
-// @route   POST /api/tour-details
-// @access  Private/Admin
+//  Create or update tour details (Admin only)
+//  POST /api/tour-details
+//  Private/Admin
 router.post('/', protect, adminOnly, async (req, res) => {
   try {
     const { tourId } = req.body;
@@ -81,9 +81,9 @@ router.post('/', protect, adminOnly, async (req, res) => {
   }
 });
 
-// @desc    Update tour details (Admin only)
-// @route   PUT /api/tour-details/:id
-// @access  Private/Admin
+//  Update tour details (Admin only)
+//  PUT /api/tour-details/:id
+//  Private/Admin
 router.put('/:id', protect, adminOnly, async (req, res) => {
   try {
     const tourDetail = await TourDetail.findByIdAndUpdate(
@@ -113,9 +113,9 @@ router.put('/:id', protect, adminOnly, async (req, res) => {
   }
 });
 
-// @desc    Delete tour details (Admin only)
-// @route   DELETE /api/tour-details/:id
-// @access  Private/Admin
+//  Delete tour details (Admin only)
+//  DELETE /api/tour-details/:id
+//  Private/Admin
 router.delete('/:id', protect, adminOnly, async (req, res) => {
   try {
     const tourDetail = await TourDetail.findByIdAndDelete(req.params.id);

@@ -4,7 +4,7 @@ const Tour = require('../model/Tour');
 const User = require('../model/User');
 const GuideAssignment = require('../model/GuideAssignment');
 
-// @desc    Create a new booking
+//  Create a new booking
 const createBooking = async (req, res) => {
   try {
     const { tourId, tourName, guideName, participants, duration, totalPrice, extraServices, bookingDate, specialRequests } = req.body;
@@ -43,7 +43,7 @@ const createBooking = async (req, res) => {
   }
 };
 
-// @desc    Get user's bookings
+//  Get user's bookings
 const getMyBookings = async (req, res) => {
   try {
     const bookings = await Booking.find({ userId: req.userId }).sort({ createdAt: -1 });
@@ -53,7 +53,7 @@ const getMyBookings = async (req, res) => {
   }
 };
 
-// @desc    Get single booking
+//  Get single booking
 const getBookingById = async (req, res) => {
   try {
     const booking = await Booking.findById(req.params.id);
@@ -65,7 +65,7 @@ const getBookingById = async (req, res) => {
   }
 };
 
-// @desc    Cancel a booking — 50% refund if paid
+//  Cancel a booking — 50% refund if paid
 const cancelBooking = async (req, res) => {
   try {
     const booking = await Booking.findById(req.params.id);
@@ -106,7 +106,7 @@ const cancelBooking = async (req, res) => {
   }
 };
 
-// @desc    Confirm booking after payment — marks as paid and creates guide assignment
+//  Confirm booking after payment — marks as paid and creates guide assignment
 const confirmBooking = async (req, res) => {
   try {
     const booking = await Booking.findById(req.params.id).populate('userId', 'name email phone');

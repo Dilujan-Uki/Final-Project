@@ -1,5 +1,3 @@
-
-// src/models/Tour.js
 const mongoose = require('mongoose');
 
 const tourSchema = new mongoose.Schema({

@@ -1,4 +1,3 @@
-// src/routes/guideApplicationRoutes.js
 const express = require('express');
 const {
   submitApplication,

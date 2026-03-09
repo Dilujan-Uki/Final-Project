@@ -1,10 +1,9 @@
-// src/controllers/contactController.js
 const Contact = require('../model/Contact');
 const { validationResult } = require('express-validator');
 
-// @desc    Submit contact form
-// @route   POST /api/contact
-// @access  Public
+//  Submit contact form
+//  POST /api/contact
+//  Public
 const submitContactForm = async (req, res) => {
   try {
     // Check for validation errors
@@ -48,9 +47,9 @@ const submitContactForm = async (req, res) => {
   }
 };
 
-// @desc    Get all contact messages (Admin only)
-// @route   GET /api/contact
-// @access  Private/Admin
+//  Get all contact messages (Admin only)
+//  GET /api/contact
+//  Private/Admin
 const getAllContacts = async (req, res) => {
   try {
     const contacts = await Contact.find().sort({ createdAt: -1 });
@@ -69,9 +68,9 @@ const getAllContacts = async (req, res) => {
   }
 };
 
-// @desc    Update contact status (Admin only)
-// @route   PATCH /api/contact/:id
-// @access  Private/Admin
+//  Update contact status (Admin only)
+//  PATCH /api/contact/:id
+//  Private/Admin
 const updateContactStatus = async (req, res) => {
   try {
     const { status } = req.body;

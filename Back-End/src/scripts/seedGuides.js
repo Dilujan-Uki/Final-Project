@@ -1,4 +1,3 @@
-// src/scripts/seedGuides.js - COMPLETE WORKING VERSION
 const path = require('path');
 const mongoose = require('mongoose');
 const User = require('../model/User');
@@ -266,13 +265,13 @@ const guideAccounts = [
 
 const seedGuides = async () => {
   try {
-    console.log('🔄 Connecting to MongoDB...');
+    console.log(' Connecting to MongoDB...');
     await mongoose.connect(process.env.MONGODB_URI);
-    console.log('✅ Connected to MongoDB');
+    console.log(' Connected to MongoDB');
 
     // Clear existing guides
     await Guide.deleteMany({});
-    console.log('🗑️ Cleared existing guides');
+    console.log(' Cleared existing guides');
 
     for (const account of guideAccounts) {
       // Check if user already exists
@@ -281,9 +280,9 @@ const seedGuides = async () => {
       if (!user) {
         // Create user account
         user = await User.create(account.user);
-        console.log(`✅ Created user account for: ${account.user.name}`);
+        console.log(` Created user account for: ${account.user.name}`);
       } else {
-        console.log(`⏭️ User already exists: ${account.user.name}`);
+        console.log(`⏭ User already exists: ${account.user.name}`);
       }
 
       // Check if guide already exists
@@ -296,29 +295,29 @@ const seedGuides = async () => {
           userId: user._id,
           password: account.user.password // Add password for guide model
         });
-        console.log(`✅ Created guide profile for: ${account.guide.name}`);
+        console.log(` Created guide profile for: ${account.guide.name}`);
       } else {
-        console.log(`⏭️ Guide profile already exists: ${account.guide.name}`);
+        console.log(`⏭ Guide profile already exists: ${account.guide.name}`);
       }
     }
 
-    console.log('\n✅ All guide accounts processed successfully!');
-    console.log('\n📋 Guide Login Credentials:');
+    console.log('\n All guide accounts processed successfully!');
+    console.log('\n Guide Login Credentials:');
     guideAccounts.forEach(account => {
       console.log(`📧 ${account.user.email}`);
     });
-    console.log('🔑 Password for all: Guide@123');
+    console.log(' Password for all: Guide@123');
 
     // Verify counts
     const guideCount = await Guide.countDocuments();
     const userCount = await User.countDocuments({ role: 'guide' });
-    console.log(`\n📊 Statistics:`);
+    console.log(`\n Statistics:`);
     console.log(`   - Guides in database: ${guideCount}`);
     console.log(`   - Guide user accounts: ${userCount}`);
 
     process.exit(0);
   } catch (error) {
-    console.error('❌ Error:', error);
+    console.error(' Error:', error);
     process.exit(1);
   }
 };

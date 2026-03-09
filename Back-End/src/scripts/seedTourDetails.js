@@ -352,13 +352,13 @@ const seedTourDetails = async () => {
       };
 
       await TourDetail.create(details);
-      console.log(`✅ Created details for: ${tour.name}`);
+      console.log(` Created details for: ${tour.name}`);
     }
 
-    console.log('\n✅ All tour details seeded successfully!');
+    console.log('\n All tour details seeded successfully!');
     process.exit(0);
   } catch (error) {
-    console.error('❌ Error seeding tour details:', error);
+    console.error(' Error seeding tour details:', error);
     process.exit(1);
   }
 };

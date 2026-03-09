@@ -6,13 +6,13 @@ require('dotenv').config({ path: path.join(__dirname, '..', '..', '.env') });
 
 const seedRemainingTourDetails = async () => {
   try {
-    console.log('🔄 Connecting to MongoDB...');
+    console.log(' Connecting to MongoDB...');
     await mongoose.connect(process.env.MONGODB_URI);
-    console.log('✅ Connected to MongoDB\n');
+    console.log(' Connected to MongoDB\n');
 
     // Get all tours
     const tours = await Tour.find();
-    console.log(`📋 Found ${tours.length} tours\n`);
+    console.log(` Found ${tours.length} tours\n`);
 
     // Check which tours already have details
     const existingDetails = await TourDetail.find().distinct('tourId');
@@ -25,7 +25,7 @@ const seedRemainingTourDetails = async () => {
       !existingIds.includes(tour._id.toString())
     );
 
-    console.log(`\n📝 Need to create details for ${toursNeedingDetails.length} tours\n`);
+    console.log(`\n Need to create details for ${toursNeedingDetails.length} tours\n`);
 
     // Details for remaining tours
     const remainingDetails = [
@@ -519,13 +519,13 @@ const seedRemainingTourDetails = async () => {
       };
 
       await TourDetail.create(details);
-      console.log(`✅ Created details for: ${tour.name}`);
+      console.log(` Created details for: ${tour.name}`);
     }
 
-    console.log('\n✅ All remaining tour details seeded successfully!');
+    console.log('\n All remaining tour details seeded successfully!');
     process.exit(0);
   } catch (error) {
-    console.error('❌ Error seeding tour details:', error);
+    console.error(' Error seeding tour details:', error);
     process.exit(1);
   }
 };

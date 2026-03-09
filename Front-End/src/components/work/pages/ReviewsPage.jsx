@@ -1,4 +1,3 @@
-// src/pages/ReviewsPage.jsx - UPDATED with auto-refresh
 import React, { useState, useEffect } from 'react';
 import './ReviewsPage.css';
 
@@ -20,7 +19,7 @@ const ReviewsPage = () => {
     recommendationRate: 0
   });
   const [loading, setLoading] = useState(true);
-  const [submitLoading, setSubmitLoading] = useState(false); // New state for submit button
+  const [submitLoading, setSubmitLoading] = useState(false); 
 
   const tours = [
     "Cultural Triangle Explorer",

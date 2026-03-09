@@ -1,4 +1,3 @@
-// src/components/common/Header.jsx
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import './Header.css';
@@ -12,7 +11,7 @@ const Header = () => {
   const [showDropdown, setShowDropdown] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
-  // -------- read user from localStorage --------
+  //  read user from localStorage 
   const loadUser = useCallback(() => {
     try {
       const data = localStorage.getItem('user');
@@ -23,12 +22,12 @@ const Header = () => {
     }
   }, []);
 
-  // -------- re-load user on every route change --------
+  // re-load user on every route change 
   useEffect(() => {
     loadUser();
   }, [location.pathname, loadUser]);
 
-  // -------- also listen for storage events (cross-tab + same-tab login) --------
+  //  also listen for storage events (cross-tab + same-tab login)
   useEffect(() => {
     // custom event fired by LoginPage right after saving to localStorage
     const onLogin = () => loadUser();
@@ -40,14 +39,14 @@ const Header = () => {
     };
   }, [loadUser]);
 
-  // -------- scroll shrink --------
+  //  scroll shrink 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
     window.addEventListener('scroll', onScroll);
     return () => window.removeEventListener('scroll', onScroll);
   }, []);
 
-  // -------- click outside closes dropdown --------
+  //  click outside closes dropdown 
   useEffect(() => {
     const close = e => {
       if (dropdownRef.current && !dropdownRef.current.contains(e.target)) {
@@ -64,7 +63,7 @@ const Header = () => {
     navigate('/');
   };
 
-  // -------- nav links --------
+  //  nav links 
   const navLinks = [
     { to: '/', label: 'Home' },
     { to: '/tours', label: 'Tours' },
@@ -79,7 +78,7 @@ const Header = () => {
     <header className={`header ${scrolled ? 'scrolled' : ''}`}>
       <div className="container header-row">
 
-        {/* -------- logo -------- */}
+        {/*  logo  */}
         <Link to="/" className="logo">
           <div className="logo-text">
             <span className="logo-title">Island Quests</span>
@@ -87,7 +86,7 @@ const Header = () => {
           </div>
         </Link>
 
-        {/* -------- nav -------- */}
+        {/*  nav  */}
         <nav className="nav">
 
           {navLinks.map(link => (
@@ -100,14 +99,14 @@ const Header = () => {
             </Link>
           ))}
 
-          {/* -------- not logged in -------- */}
+          {/*  not logged in  */}
           {!user && (
             <Link to="/login" className="nav-btn login-btn">
               Login
             </Link>
           )}
 
-          {/* -------- logged in -------- */}
+          {/*  logged in  */}
           {user && (
             <div className="user-wrap" ref={dropdownRef}>
               <button

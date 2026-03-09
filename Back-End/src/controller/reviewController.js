@@ -1,10 +1,9 @@
-// src/controller/reviewController.js
 const Review = require('../model/Review');
 const { validationResult } = require('express-validator');
 
-// @desc    Submit review
-// @route   POST /api/reviews
-// @access  Private
+//  Submit review
+//  POST /api/reviews
+//  Private
 const submitReview = async (req, res) => {
   try {
     const errors = validationResult(req);
@@ -55,9 +54,9 @@ const submitReview = async (req, res) => {
   }
 };
 
-// @desc    Get all reviews (with optional filtering)
-// @route   GET /api/reviews
-// @access  Public
+//  Get all reviews (with optional filtering)
+//  GET /api/reviews
+//  Public
 const getAllReviews = async (req, res) => {
   try {
     const { tour, approved } = req.query;
@@ -96,9 +95,9 @@ const getAllReviews = async (req, res) => {
   }
 };
 
-// @desc    Get user's reviews
-// @route   GET /api/reviews/my-reviews
-// @access  Private
+//  Get user's reviews
+//  GET /api/reviews/my-reviews
+//  Private
 const getMyReviews = async (req, res) => {
   try {
     const reviews = await Review.find({ user: req.userId })
@@ -118,11 +117,11 @@ const getMyReviews = async (req, res) => {
   }
 };
 
-// src/controller/reviewController.js (UPDATED)
 
-// @desc    Update review approval status (Admin only)
-// @route   PATCH /api/reviews/:id/approve
-// @access  Private/Admin
+
+//  Update review approval status (Admin only)
+//  PATCH /api/reviews/:id/approve
+//  Private/Admin
 const updateReviewApproval = async (req, res) => {
   try {
     const { isApproved } = req.body;
@@ -164,9 +163,9 @@ const updateReviewApproval = async (req, res) => {
     });
   }
 };
-// @desc    Delete review (User can delete their own, admin gets notification)
-// @route   DELETE /api/reviews/:id
-// @access  Private
+//  Delete review (User can delete their own, admin gets notification)
+//  DELETE /api/reviews/:id
+//  Private
 const deleteReview = async (req, res) => {
   try {
     const review = await Review.findById(req.params.id).populate('user', 'name email');
@@ -215,9 +214,9 @@ const deleteReview = async (req, res) => {
   }
 };
 
-// @desc    Get all reviews with user details (Admin only)
-// @route   GET /api/reviews/all
-// @access  Private/Admin
+//  Get all reviews with user details (Admin only)
+//  GET /api/reviews/all
+//  Private/Admin
 const getAllReviewsAdmin = async (req, res) => {
   try {
     const { limit } = req.query;

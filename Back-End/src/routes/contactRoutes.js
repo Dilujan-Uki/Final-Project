@@ -1,11 +1,10 @@
-// src/routes/contactRoutes.js
 const express = require('express');
 const { body } = require('express-validator');
 const {
   submitContactForm,
   getAllContacts,
   updateContactStatus
-} = require('../controller/contactController'); // Changed from ../controllers to ../controller
+} = require('../controller/contactController'); 
 const { protect, adminOnly } = require('../middleware/authMiddleware');
 
 const router = express.Router();

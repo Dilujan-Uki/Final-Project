@@ -1,4 +1,3 @@
-// src/components/work/pages/BookingDetailPage.jsx - NEW FILE
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { getTourImage } from '../../../utils/tourImageMapping';

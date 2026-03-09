@@ -1,6 +1,6 @@
 const path = require('path');
 const mongoose = require('mongoose');
-const User = require('../model/User'); // Changed from '../src/model/User' to '../model/User'
+const User = require('../model/User'); 
 require('dotenv').config({ path: path.join(__dirname, '..', '..', '.env') });
 
 const createAdmin = async () => {
@@ -22,10 +22,10 @@ const createAdmin = async () => {
     const existingAdmin = await User.findOne({ email: 'dilujan2005@gmail.com' });
     
     if (existingAdmin) {
-      console.log('✅ Admin user already exists');
-      console.log('📧 Email:', existingAdmin.email);
-      console.log('👤 Name:', existingAdmin.name);
-      console.log('🔑 Role:', existingAdmin.role);
+      console.log(' Admin user already exists');
+      console.log(' Email:', existingAdmin.email);
+      console.log(' Name:', existingAdmin.name);
+      console.log(' Role:', existingAdmin.role);
       process.exit(0);
     }
     
@@ -40,14 +40,14 @@ const createAdmin = async () => {
     
     await admin.save();
     
-    console.log('✅ Admin user created successfully');
-    console.log('📧 Email: dilujan2005@gmail.com');
-    console.log('🔑 Password: Dilujan@2005');
-    console.log('⚠️  IMPORTANT: Change this password in production!');
+    console.log(' Admin user created successfully');
+    console.log(' Email: dilujan2005@gmail.com');
+    console.log(' Password: Dilujan@2005');
+    console.log('  IMPORTANT: Change this password in production!');
     
     process.exit(0);
   } catch (error) {
-    console.error('❌ Error creating admin:', error);
+    console.error(' Error creating admin:', error);
     process.exit(1);
   }
 };

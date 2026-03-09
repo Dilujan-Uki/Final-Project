@@ -1,4 +1,3 @@
-// src/pages/TourGuidesPage.jsx - UPDATED with 6 guides and imported images
 import React, { useState, useEffect } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './TourGuidesPage.css';

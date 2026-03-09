@@ -1,4 +1,3 @@
-// src/api.js (UPDATED - Add new-bookings endpoints)
 const API_BASE_URL = 'http://localhost:5000/api';
 
 // Generic API call function
@@ -69,7 +68,7 @@ export const adminAPI = {
   updateReviewStatus: (id, isApproved) => apiCall(`/reviews/${id}/approve`, 'PATCH', { isApproved }),
 };
 
-// ============ NEW BOOKINGS API (Using new-bookings endpoints) ============
+//  NEW BOOKINGS API (Using new-bookings endpoints) 
 export const newBookingsAPI = {
   // Create a new booking (used in BookingPage)
   create: (bookingData) => apiCall('/new-bookings', 'POST', bookingData),
@@ -84,7 +83,7 @@ export const newBookingsAPI = {
   cancel: (id) => apiCall(`/new-bookings/${id}/cancel`, 'PATCH')
 };
 
-// ============ LEGACY BOOKINGS API (Admin only) ============
+//  LEGACY BOOKINGS API (Admin only) 
 export const bookingsAPI = {
   getAll: () => apiCall('/bookings/all', 'GET'),
   updateStatus: (id, status) => apiCall(`/bookings/${id}/status`, 'PATCH', { status }),

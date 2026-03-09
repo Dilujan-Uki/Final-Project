@@ -1,6 +1,4 @@
-/* src/pages/AuthPages.css - Complete Redesign */
-
-.auth-page {
+auth-page {
   min-height: 100vh;
   display: flex;
   align-items: center;

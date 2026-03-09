@@ -1,4 +1,4 @@
-// scripts/checkDatabase.js
+
 const mongoose = require('mongoose');
 const Tour = require('../src/model/Tour');
 const User = require('../src/model/User');

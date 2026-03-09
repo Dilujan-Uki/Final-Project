@@ -1,4 +1,3 @@
-// src/routes/reviewRoutes.js (updated)
 const express = require('express');
 const { body } = require('express-validator');
 const {
@@ -7,7 +6,7 @@ const {
   getMyReviews,
   updateReviewApproval,
   deleteReview,
-  getAllReviewsAdmin  // Import the new function
+  getAllReviewsAdmin  
 } = require('../controller/reviewController');
 const { protect, adminOnly } = require('../middleware/authMiddleware');
 

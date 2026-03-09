@@ -1,11 +1,10 @@
-// src/controller/guideApplicationController.js
 const GuideApplication = require('../model/GuideApplication');
 const User = require('../model/User');
 const Guide = require('../model/Guide');
 
-// @desc    Submit guide application
-// @route   POST /api/guide-applications
-// @access  Public
+// Submit guide application
+// POST /api/guide-applications
+// Public
 const submitApplication = async (req, res) => {
   try {
     const {
@@ -62,9 +61,9 @@ const submitApplication = async (req, res) => {
   }
 };
 
-// @desc    Get all applications (Admin only)
-// @route   GET /api/guide-applications
-// @access  Private/Admin
+//  Get all applications (Admin only)
+//  GET /api/guide-applications
+//  Private/Admin
 const getAllApplications = async (req, res) => {
   try {
     const applications = await GuideApplication.find().sort({ appliedAt: -1 });
@@ -92,9 +91,9 @@ const getAllApplications = async (req, res) => {
   }
 };
 
-// @desc    Update application status (Admin only)
-// @route   PATCH /api/guide-applications/:id
-// @access  Private/Admin
+//  Update application status (Admin only)
+//  PATCH /api/guide-applications/:id
+//  Private/Admin
 const updateApplicationStatus = async (req, res) => {
   try {
     const { status, rejectionReason } = req.body;
@@ -167,9 +166,9 @@ const updateApplicationStatus = async (req, res) => {
   }
 };
 
-// @desc    Get single application (Admin only)
-// @route   GET /api/guide-applications/:id
-// @access  Private/Admin
+//  Get single application (Admin only)
+//  GET /api/guide-applications/:id
+//  Private/Admin
 const getApplicationById = async (req, res) => {
   try {
     const application = await GuideApplication.findById(req.params.id);

@@ -1,4 +1,3 @@
-// Import all images
 import Cultural from '../components/work/assets/Cultural-Triangle.png';
 import Hill from '../components/work/assets/Hill-Country.png';
 import Safari from '../components/work/assets/Wild-Safari.png';

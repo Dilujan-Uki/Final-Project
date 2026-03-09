@@ -1,4 +1,3 @@
-// src/pages/ToursPage.jsx
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './ToursPage.css';
@@ -80,7 +79,7 @@ const ToursPage = () => {
         <div className="container">
           <div className="tours-grid">
             {tours.map((tour) => {
-              const basePrice = tour.price; // Removed unused 'days' variable
+              const basePrice = tour.price; 
               
               return (
                 <div key={tour._id} className="tour-card">

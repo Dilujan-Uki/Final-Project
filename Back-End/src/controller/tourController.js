@@ -1,9 +1,8 @@
-// src/controllers/tourController.js
 const Tour = require('../model/Tour');
 
-// @desc    Get all tours
-// @route   GET /api/tours
-// @access  Public
+//  Get all tours
+//  GET /api/tours
+//  Public
 const getAllTours = async (req, res) => {
   try {
     const tours = await Tour.find({ isActive: true }).sort({ createdAt: -1 });
@@ -22,9 +21,9 @@ const getAllTours = async (req, res) => {
   }
 };
 
-// @desc    Get single tour
-// @route   GET /api/tours/:id
-// @access  Public
+//  Get single tour
+//  GET /api/tours/:id
+//  Public
 const getTourById = async (req, res) => {
   try {
     const tour = await Tour.findById(req.params.id);
@@ -49,9 +48,9 @@ const getTourById = async (req, res) => {
   }
 };
 
-// @desc    Get tours by category
-// @route   GET /api/tours/category/:category
-// @access  Public
+//  Get tours by category
+//  GET /api/tours/category/:category
+//  Public
 const getToursByCategory = async (req, res) => {
   try {
     const { category } = req.params;
@@ -74,9 +73,9 @@ const getToursByCategory = async (req, res) => {
   }
 };
 
-// @desc    Create tour (Admin only)
-// @route   POST /api/tours
-// @access  Private/Admin
+// Create tour (Admin only)
+// POST /api/tours
+// Private/Admin
 const createTour = async (req, res) => {
   try {
     // Double-check admin role

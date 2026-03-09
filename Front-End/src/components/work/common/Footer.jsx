@@ -1,4 +1,4 @@
-// src/components/common/Footer.jsx
+
 import React from 'react';
 import { Link } from 'react-router-dom';
 import './Footer.css';
@@ -54,12 +54,11 @@ const Footer = () => {
           </div>
         </div>
         
-        {/* Footer Bottom - REMOVED LEGAL LINKS */}
+        {/* Footer Bottom */}
         <div className="footer-bottom">
           <p className="copyright">
             © {currentYear} Island Quests. All rights reserved.
           </p>
-          {/* REMOVED LEGAL LINKS SECTION */}
         </div>
       </div>
     </footer>
