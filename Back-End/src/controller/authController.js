@@ -1,10 +1,9 @@
-// src/controllers/authController.js
 const User = require('../model/User');
 const jwt = require('jsonwebtoken');
 
 // Generate JWT Token
 const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET || 'ceylon-tours-secret-key', {
+  return jwt.sign({ id }, process.env.JWT_SECRET , {
     expiresIn: '30d'
   });
 };

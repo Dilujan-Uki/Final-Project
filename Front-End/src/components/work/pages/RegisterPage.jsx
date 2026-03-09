@@ -116,9 +116,9 @@ const RegisterPage = () => {
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="auth-form">
+            <form onSubmit={handleSubmit} className="auth-form" autoComplete="off">
               <div className="form-group">
-                <label htmlFor="name" className="form-label">Full Name *</label>
+                <label htmlFor="name" className="form-label">Full Name</label>
                 <input
                   type="text"
                   id="name"
@@ -129,14 +129,15 @@ const RegisterPage = () => {
                   required
                   placeholder="John Doe"
                   disabled={loading}
+                  autoComplete="off"
                 />
               </div>
 
               <div className="form-group">
-                <label htmlFor="email" className="form-label">Email Address *</label>
+                <label htmlFor="reg-email" className="form-label">Email Address</label>
                 <input
                   type="email"
-                  id="email"
+                  id="reg-email"
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
@@ -144,11 +145,12 @@ const RegisterPage = () => {
                   required
                   placeholder="john@example.com"
                   disabled={loading}
+                  autoComplete="off"
                 />
               </div>
 
               <div className="form-group">
-                <label htmlFor="phone" className="form-label">Phone Number (Optional)</label>
+                <label htmlFor="phone" className="form-label">Phone Number</label>
                 <input
                   type="tel"
                   id="phone"
@@ -156,16 +158,18 @@ const RegisterPage = () => {
                   value={formData.phone}
                   onChange={handleChange}
                   className="form-input"
+                  required
                   placeholder="0771234567"
                   disabled={loading}
+                  autoComplete="off"
                 />
               </div>
 
               <div className="form-group">
-                <label htmlFor="password" className="form-label">Password *</label>
+                <label htmlFor="reg-password" className="form-label">Password</label>
                 <input
                   type="password"
-                  id="password"
+                  id="reg-password"
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
@@ -173,13 +177,14 @@ const RegisterPage = () => {
                   required
                   placeholder="Enter your password (min. 6 characters)"
                   disabled={loading}
+                  autoComplete="new-password"
                   minLength="6"
                 />
                 <small className="password-hint">Must be at least 6 characters</small>
               </div>
 
               <div className="form-group">
-                <label htmlFor="confirmPassword" className="form-label">Confirm Password *</label>
+                <label htmlFor="confirmPassword" className="form-label">Confirm Password</label>
                 <input
                   type="password"
                   id="confirmPassword"
@@ -190,6 +195,7 @@ const RegisterPage = () => {
                   required
                   placeholder="Confirm your password"
                   disabled={loading}
+                  autoComplete="new-password"
                 />
               </div>
 

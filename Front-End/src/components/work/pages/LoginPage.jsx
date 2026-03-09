@@ -130,12 +130,12 @@ const LoginPage = () => {
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="auth-form">
+            <form onSubmit={handleSubmit} className="auth-form" autoComplete="off">
               <div className="form-group">
-                <label htmlFor="email" className="form-label">Email Address</label>
+                <label htmlFor="login-email" className="form-label">Email Address</label>
                 <input
                   type="email"
-                  id="email"
+                  id="login-email"
                   name="email"
                   value={formData.email}
                   onChange={handleChange}
@@ -143,14 +143,15 @@ const LoginPage = () => {
                   required
                   placeholder="your@email.com"
                   disabled={loading}
+                  autoComplete="off"
                 />
               </div>
 
               <div className="form-group">
-                <label htmlFor="password" className="form-label">Password</label>
+                <label htmlFor="login-password" className="form-label">Password</label>
                 <input
                   type="password"
-                  id="password"
+                  id="login-password"
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
@@ -158,6 +159,7 @@ const LoginPage = () => {
                   required
                   placeholder="••••••••"
                   disabled={loading}
+                  autoComplete="off"
                 />
               </div>
 
