@@ -1,6 +1,6 @@
-const express = require('express');
-const { getGuideAssignments, getAssignmentById, updateAssignmentStatus, createAssignment, getPendingCompletions, adminConfirmCompletion } = require('../controller/guideController');
-const { protect, adminOnly } = require('../middleware/authMiddleware');
+import express from 'express';
+import { getGuideAssignments, getAssignmentById, updateAssignmentStatus, createAssignment, getPendingCompletions, adminConfirmCompletion } from '../controller/guideController.js';
+import { protect, adminOnly } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
@@ -11,4 +11,4 @@ router.patch('/assignments/:id/status', protect, updateAssignmentStatus);
 router.patch('/assignments/:id/confirm-completion', protect, adminOnly, adminConfirmCompletion);
 router.post('/assignments', protect, adminOnly, createAssignment);
 
-module.exports = router;
+export default router;

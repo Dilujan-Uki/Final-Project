@@ -1,18 +1,10 @@
-const express = require('express');
-const { body } = require('express-validator');
-const {
-  submitReview,
-  getAllReviews,
-  getMyReviews,
-  updateReviewApproval,
-  deleteReview,
-  getAllReviewsAdmin  
-} = require('../controller/reviewController');
-const { protect, adminOnly } = require('../middleware/authMiddleware');
+import express from 'express';
+import { body } from 'express-validator';
+import { submitReview, getAllReviews, getMyReviews, updateReviewApproval, deleteReview, getAllReviewsAdmin } from '../controller/reviewController.js';
+import { protect, adminOnly } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// Validation rules
 const reviewValidation = [
   body('tour').notEmpty().withMessage('Tour is required'),
   body('rating').isInt({ min: 1, max: 5 }).withMessage('Rating must be between 1 and 5'),
@@ -20,16 +12,11 @@ const reviewValidation = [
   body('comment').notEmpty().withMessage('Comment is required')
 ];
 
-// Public routes
 router.get('/', getAllReviews);
-
-// Protected routes
 router.post('/', protect, reviewValidation, submitReview);
 router.get('/my-reviews', protect, getMyReviews);
 router.delete('/:id', protect, deleteReview);
-
-// Admin routes
-router.get('/all', protect, adminOnly, getAllReviewsAdmin);  // New admin route
+router.get('/all', protect, adminOnly, getAllReviewsAdmin);
 router.patch('/:id/approve', protect, adminOnly, updateReviewApproval);
 
-module.exports = router;
+export default router;

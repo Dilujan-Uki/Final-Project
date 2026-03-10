@@ -1,20 +1,12 @@
-const express = require('express');
-const {
-  getAllTours,
-  getTourById,
-  getToursByCategory,
-  createTour
-} = require('../controller/tourController'); 
-const { protect, adminOnly } = require('../middleware/authMiddleware');
+import express from 'express';
+import { getAllTours, getTourById, getToursByCategory, createTour } from '../controller/tourController.js';
+import { protect, adminOnly } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// Public routes
 router.get('/', getAllTours);
 router.get('/:id', getTourById);
 router.get('/category/:category', getToursByCategory);
-
-// Protected/Admin routes
 router.post('/', protect, adminOnly, createTour);
 
-module.exports = router;
+export default router;

@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const guideAssignmentSchema = new mongoose.Schema({
   guideId: {
@@ -85,4 +85,4 @@ const guideAssignmentSchema = new mongoose.Schema({
 });
 
 const GuideAssignment = mongoose.model('GuideAssignment', guideAssignmentSchema);
-module.exports = GuideAssignment;
+export default GuideAssignment;

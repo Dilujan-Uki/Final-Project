@@ -1,20 +1,12 @@
-const express = require('express');
-const {
-  submitApplication,
-  getAllApplications,
-  updateApplicationStatus,
-  getApplicationById
-} = require('../controller/guideApplicationController');
-const { protect, adminOnly } = require('../middleware/authMiddleware');
+import express from 'express';
+import { submitApplication, getAllApplications, updateApplicationStatus, getApplicationById } from '../controller/guideApplicationController.js';
+import { protect, adminOnly } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
-// Public route
 router.post('/', submitApplication);
-
-// Admin routes
 router.get('/', protect, adminOnly, getAllApplications);
 router.get('/:id', protect, adminOnly, getApplicationById);
 router.patch('/:id', protect, adminOnly, updateApplicationStatus);
 
-module.exports = router;
+export default router;

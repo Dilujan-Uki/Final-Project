@@ -1,5 +1,5 @@
 
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const guideApplicationSchema = new mongoose.Schema({
   fullName: {
@@ -75,4 +75,4 @@ guideApplicationSchema.pre('save', function(next) {
 });
 
 const GuideApplication = mongoose.model('GuideApplication', guideApplicationSchema);
-module.exports = GuideApplication;
+export default GuideApplication;

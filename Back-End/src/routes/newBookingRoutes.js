@@ -1,6 +1,6 @@
-const express = require('express');
-const { createBooking, getMyBookings, getBookingById, cancelBooking, confirmBooking } = require('../controller/newBookingController');
-const { protect, checkNotSuspended } = require('../middleware/authMiddleware');
+import express from 'express';
+import { createBooking, getMyBookings, getBookingById, cancelBooking, confirmBooking } from '../controller/newBookingController.js';
+import { protect, checkNotSuspended } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
@@ -10,4 +10,4 @@ router.get('/:id', protect, getBookingById);
 router.patch('/:id/cancel', protect, cancelBooking);
 router.patch('/:id/confirm', protect, confirmBooking);
 
-module.exports = router;
+export default router;

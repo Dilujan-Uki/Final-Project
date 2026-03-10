@@ -1,8 +1,12 @@
-const path = require('path');
-const mongoose = require('mongoose');
-const User = require('../model/User');
-const Guide = require('../model/Guide');
-require('dotenv').config({ path: path.join(__dirname, '..', '..', '.env') });
+import path from 'path';
+import { fileURLToPath } from 'url';
+import mongoose from 'mongoose';
+import User from '../model/User.js';
+import Guide from '../model/Guide.js';
+import dotenv from 'dotenv';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+dotenv.config({ path: path.join(__dirname, '..', '..', '.env') });
 
 // Image filenames (these will be used by frontend)
 const guideImages = {

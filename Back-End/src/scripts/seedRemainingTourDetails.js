@@ -1,8 +1,12 @@
-const path = require('path');
-const mongoose = require('mongoose');
-const Tour = require('../model/Tour');
-const TourDetail = require('../model/TourDetail');
-require('dotenv').config({ path: path.join(__dirname, '..', '..', '.env') });
+import path from 'path';
+import { fileURLToPath } from 'url';
+import mongoose from 'mongoose';
+import Tour from '../model/Tour.js';
+import TourDetail from '../model/TourDetail.js';
+import dotenv from 'dotenv';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+dotenv.config({ path: path.join(__dirname, '..', '..', '.env') });
 
 const seedRemainingTourDetails = async () => {
   try {

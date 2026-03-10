@@ -1,7 +1,7 @@
-const jwt = require('jsonwebtoken');
-const User = require('../model/User');
+import jwt from 'jsonwebtoken';
+import User from '../model/User.js';
 
-const protect = async (req, res, next) => {
+export const protect = async (req, res, next) => {
   let token;
 
   if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
@@ -27,7 +27,7 @@ const protect = async (req, res, next) => {
   }
 };
 
-const adminOnly = async (req, res, next) => {
+export const adminOnly = async (req, res, next) => {
   try {
     if (!req.user) return res.status(401).json({ status: 'error', message: 'Not authorized' });
     if (req.user.role !== 'admin') return res.status(403).json({ status: 'error', message: 'Access denied. Admin only.' });
@@ -37,8 +37,7 @@ const adminOnly = async (req, res, next) => {
   }
 };
 
-// Check suspension for non-admin users
-const checkNotSuspended = async (req, res, next) => {
+export const checkNotSuspended = async (req, res, next) => {
   if (req.user && req.user.isSuspended && req.user.role !== 'admin') {
     return res.status(403).json({
       status: 'error',
@@ -49,5 +48,3 @@ const checkNotSuspended = async (req, res, next) => {
   }
   next();
 };
-
-module.exports = { protect, adminOnly, checkNotSuspended };

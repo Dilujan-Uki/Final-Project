@@ -1,6 +1,6 @@
-const express = require('express');
-const { getAllUsers, getUserById, updateUserProfile, toggleSuspendUser } = require('../controller/userController');
-const { protect, adminOnly } = require('../middleware/authMiddleware');
+import express from 'express';
+import { getAllUsers, getUserById, updateUserProfile, toggleSuspendUser } from '../controller/userController.js';
+import { protect, adminOnly } from '../middleware/authMiddleware.js';
 
 const router = express.Router();
 
@@ -9,4 +9,4 @@ router.get('/', protect, adminOnly, getAllUsers);
 router.get('/:id', protect, adminOnly, getUserById);
 router.patch('/:id/suspend', protect, adminOnly, toggleSuspendUser);
 
-module.exports = router;
+export default router;

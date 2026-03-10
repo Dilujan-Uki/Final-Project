@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const tourDetailSchema = new mongoose.Schema({
   tourId: {
@@ -100,4 +100,4 @@ tourDetailSchema.pre('save', function(next) {
 });
 
 const TourDetail = mongoose.model('TourDetail', tourDetailSchema);
-module.exports = TourDetail;
+export default TourDetail;
