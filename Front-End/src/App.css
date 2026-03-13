@@ -21,11 +21,34 @@
   box-sizing: border-box;
 }
 
+html,
+body {
+  overflow-x: hidden;
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+html::-webkit-scrollbar,
+body::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+
+/* Hide scrollbar globally on all elements */
+* {
+  scrollbar-width: none; /* Firefox */
+  -ms-overflow-style: none; /* IE/Edge */
+}
+
+*::-webkit-scrollbar {
+  display: none; /* Chrome/Safari */
+}
+
 body {
   font-family: 'Poppins', -apple-system, BlinkMacSystemFont, sans-serif;
   background-color: var(--bg-light);
   color: var(--text-dark);
   line-height: 1.6;
+  overflow-x: hidden;
 }
 
 /* Sri Lanka inspired background patterns */

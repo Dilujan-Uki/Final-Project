@@ -23,6 +23,8 @@ const TourGuidesPage = () => {
 
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedTour, setSelectedTour] = useState(null);
+  const [guideAvailability, setGuideAvailability] = useState({});
+  const [availabilityLoading, setAvailabilityLoading] = useState(true);
 
   // Complete guides data with 6 guides and imported images
   const guides = [
@@ -112,6 +114,37 @@ const TourGuidesPage = () => {
     }
   ];
 
+  // Fetch real-time availability for all guides from the DB
+  useEffect(() => {
+    const fetchAvailability = async () => {
+      setAvailabilityLoading(true);
+      try {
+        const response = await fetch('http://localhost:5000/api/guides/profiles');
+        const data = await response.json();
+        if (data.status === 'success') {
+          const availMap = {};
+          data.data.forEach(g => {
+            // Match by name since static guide list uses names, not DB IDs
+            availMap[g.name] = {
+              isAvailable: g.isAvailable,
+              currentBookingEnd: g.currentBookingEnd,
+              guideId: g._id
+            };
+          });
+          setGuideAvailability(availMap);
+        }
+      } catch (err) {
+        console.error('Error fetching guide availability:', err);
+      } finally {
+        setAvailabilityLoading(false);
+      }
+    };
+    fetchAvailability();
+    // Refresh every 60 seconds so the page stays live
+    const interval = setInterval(fetchAvailability, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
   // Set selected tour from URL params
   useEffect(() => {
     if (tourId && tourName) {
@@ -146,17 +179,28 @@ const TourGuidesPage = () => {
     : guides.filter(guide => guide.category === selectedCategory);
 
   const handleSelectGuide = (guide) => {
-    // Get selected tour from state or localStorage
     const tour = selectedTour || JSON.parse(localStorage.getItem('selectedTour') || '{}');
-    
+
     if (!tour.id) {
       alert('Please select a tour first');
       navigate('/tours');
       return;
     }
 
-    // Navigate to booking page with both tour and guide
-    navigate(`/booking?tour=${tour.id}&name=${encodeURIComponent(tour.name)}&duration=${tour.duration}&pricePerDay=${tour.pricePerDay}&guide=${guide.id}&guideName=${encodeURIComponent(guide.name)}&guideDailyRate=${guide.dailyRate}`);
+    // Block if guide is not available
+    const avail = guideAvailability[guide.name];
+    if (avail && !avail.isAvailable) {
+      const freeDate = avail.currentBookingEnd
+        ? new Date(avail.currentBookingEnd).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
+        : 'a later date';
+      alert(`${guide.name} is currently on another tour and will be available from ${freeDate}.\n\nPlease select a different guide.`);
+      return;
+    }
+
+    const dbGuideId = avail?.guideId || '';
+    navigate(
+      `/booking?tour=${tour.id}&name=${encodeURIComponent(tour.name)}&duration=${tour.duration}&pricePerDay=${tour.pricePerDay}&guide=${guide.id}&guideName=${encodeURIComponent(guide.name)}&guideDailyRate=${guide.dailyRate}&guideDbId=${dbGuideId}`
+    );
   };
 
   const handleViewGuideDetails = (guideId) => {
@@ -232,18 +276,42 @@ const TourGuidesPage = () => {
               {selectedCategory === 'all' ? 'All Tour Guides' : `${categories.find(c => c.id === selectedCategory)?.label} Guides`}
             </h2>
             <p className="section-subtitle">
-              {filteredGuides.length} certified guides available
+              {filteredGuides.length} certified guides &bull;{' '}
+              {availabilityLoading ? (
+                <span className="avail-loading">Checking availability...</span>
+              ) : (
+                <span className="avail-count">
+                  {filteredGuides.filter(g => {
+                    const a = guideAvailability[g.name];
+                    return !a || a.isAvailable;
+                  }).length} available now
+                </span>
+              )}
             </p>
           </div>
 
           <div className="guides-grid">
             {filteredGuides.map((guide) => (
-              <div key={guide.id} className="guide-card">
+              <div key={guide.id} className={`guide-card ${guideAvailability[guide.name] && !guideAvailability[guide.name]?.isAvailable ? 'guide-card--busy' : ''}`}>
                 <div className="guide-image">
                   <img src={guide.image} alt={guide.name} className="guide-img" />
                   <div className="guide-rating-badge">
                     <span>⭐ {guide.rating}</span>
                   </div>
+                  {/* Availability badge */}
+                  {!availabilityLoading && (
+                    guideAvailability[guide.name] && !guideAvailability[guide.name]?.isAvailable ? (
+                      <div className="availability-badge availability-badge--busy">
+                        <span className="avail-dot avail-dot--busy"></span>
+                        Currently Busy
+                      </div>
+                    ) : (
+                      <div className="availability-badge availability-badge--available">
+                        <span className="avail-dot avail-dot--available"></span>
+                        Available
+                      </div>
+                    )
+                  )}
                 </div>
                 
                 <div className="guide-content">
@@ -283,14 +351,29 @@ const TourGuidesPage = () => {
                   </div>
                   
                   <div className="guide-actions">
-                    <button 
-                      onClick={() => handleSelectGuide(guide)}
-                      className="btn-primary"
-                      disabled={!selectedTour && !localStorage.getItem('selectedTour')}
-                    >
-                      Select Guide
-                    </button>
-                    <button 
+                    {guideAvailability[guide.name] && !guideAvailability[guide.name]?.isAvailable ? (
+                      <div className="busy-info">
+                        <button className="btn-busy" disabled>
+                          <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                          Currently Booked
+                        </button>
+                        {guideAvailability[guide.name]?.currentBookingEnd && (
+                          <p className="free-date">
+                            Free from{' '}
+                            {new Date(guideAvailability[guide.name].currentBookingEnd).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
+                          </p>
+                        )}
+                      </div>
+                    ) : (
+                      <button
+                        onClick={() => handleSelectGuide(guide)}
+                        className="btn-primary"
+                        disabled={!selectedTour && !localStorage.getItem('selectedTour')}
+                      >
+                        Select Guide
+                      </button>
+                    )}
+                    <button
                       onClick={() => handleViewGuideDetails(guide.id)}
                       className="btn-secondary"
                     >

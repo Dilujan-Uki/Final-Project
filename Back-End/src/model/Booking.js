@@ -19,6 +19,12 @@ const bookingSchema = new mongoose.Schema({
     type: String,
     default: ''
   },
+  
+  guideId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Guide',
+    default: null
+  },
   participants: {
     type: Number,
     required: true,
@@ -45,14 +51,8 @@ const bookingSchema = new mongoose.Schema({
     default: 0
   },
   extraServices: {
-    transport: {
-      type: Boolean,
-      default: false
-    },
-    meals: {
-      type: Boolean,
-      default: false
-    }
+    transport: { type: Boolean, default: false },
+    meals: { type: Boolean, default: false }
   },
   bookingDate: {
     type: Date,

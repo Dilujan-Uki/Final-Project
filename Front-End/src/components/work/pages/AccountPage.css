@@ -6,14 +6,8 @@
 }
 
 .account-page::before {
-  content: '👤';
-  position: fixed;
-  right: 30px;
-  bottom: 30px;
-  font-size: 120px;
-  opacity: 0.03;
-  pointer-events: none;
-  z-index: 0;
+  content: '';
+  display: none;
 }
 
 /* Header */

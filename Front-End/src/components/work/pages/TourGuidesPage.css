@@ -609,3 +609,169 @@
     padding: 0 1rem;
   }
 }
+/* ════════════════════════════════════════════════════
+   GUIDE AVAILABILITY SYSTEM — Professional Styling
+   ════════════════════════════════════════════════════ */
+
+/* Available-count text in section header */
+.avail-count {
+  color: #1e4c24;
+  font-weight: 700;
+}
+
+.avail-loading {
+  color: #6c757d;
+  font-style: italic;
+}
+
+/* ── Availability badge on the guide image ── */
+.availability-badge {
+  position: absolute;
+  bottom: 14px;
+  left: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 12px;
+  border-radius: 100px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  z-index: 3;
+  backdrop-filter: blur(8px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  text-transform: uppercase;
+}
+
+.availability-badge--available {
+  background: rgba(21, 87, 36, 0.92);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.availability-badge--busy {
+  background: rgba(114, 28, 36, 0.88);
+  color: #fff;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+/* Animated pulse dot */
+.avail-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.avail-dot--available {
+  background: #4ade80;
+  box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.7);
+  animation: pulseGreen 2s infinite;
+}
+
+.avail-dot--busy {
+  background: #f87171;
+  box-shadow: 0 0 0 0 rgba(248, 113, 113, 0.7);
+  animation: pulseRed 2s infinite;
+}
+
+@keyframes pulseGreen {
+  0%   { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0.7); }
+  70%  { box-shadow: 0 0 0 7px rgba(74, 222, 128, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(74, 222, 128, 0); }
+}
+
+@keyframes pulseRed {
+  0%   { box-shadow: 0 0 0 0 rgba(248, 113, 113, 0.7); }
+  70%  { box-shadow: 0 0 0 7px rgba(248, 113, 113, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(248, 113, 113, 0); }
+}
+
+/* ── Busy card styling ── */
+.guide-card--busy {
+  position: relative;
+  opacity: 0.88;
+}
+
+.guide-card--busy .guide-img {
+  filter: grayscale(30%);
+  transition: filter 0.3s ease;
+}
+
+.guide-card--busy:hover .guide-img {
+  filter: grayscale(15%);
+}
+
+/* ── "Currently Booked" button ── */
+.btn-busy {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  background: #f8d7da;
+  color: #842029;
+  border: 2px solid #f5c2c7;
+  border-radius: 50px;
+  font-size: 0.875rem;
+  font-weight: 700;
+  cursor: not-allowed;
+  opacity: 0.85;
+  flex: 1;
+}
+
+.busy-info {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.4rem;
+  flex: 1;
+}
+
+.free-date {
+  font-size: 0.78rem;
+  color: #6c757d;
+  margin: 0;
+  padding-left: 0.25rem;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.free-date::before {
+  content: '📅';
+  font-size: 0.8rem;
+}
+
+/* ── Skeleton shimmer while loading availability ── */
+@keyframes shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position: 400px 0; }
+}
+
+.avail-skeleton {
+  width: 90px;
+  height: 22px;
+  border-radius: 100px;
+  background: linear-gradient(90deg, #e0e0e0 25%, #f0f0f0 50%, #e0e0e0 75%);
+  background-size: 400px 100%;
+  animation: shimmer 1.4s infinite;
+}
+
+/* Responsive */
+@media (max-width: 480px) {
+  .availability-badge {
+    font-size: 0.68rem;
+    padding: 4px 10px;
+    bottom: 10px;
+    left: 10px;
+  }
+
+  .busy-info {
+    width: 100%;
+  }
+
+  .btn-busy {
+    width: 100%;
+    justify-content: center;
+  }
+}

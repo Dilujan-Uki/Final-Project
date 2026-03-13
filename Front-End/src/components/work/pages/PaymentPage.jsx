@@ -166,6 +166,9 @@ const PaymentPage = () => {
       const bookingResult = await bookingResponse.json();
 
       if (!bookingResponse.ok) {
+        if (bookingResponse.status === 409) {
+          throw new Error(bookingResult.message || 'Your selected guide is no longer available. Please go back and choose another guide.');
+        }
         throw new Error(bookingResult.message || 'Failed to create booking');
       }
 
@@ -178,7 +181,15 @@ const PaymentPage = () => {
           'Authorization': `Bearer ${token}`
         }
       });
-      await confirmResponse.json();
+      const confirmResult = await confirmResponse.json();
+
+      // Handle guide no-longer-available at payment time (409 Conflict)
+      if (!confirmResponse.ok) {
+        if (confirmResponse.status === 409) {
+          throw new Error(confirmResult.message || 'Your selected guide is no longer available. Please go back and choose another guide.');
+        }
+        throw new Error(confirmResult.message || 'Failed to confirm booking');
+      }
 
       // Clear temporary data
       localStorage.removeItem('selectedTour');

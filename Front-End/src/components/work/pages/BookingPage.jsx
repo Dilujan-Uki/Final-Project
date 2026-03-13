@@ -16,6 +16,7 @@ const BookingPage = () => {
   const guideId = queryParams.get('guide');
   const guideName = queryParams.get('guideName') || "";
   const guideDailyRate = parseInt(queryParams.get('guideDailyRate')) || 0;
+  const guideDbId = queryParams.get('guideDbId') || '';  // MongoDB _id for availability tracking
 
   const [bookingData, setBookingData] = useState({
     tourId: tourId || '',
@@ -113,6 +114,7 @@ const handleSubmit = async (e) => {
       tourId: tourId || bookingData.tourId,
       tourName: bookingData.tourName,
       guideName: bookingData.guideName || '',
+      guideId: guideDbId || null,   // DB _id for availability locking
       participants: parseInt(bookingData.participants),
       duration: parseInt(bookingData.selectedDuration),
       totalPrice: prices.total,

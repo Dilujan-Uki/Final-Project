@@ -1,10 +1,27 @@
 import Guide from '../model/Guide.js';
+import GuideAssignment from '../model/GuideAssignment.js';
 import User from '../model/User.js';
 
 export const getAllGuides = async (req, res) => {
   try {
     const guides = await Guide.find({ isActive: true }).select('-password -__v').sort({ rating: -1 });
-    res.status(200).json({ status: 'success', count: guides.length, data: guides });
+
+    // Enrich each guide with live availability status
+    const guidesWithAvailability = await Promise.all(
+      guides.map(async (guide) => {
+        const activeAssignment = await GuideAssignment.findOne({
+          guideId: guide._id,
+          status: { $in: ['upcoming', 'ongoing'] }
+        }).sort({ startDate: 1 });
+
+        const guideObj = guide.toObject();
+        guideObj.isAvailable = !activeAssignment;
+        guideObj.currentBookingEnd = activeAssignment ? activeAssignment.endDate : null;
+        return guideObj;
+      })
+    );
+
+    res.status(200).json({ status: 'success', count: guidesWithAvailability.length, data: guidesWithAvailability });
   } catch (error) {
     res.status(500).json({ status: 'error', message: 'Server error while fetching guides' });
   }
@@ -13,7 +30,22 @@ export const getAllGuides = async (req, res) => {
 export const getAllGuidesAdmin = async (req, res) => {
   try {
     const guides = await Guide.find({}).select('-password -__v').sort({ rating: -1 });
-    res.status(200).json({ status: 'success', count: guides.length, data: guides });
+
+    const guidesWithAvailability = await Promise.all(
+      guides.map(async (guide) => {
+        const activeAssignment = await GuideAssignment.findOne({
+          guideId: guide._id,
+          status: { $in: ['upcoming', 'ongoing'] }
+        }).sort({ startDate: 1 });
+
+        const guideObj = guide.toObject();
+        guideObj.isAvailable = !activeAssignment;
+        guideObj.currentBookingEnd = activeAssignment ? activeAssignment.endDate : null;
+        return guideObj;
+      })
+    );
+
+    res.status(200).json({ status: 'success', count: guidesWithAvailability.length, data: guidesWithAvailability });
   } catch (error) {
     res.status(500).json({ status: 'error', message: 'Server error while fetching guides' });
   }
@@ -23,7 +55,17 @@ export const getGuideById = async (req, res) => {
   try {
     const guide = await Guide.findById(req.params.id).select('-password -__v');
     if (!guide) return res.status(404).json({ status: 'error', message: 'Guide not found' });
-    res.status(200).json({ status: 'success', data: guide });
+
+    const activeAssignment = await GuideAssignment.findOne({
+      guideId: guide._id,
+      status: { $in: ['upcoming', 'ongoing'] }
+    }).sort({ startDate: 1 });
+
+    const guideObj = guide.toObject();
+    guideObj.isAvailable = !activeAssignment;
+    guideObj.currentBookingEnd = activeAssignment ? activeAssignment.endDate : null;
+
+    res.status(200).json({ status: 'success', data: guideObj });
   } catch (error) {
     res.status(500).json({ status: 'error', message: 'Server error while fetching guide' });
   }
@@ -35,9 +77,55 @@ export const getGuidesByCategory = async (req, res) => {
     let filter = { isActive: true };
     if (category !== 'all') filter.category = category;
     const guides = await Guide.find(filter).select('-password -__v').sort({ rating: -1 });
-    res.status(200).json({ status: 'success', count: guides.length, data: guides });
+
+    const guidesWithAvailability = await Promise.all(
+      guides.map(async (guide) => {
+        const activeAssignment = await GuideAssignment.findOne({
+          guideId: guide._id,
+          status: { $in: ['upcoming', 'ongoing'] }
+        }).sort({ startDate: 1 });
+
+        const guideObj = guide.toObject();
+        guideObj.isAvailable = !activeAssignment;
+        guideObj.currentBookingEnd = activeAssignment ? activeAssignment.endDate : null;
+        return guideObj;
+      })
+    );
+
+    res.status(200).json({ status: 'success', count: guidesWithAvailability.length, data: guidesWithAvailability });
   } catch (error) {
     res.status(500).json({ status: 'error', message: 'Server error while fetching guides' });
+  }
+};
+
+// New: check a single guide's availability (used before booking confirmation)
+export const checkGuideAvailability = async (req, res) => {
+  try {
+    const guide = await Guide.findById(req.params.id).select('-password');
+    if (!guide) return res.status(404).json({ status: 'error', message: 'Guide not found' });
+
+    const activeAssignment = await GuideAssignment.findOne({
+      guideId: guide._id,
+      status: { $in: ['upcoming', 'ongoing'] }
+    }).sort({ startDate: 1 });
+
+    res.status(200).json({
+      status: 'success',
+      data: {
+        guideId: guide._id,
+        guideName: guide.name,
+        isAvailable: !activeAssignment,
+        currentBookingEnd: activeAssignment ? activeAssignment.endDate : null,
+        activeAssignment: activeAssignment ? {
+          tourName: activeAssignment.tourName,
+          startDate: activeAssignment.startDate,
+          endDate: activeAssignment.endDate,
+          status: activeAssignment.status
+        } : null
+      }
+    });
+  } catch (error) {
+    res.status(500).json({ status: 'error', message: 'Server error while checking availability' });
   }
 };
 
