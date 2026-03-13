@@ -48,7 +48,7 @@ const Footer = () => {
               </p>
               <p className="contact-item">
                 <span className="icon">✉️</span>
-                info@ceylontours.lk
+                info@islandquest.lk
               </p>
             </div>
           </div>

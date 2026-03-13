@@ -1618,3 +1618,241 @@
   background: #dc3545;
   color: #fff;
 }
+/* ── Change Password Tab ── */
+.change-password-container {
+  display: grid;
+  grid-template-columns: 1fr 1.6fr;
+  gap: 2.5rem;
+  align-items: start;
+}
+
+@media (max-width: 768px) {
+  .change-password-container {
+    grid-template-columns: 1fr;
+  }
+}
+
+.change-password-info {
+  background: linear-gradient(135deg, rgba(30, 76, 36, 0.04), rgba(255, 180, 0, 0.02));
+  border-radius: 20px;
+  padding: 2rem;
+  border: 1px solid rgba(30, 76, 36, 0.1);
+}
+
+.pw-info-icon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+  display: block;
+}
+
+.change-password-info p {
+  font-size: 0.95rem;
+  color: #495057;
+  line-height: 1.6;
+  margin-bottom: 1.25rem;
+}
+
+.pw-requirements {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.pw-requirements li {
+  font-size: 0.85rem;
+  color: #495057;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.pw-requirements li::before {
+  content: '✓';
+  color: #1e4c24;
+  font-weight: 800;
+  font-size: 0.9rem;
+  width: 18px;
+  height: 18px;
+  background: rgba(30, 76, 36, 0.1);
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.change-password-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.pw-divider {
+  position: relative;
+  text-align: center;
+  margin: 0.25rem 0;
+}
+
+.pw-divider::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: rgba(30, 76, 36, 0.15);
+}
+
+.pw-divider span {
+  position: relative;
+  background: white;
+  padding: 0 1rem;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: #6c757d;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.pw-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.pw-input-wrapper .form-input {
+  padding-right: 3rem;
+  width: 100%;
+}
+
+.pw-toggle-btn {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #6c757d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: color 0.2s ease;
+}
+
+.pw-toggle-btn:hover { color: #1e4c24; }
+
+.field-match {
+  font-size: 0.8rem;
+  color: #155724;
+  margin-top: 0.4rem;
+  display: block;
+}
+
+.field-mismatch {
+  font-size: 0.8rem;
+  color: #721c24;
+  margin-top: 0.4rem;
+  display: block;
+}
+
+.btn-spinner {
+  width: 16px;
+  height: 16px;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: white;
+  border-radius: 50%;
+  animation: spin 0.7s linear infinite;
+  display: inline-block;
+  vertical-align: middle;
+  margin-right: 0.5rem;
+}
+
+/* ── Improved Edit Profile Form ── */
+.edit-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  margin-bottom: 1.25rem;
+}
+
+@media (max-width: 768px) {
+  .edit-form-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+.edit-profile-form .form-group label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #1e4c24;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.4rem;
+}
+
+.label-icon {
+  font-size: 0.9rem;
+}
+
+.edit-profile-form .form-input,
+.edit-profile-form .form-select {
+  padding: 0.9rem 1.1rem;
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  transition: all 0.25s ease;
+  background: white;
+  width: 100%;
+  color: #212529;
+}
+
+.edit-profile-form .form-input:focus,
+.edit-profile-form .form-select:focus {
+  outline: none;
+  border-color: #1e4c24;
+  box-shadow: 0 0 0 4px rgba(30, 76, 36, 0.08);
+}
+
+.edit-profile-form .form-input.disabled {
+  background: #f8f9fa;
+  color: #6c757d;
+  cursor: not-allowed;
+  border-style: dashed;
+}
+
+.change-password-form .form-group label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: #1e4c24;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.4rem;
+}
+
+.change-password-form .form-input {
+  padding: 0.9rem 3rem 0.9rem 1.1rem;
+  border: 2px solid #e9ecef;
+  border-radius: 12px;
+  font-size: 0.95rem;
+  transition: all 0.25s ease;
+  background: white;
+  width: 100%;
+  color: #212529;
+}
+
+.change-password-form .form-input:focus {
+  outline: none;
+  border-color: #1e4c24;
+  box-shadow: 0 0 0 4px rgba(30, 76, 36, 0.08);
+}

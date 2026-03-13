@@ -30,6 +30,15 @@ const AdminDashboard = () => {
   const [suspendModalData, setSuspendModalData] = useState(null);
   const [suspendReason, setSuspendReason] = useState('');
 
+  // Change password state
+  const [pwForm, setPwForm] = useState({ oldPassword: '', newPassword: '', confirmNewPassword: '' });
+  const [showOldPw, setShowOldPw] = useState(false);
+  const [showNewPw, setShowNewPw] = useState(false);
+  const [showConfirmPw, setShowConfirmPw] = useState(false);
+  const [pwLoading, setPwLoading] = useState(false);
+  const [pwSuccess, setPwSuccess] = useState('');
+  const [pwError, setPwError] = useState('');
+
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -261,7 +270,48 @@ const AdminDashboard = () => {
     { key: 'applications', label: 'Applications', badge: applicationStats.pending || null },
     { key: 'completions', label: 'Tour Completions', badge: pendingCompletions.length || null },
     { key: 'reviews', label: 'Reviews', badge: reviewStats.pending || null },
+    { key: 'changePassword', label: '🔒 Change Password', badge: null },
   ];
+
+  const EyeIcon = ({ open }) =>
+    open ? (
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+        <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+        <line x1="1" y1="1" x2="23" y2="23"/>
+      </svg>
+    ) : (
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+        <circle cx="12" cy="12" r="3"/>
+      </svg>
+    );
+
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    setPwError('');
+    setPwSuccess('');
+    if (pwForm.newPassword.length < 6) { setPwError('New password must be at least 6 characters.'); return; }
+    if (pwForm.newPassword !== pwForm.confirmNewPassword) { setPwError('New passwords do not match.'); return; }
+    setPwLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:5000/api/users/change-password', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ oldPassword: pwForm.oldPassword, newPassword: pwForm.newPassword })
+      });
+      const data = await response.json();
+      if (data.status === 'success') {
+        setPwSuccess('Password changed successfully!');
+        setPwForm({ oldPassword: '', newPassword: '', confirmNewPassword: '' });
+        setTimeout(() => setPwSuccess(''), 4000);
+      } else {
+        setPwError(data.message || 'Failed to change password.');
+      }
+    } catch { setPwError('Network error. Please try again.'); }
+    finally { setPwLoading(false); }
+  };
 
   return (
     <div className="admin-dashboard">
@@ -770,6 +820,100 @@ const AdminDashboard = () => {
                     ))}
                   </div>
                 )}
+              </div>
+            )}
+
+            {/* CHANGE PASSWORD TAB */}
+            {activeTab === 'changePassword' && (
+              <div className="admin-card">
+                <div className="card-header">
+                  <h2 className="card-title">🔒 Change Admin Password</h2>
+                </div>
+                <div className="change-password-container">
+                  <div className="change-password-info">
+                    <div className="pw-info-icon">🔐</div>
+                    <p>For your security, please enter your current password before setting a new one.</p>
+                    <ul className="pw-requirements">
+                      <li>At least 6 characters long</li>
+                      <li>Use a mix of letters and numbers for stronger security</li>
+                      <li>Don't reuse recent passwords</li>
+                    </ul>
+                  </div>
+
+                  <form className="change-password-form" onSubmit={handleChangePassword}>
+                    {pwSuccess && <div className="success-message">✅ {pwSuccess}</div>}
+                    {pwError && <div className="error-message">❌ {pwError}</div>}
+
+                    <div className="form-group">
+                      <label htmlFor="admin-oldPassword">🔑 Current Password</label>
+                      <div className="pw-input-wrapper">
+                        <input
+                          type={showOldPw ? 'text' : 'password'}
+                          id="admin-oldPassword"
+                          value={pwForm.oldPassword}
+                          onChange={e => setPwForm(p => ({ ...p, oldPassword: e.target.value }))}
+                          className="form-input"
+                          placeholder="Enter your current password"
+                          required
+                          disabled={pwLoading}
+                        />
+                        <button type="button" className="pw-toggle-btn" onClick={() => setShowOldPw(v => !v)} tabIndex={-1}>
+                          <EyeIcon open={showOldPw} />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="pw-divider"><span>New Password</span></div>
+
+                    <div className="form-group">
+                      <label htmlFor="admin-newPassword">🔒 New Password</label>
+                      <div className="pw-input-wrapper">
+                        <input
+                          type={showNewPw ? 'text' : 'password'}
+                          id="admin-newPassword"
+                          value={pwForm.newPassword}
+                          onChange={e => setPwForm(p => ({ ...p, newPassword: e.target.value }))}
+                          className="form-input"
+                          placeholder="Enter new password (min. 6 characters)"
+                          required
+                          minLength="6"
+                          disabled={pwLoading}
+                        />
+                        <button type="button" className="pw-toggle-btn" onClick={() => setShowNewPw(v => !v)} tabIndex={-1}>
+                          <EyeIcon open={showNewPw} />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="form-group">
+                      <label htmlFor="admin-confirmNewPassword">🔒 Confirm New Password</label>
+                      <div className="pw-input-wrapper">
+                        <input
+                          type={showConfirmPw ? 'text' : 'password'}
+                          id="admin-confirmNewPassword"
+                          value={pwForm.confirmNewPassword}
+                          onChange={e => setPwForm(p => ({ ...p, confirmNewPassword: e.target.value }))}
+                          className="form-input"
+                          placeholder="Re-enter new password"
+                          required
+                          disabled={pwLoading}
+                        />
+                        <button type="button" className="pw-toggle-btn" onClick={() => setShowConfirmPw(v => !v)} tabIndex={-1}>
+                          <EyeIcon open={showConfirmPw} />
+                        </button>
+                      </div>
+                      {pwForm.newPassword && pwForm.confirmNewPassword && (
+                        <small className={pwForm.newPassword === pwForm.confirmNewPassword ? 'field-match' : 'field-mismatch'}>
+                          {pwForm.newPassword === pwForm.confirmNewPassword ? '✅ Passwords match' : '❌ Passwords do not match'}
+                        </small>
+                      )}
+                    </div>
+
+                    <button type="submit" className="btn-primary" disabled={pwLoading} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', justifyContent: 'center' }}>
+                      {pwLoading ? 'Updating...' : '🔒 Update Password'}
+                    </button>
+                  </form>
+                </div>
               </div>
             )}
 

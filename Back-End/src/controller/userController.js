@@ -51,6 +51,39 @@ export const updateUserProfile = async (req, res) => {
   }
 };
 
+export const changePassword = async (req, res) => {
+  try {
+    const { oldPassword, newPassword } = req.body;
+
+    if (!oldPassword || !newPassword) {
+      return res.status(400).json({ status: 'error', message: 'Both old and new passwords are required.' });
+    }
+
+    if (newPassword.length < 6) {
+      return res.status(400).json({ status: 'error', message: 'New password must be at least 6 characters.' });
+    }
+
+    // Fetch user WITH password field for comparison
+    const user = await User.findById(req.userId).select('+password');
+    if (!user) return res.status(404).json({ status: 'error', message: 'User not found.' });
+
+    // Verify old password
+    const isMatch = await user.comparePassword(oldPassword);
+    if (!isMatch) {
+      return res.status(401).json({ status: 'error', message: 'Current password is incorrect.' });
+    }
+
+    // Set new password — the pre-save hook will hash it
+    user.password = newPassword;
+    await user.save();
+
+    res.status(200).json({ status: 'success', message: 'Password changed successfully.' });
+  } catch (error) {
+    console.error('Change password error:', error);
+    res.status(500).json({ status: 'error', message: 'Server error while changing password.' });
+  }
+};
+
 export const toggleSuspendUser = async (req, res) => {
   try {
     const { isSuspended, reason } = req.body;

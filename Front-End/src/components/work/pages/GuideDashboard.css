@@ -838,3 +838,65 @@
 
 /* === DISABLED BUTTON === */
 .disabled-btn { opacity: 0.6; cursor: not-allowed !important; }
+
+/* ── Guide Header Actions (Edit Profile + Change Password buttons) ── */
+.guide-header-actions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.change-pw-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.25rem;
+  background: rgba(255, 180, 0, 0.1);
+  color: #b45f1b;
+  border: 2px solid rgba(255, 180, 0, 0.3);
+  border-radius: 50px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.change-pw-btn:hover {
+  background: linear-gradient(135deg, #ffb400, #ff6b35);
+  color: #1e2e1e;
+  border-color: transparent;
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(255, 180, 0, 0.25);
+}
+
+/* ── Password toggle in modals ── */
+.pw-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.pw-input-wrapper .form-input {
+  padding-right: 3rem !important;
+  width: 100%;
+}
+
+.pw-toggle-btn {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #6c757d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: color 0.2s ease;
+  line-height: 1;
+}
+
+.pw-toggle-btn:hover { color: #1e4c24; }

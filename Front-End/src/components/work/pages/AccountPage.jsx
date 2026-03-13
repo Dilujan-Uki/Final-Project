@@ -4,10 +4,8 @@ import { newBookingsAPI } from '../../../services/api.js';
 import { getTourImage } from '../../../utils/tourImageMapping';
 import './AccountPage.css';
 
-// Badge helpers 
+// Badge helpers
 const getSeenKey = (tab, userId) => `ceylon_seen_${tab}_${userId}`;
-
-/** Count items created within last 24 h AND after the last-seen timestamp */
 const countNewItems = (items, lastSeenTs) => {
   const now = Date.now();
   const oneDayMs = 24 * 60 * 60 * 1000;
@@ -16,21 +14,28 @@ const countNewItems = (items, lastSeenTs) => {
     return (now - created) < oneDayMs && created > lastSeenTs;
   }).length;
 };
-
-/** Read the stored last-seen timestamp (0 if never) */
 const getLastSeen = (tab, userId) => {
-  try {
-    return parseInt(localStorage.getItem(getSeenKey(tab, userId)) || '0', 10);
-  } catch { return 0; }
+  try { return parseInt(localStorage.getItem(getSeenKey(tab, userId)) || '0', 10); }
+  catch { return 0; }
+};
+const markSeen = (tab, userId) => {
+  try { localStorage.setItem(getSeenKey(tab, userId), String(Date.now())); }
+  catch {}
 };
 
-/** Write current time as last-seen */
-const markSeen = (tab, userId) => {
-  try {
-    localStorage.setItem(getSeenKey(tab, userId), String(Date.now()));
-  } catch {}
-};
-// ─────────────────────────────────────────────────────────────────────────────
+const EyeIcon = ({ open }) =>
+  open ? (
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+      <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+      <line x1="1" y1="1" x2="23" y2="23"/>
+    </svg>
+  ) : (
+    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+      <circle cx="12" cy="12" r="3"/>
+    </svg>
+  );
 
 const AccountPage = () => {
   const [user, setUser] = useState(null);
@@ -42,16 +47,22 @@ const AccountPage = () => {
   const [loadingReviews, setLoadingReviews] = useState(false);
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({
-    name: '',
-    email: '',
-    phone: '',
-    address: '',
+    name: '', email: '', phone: '', address: '',
     preferences: { tourTypes: [], language: 'English' }
   });
   const [updateSuccess, setUpdateSuccess] = useState(false);
   const [updateError, setUpdateError] = useState('');
 
-  // Badge counts (new items within 24 h that the user hasn't seen yet)
+  // Change password state
+  const [pwForm, setPwForm] = useState({ oldPassword: '', newPassword: '', confirmNewPassword: '' });
+  const [showOldPw, setShowOldPw] = useState(false);
+  const [showNewPw, setShowNewPw] = useState(false);
+  const [showConfirmPw, setShowConfirmPw] = useState(false);
+  const [pwLoading, setPwLoading] = useState(false);
+  const [pwSuccess, setPwSuccess] = useState('');
+  const [pwError, setPwError] = useState('');
+
+  // Badge counts
   const [newBookingsCount, setNewBookingsCount] = useState(0);
   const [newReviewsCount, setNewReviewsCount] = useState(0);
 
@@ -61,7 +72,6 @@ const AccountPage = () => {
     const userData = localStorage.getItem('user');
     const token = localStorage.getItem('token');
     if (!userData || !token) { navigate('/login'); return; }
-
     try {
       const parsedUser = JSON.parse(userData);
       setUser(parsedUser);
@@ -81,25 +91,13 @@ const AccountPage = () => {
     }
   }, [navigate]);
 
-  // Recalculate badges whenever data or tab changes
   useEffect(() => {
     if (!user) return;
     const uid = user._id || user.id;
-
-    if (activeTab === 'bookings') {
-      // User is looking at bookings → mark as seen, clear badge
-      markSeen('bookings', uid);
-      setNewBookingsCount(0);
-    } else {
-      setNewBookingsCount(countNewItems(bookings, getLastSeen('bookings', uid)));
-    }
-
-    if (activeTab === 'reviews') {
-      markSeen('reviews', uid);
-      setNewReviewsCount(0);
-    } else {
-      setNewReviewsCount(countNewItems(reviews, getLastSeen('reviews', uid)));
-    }
+    if (activeTab === 'bookings') { markSeen('bookings', uid); setNewBookingsCount(0); }
+    else setNewBookingsCount(countNewItems(bookings, getLastSeen('bookings', uid)));
+    if (activeTab === 'reviews') { markSeen('reviews', uid); setNewReviewsCount(0); }
+    else setNewReviewsCount(countNewItems(reviews, getLastSeen('reviews', uid)));
   }, [activeTab, bookings, reviews, user]);
 
   const fetchUserBookings = async (token, userId) => {
@@ -111,9 +109,7 @@ const AccountPage = () => {
     } catch (error) {
       console.error('Error fetching bookings:', error);
       setBookings([]);
-    } finally {
-      setLoadingBookings(false);
-    }
+    } finally { setLoadingBookings(false); }
   };
 
   const handleCancelBooking = async (bookingId) => {
@@ -131,9 +127,7 @@ const AccountPage = () => {
       } else {
         alert(data.message || 'Failed to cancel booking');
       }
-    } catch {
-      alert('Error cancelling booking');
-    }
+    } catch { alert('Error cancelling booking'); }
   };
 
   const fetchUserReviews = async (token, userId) => {
@@ -143,17 +137,12 @@ const AccountPage = () => {
         headers: { 'Authorization': `Bearer ${token}` }
       });
       const data = await response.json();
-      if (response.ok && data.status === 'success') {
-        setReviews(data.data || []);
-      } else {
-        setReviews([]);
-      }
+      if (response.ok && data.status === 'success') setReviews(data.data || []);
+      else setReviews([]);
     } catch (error) {
       console.error('Error fetching reviews:', error);
       setReviews([]);
-    } finally {
-      setLoadingReviews(false);
-    }
+    } finally { setLoadingReviews(false); }
   };
 
   const handleInputChange = (e) => {
@@ -187,10 +176,8 @@ const AccountPage = () => {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
         body: JSON.stringify({
-          name: editForm.name,
-          phone: editForm.phone,
-          address: editForm.address,
-          preferences: editForm.preferences
+          name: editForm.name, phone: editForm.phone,
+          address: editForm.address, preferences: editForm.preferences
         })
       });
       const data = await response.json();
@@ -207,6 +194,43 @@ const AccountPage = () => {
     } catch (error) {
       console.error('Update error:', error);
       setUpdateError('Network error. Please try again.');
+    }
+  };
+
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    setPwError('');
+    setPwSuccess('');
+
+    if (pwForm.newPassword.length < 6) {
+      setPwError('New password must be at least 6 characters.');
+      return;
+    }
+    if (pwForm.newPassword !== pwForm.confirmNewPassword) {
+      setPwError('New passwords do not match.');
+      return;
+    }
+
+    setPwLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:5000/api/users/change-password', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ oldPassword: pwForm.oldPassword, newPassword: pwForm.newPassword })
+      });
+      const data = await response.json();
+      if (data.status === 'success') {
+        setPwSuccess('Password changed successfully!');
+        setPwForm({ oldPassword: '', newPassword: '', confirmNewPassword: '' });
+        setTimeout(() => setPwSuccess(''), 4000);
+      } else {
+        setPwError(data.message || 'Failed to change password.');
+      }
+    } catch {
+      setPwError('Network error. Please try again.');
+    } finally {
+      setPwLoading(false);
     }
   };
 
@@ -230,9 +254,7 @@ const AccountPage = () => {
       if (data.status === 'success') {
         alert('Review deleted successfully');
         fetchUserReviews(token, user._id || user.id);
-      } else {
-        alert('Failed to delete review');
-      }
+      } else { alert('Failed to delete review'); }
     } catch (error) {
       console.error('Error deleting review:', error);
       alert('Error deleting review');
@@ -262,7 +284,6 @@ const AccountPage = () => {
   return (
     <div className="account-page">
       <div className="container">
-        {/* Header */}
         <div className="account-header">
           <h1 className="account-title">My Account</h1>
           <p className="account-subtitle">Welcome back, {user?.name?.split(' ')[0]}!</p>
@@ -272,9 +293,7 @@ const AccountPage = () => {
           {/* Sidebar Navigation */}
           <aside className="account-sidebar">
             <div className="sidebar-profile">
-              <div className="profile-avatar">
-                {user?.name?.charAt(0).toUpperCase()}
-              </div>
+              <div className="profile-avatar">{user?.name?.charAt(0).toUpperCase()}</div>
               <div className="profile-info">
                 <h3 className="profile-name">{user?.name}</h3>
                 <p className="profile-email">{user?.email}</p>
@@ -282,61 +301,37 @@ const AccountPage = () => {
             </div>
 
             <nav className="sidebar-nav">
-              <button
-                className={`nav-item ${activeTab === 'profile' ? 'active' : ''}`}
-                onClick={() => setActiveTab('profile')}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                  <circle cx="12" cy="7" r="4"></circle>
-                </svg>
+              <button className={`nav-item ${activeTab === 'profile' ? 'active' : ''}`} onClick={() => setActiveTab('profile')}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                 Profile
               </button>
 
-              <button
-                className={`nav-item ${activeTab === 'bookings' ? 'active' : ''}`}
-                onClick={() => setActiveTab('bookings')}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
-                </svg>
+              <button className={`nav-item ${activeTab === 'bookings' ? 'active' : ''}`} onClick={() => setActiveTab('bookings')}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
                 My Bookings
-                {newBookingsCount > 0 && (
-                  <span className="nav-badge nav-badge--new">{newBookingsCount}</span>
-                )}
+                {newBookingsCount > 0 && <span className="nav-badge nav-badge--new">{newBookingsCount}</span>}
               </button>
 
-              <button
-                className={`nav-item ${activeTab === 'reviews' ? 'active' : ''}`}
-                onClick={() => setActiveTab('reviews')}
-              >
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                </svg>
+              <button className={`nav-item ${activeTab === 'reviews' ? 'active' : ''}`} onClick={() => setActiveTab('reviews')}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
                 My Reviews
-                {newReviewsCount > 0 && (
-                  <span className="nav-badge nav-badge--new">{newReviewsCount}</span>
-                )}
+                {newReviewsCount > 0 && <span className="nav-badge nav-badge--new">{newReviewsCount}</span>}
+              </button>
+
+              <button className={`nav-item ${activeTab === 'changePassword' ? 'active' : ''}`} onClick={() => setActiveTab('changePassword')}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                Change Password
               </button>
 
               {isAdmin && (
                 <Link to="/admin" className="nav-item admin-link">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <rect x="3" y="3" width="7" height="9"></rect>
-                    <rect x="14" y="3" width="7" height="5"></rect>
-                    <rect x="3" y="15" width="7" height="6"></rect>
-                    <rect x="14" y="13" width="7" height="8"></rect>
-                  </svg>
+                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="7" height="9"/><rect x="14" y="3" width="7" height="5"/><rect x="3" y="15" width="7" height="6"/><rect x="14" y="13" width="7" height="8"/></svg>
                   Admin Dashboard
                 </Link>
               )}
 
               <button className="nav-item logout-btn" onClick={handleLogout}>
-                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                  <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                  <polyline points="16 17 21 12 16 7"></polyline>
-                  <line x1="21" y1="12" x2="9" y2="12"></line>
-                </svg>
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
                 Logout
               </button>
             </nav>
@@ -350,18 +345,12 @@ const AccountPage = () => {
               <div className="account-card">
                 <div className="card-header">
                   <h2 className="card-title">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                      <circle cx="12" cy="7" r="4"></circle>
-                    </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
                     Personal Information
                   </h2>
                   {!isEditing && (
                     <button className="edit-profile-btn" onClick={() => setIsEditing(true)}>
-                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                        <path d="M20 14.66V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5.34"></path>
-                        <polygon points="18 2 22 6 12 16 8 16 8 12 18 2"></polygon>
-                      </svg>
+                      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 14.66V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5.34"/><polygon points="18 2 22 6 12 16 8 16 8 12 18 2"/></svg>
                       Edit Profile
                     </button>
                   )}
@@ -372,35 +361,54 @@ const AccountPage = () => {
 
                 {isEditing ? (
                   <div className="edit-profile-form">
-                    <div className="form-group">
-                      <label htmlFor="name">Full Name</label>
-                      <input type="text" id="name" name="name" value={editForm.name} onChange={handleInputChange} className="form-input" />
+                    <div className="edit-form-grid">
+                      <div className="form-group">
+                        <label htmlFor="edit-name">
+                          <span className="label-icon">👤</span> Full Name
+                        </label>
+                        <input type="text" id="edit-name" name="name" value={editForm.name} onChange={handleInputChange} className="form-input" placeholder="Your full name" />
+                      </div>
+
+                      <div className="form-group">
+                        <label htmlFor="edit-email">
+                          <span className="label-icon">✉️</span> Email Address
+                        </label>
+                        <input type="email" id="edit-email" name="email" value={editForm.email} disabled className="form-input disabled" />
+                        <small className="field-note">🔒 Email cannot be changed</small>
+                      </div>
+
+                      <div className="form-group">
+                        <label htmlFor="edit-phone">
+                          <span className="label-icon">📱</span> Phone Number
+                        </label>
+                        <input type="tel" id="edit-phone" name="phone" value={editForm.phone} onChange={handleInputChange} className="form-input" placeholder="0771234567" />
+                      </div>
+
+                      <div className="form-group">
+                        <label htmlFor="edit-address">
+                          <span className="label-icon">📍</span> Address
+                        </label>
+                        <input type="text" id="edit-address" name="address" value={editForm.address} onChange={handleInputChange} className="form-input" placeholder="Your address" />
+                      </div>
+
+                      <div className="form-group">
+                        <label>
+                          <span className="label-icon">🌐</span> Preferred Language
+                        </label>
+                        <select name="language" value={editForm.preferences.language} onChange={handlePreferenceChange} className="form-select">
+                          <option value="English">English</option>
+                          <option value="Sinhala">Sinhala</option>
+                          <option value="Tamil">Tamil</option>
+                          <option value="French">French</option>
+                          <option value="German">German</option>
+                        </select>
+                      </div>
                     </div>
+
                     <div className="form-group">
-                      <label htmlFor="email">Email Address</label>
-                      <input type="email" id="email" name="email" value={editForm.email} disabled className="form-input disabled" />
-                      <small className="field-note">Email cannot be changed</small>
-                    </div>
-                    <div className="form-group">
-                      <label htmlFor="phone">Phone Number</label>
-                      <input type="tel" id="phone" name="phone" value={editForm.phone} onChange={handleInputChange} className="form-input" placeholder="Enter your phone number" />
-                    </div>
-                    <div className="form-group">
-                      <label htmlFor="address">Address</label>
-                      <input type="text" id="address" name="address" value={editForm.address} onChange={handleInputChange} className="form-input" placeholder="Enter your address" />
-                    </div>
-                    <div className="form-group">
-                      <label>Preferred Language</label>
-                      <select name="language" value={editForm.preferences.language} onChange={handlePreferenceChange} className="form-select">
-                        <option value="English">English</option>
-                        <option value="Sinhala">Sinhala</option>
-                        <option value="Tamil">Tamil</option>
-                        <option value="French">French</option>
-                        <option value="German">German</option>
-                      </select>
-                    </div>
-                    <div className="form-group">
-                      <label>Interested Tour Types</label>
+                      <label>
+                        <span className="label-icon">🗺️</span> Interested Tour Types
+                      </label>
                       <div className="checkbox-group">
                         {tourTypeOptions.map(type => (
                           <label key={type} className="checkbox">
@@ -410,8 +418,12 @@ const AccountPage = () => {
                         ))}
                       </div>
                     </div>
+
                     <div className="form-actions">
-                      <button className="btn-primary save-btn" onClick={handleUpdateProfile}>Save Changes</button>
+                      <button className="btn-primary save-btn" onClick={handleUpdateProfile}>
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>
+                        Save Changes
+                      </button>
                       <button className="btn-outline cancel-btn" onClick={() => {
                         setIsEditing(false);
                         setEditForm({
@@ -419,7 +431,9 @@ const AccountPage = () => {
                           address: user.address || '',
                           preferences: user.preferences || { tourTypes: [], language: 'English' }
                         });
-                      }}>Cancel</button>
+                      }}>
+                        Cancel
+                      </button>
                     </div>
                   </div>
                 ) : (
@@ -437,18 +451,119 @@ const AccountPage = () => {
                 )}
 
                 <div className="quick-stats">
-                  <div className="stat-item">
-                    <span className="stat-number">{bookings.length}</span>
-                    <span className="stat-label">Total Bookings</span>
+                  <div className="stat-item"><span className="stat-number">{bookings.length}</span><span className="stat-label">Total Bookings</span></div>
+                  <div className="stat-item"><span className="stat-number">{reviews.length}</span><span className="stat-label">Reviews</span></div>
+                  <div className="stat-item"><span className="stat-number">{bookings.filter(b => b.status === 'completed').length}</span><span className="stat-label">Tours Completed</span></div>
+                </div>
+              </div>
+            )}
+
+            {/* ── Change Password Tab ── */}
+            {activeTab === 'changePassword' && (
+              <div className="account-card">
+                <div className="card-header">
+                  <h2 className="card-title">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                    Change Password
+                  </h2>
+                </div>
+
+                <div className="change-password-container">
+                  <div className="change-password-info">
+                    <div className="pw-info-icon">🔐</div>
+                    <p>For your security, please enter your current password before setting a new one.</p>
+                    <ul className="pw-requirements">
+                      <li>At least 6 characters long</li>
+                      <li>Use a mix of letters and numbers for stronger security</li>
+                      <li>Don't reuse recent passwords</li>
+                    </ul>
                   </div>
-                  <div className="stat-item">
-                    <span className="stat-number">{reviews.length}</span>
-                    <span className="stat-label">Reviews</span>
-                  </div>
-                  <div className="stat-item">
-                    <span className="stat-number">{bookings.filter(b => b.status === 'completed').length}</span>
-                    <span className="stat-label">Tours Completed</span>
-                  </div>
+
+                  <form className="change-password-form" onSubmit={handleChangePassword}>
+                    {pwSuccess && <div className="success-message">✅ {pwSuccess}</div>}
+                    {pwError && <div className="error-message">❌ {pwError}</div>}
+
+                    <div className="form-group">
+                      <label htmlFor="oldPassword">
+                        <span className="label-icon">🔑</span> Current Password
+                      </label>
+                      <div className="pw-input-wrapper">
+                        <input
+                          type={showOldPw ? 'text' : 'password'}
+                          id="oldPassword"
+                          value={pwForm.oldPassword}
+                          onChange={e => setPwForm(p => ({ ...p, oldPassword: e.target.value }))}
+                          className="form-input"
+                          placeholder="Enter your current password"
+                          required
+                          disabled={pwLoading}
+                        />
+                        <button type="button" className="pw-toggle-btn" onClick={() => setShowOldPw(v => !v)} tabIndex={-1}>
+                          <EyeIcon open={showOldPw} />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="pw-divider">
+                      <span>New Password</span>
+                    </div>
+
+                    <div className="form-group">
+                      <label htmlFor="newPassword">
+                        <span className="label-icon">🔒</span> New Password
+                      </label>
+                      <div className="pw-input-wrapper">
+                        <input
+                          type={showNewPw ? 'text' : 'password'}
+                          id="newPassword"
+                          value={pwForm.newPassword}
+                          onChange={e => setPwForm(p => ({ ...p, newPassword: e.target.value }))}
+                          className="form-input"
+                          placeholder="Enter new password (min. 6 characters)"
+                          required
+                          minLength="6"
+                          disabled={pwLoading}
+                        />
+                        <button type="button" className="pw-toggle-btn" onClick={() => setShowNewPw(v => !v)} tabIndex={-1}>
+                          <EyeIcon open={showNewPw} />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div className="form-group">
+                      <label htmlFor="confirmNewPassword">
+                        <span className="label-icon">🔒</span> Confirm New Password
+                      </label>
+                      <div className="pw-input-wrapper">
+                        <input
+                          type={showConfirmPw ? 'text' : 'password'}
+                          id="confirmNewPassword"
+                          value={pwForm.confirmNewPassword}
+                          onChange={e => setPwForm(p => ({ ...p, confirmNewPassword: e.target.value }))}
+                          className="form-input"
+                          placeholder="Re-enter new password"
+                          required
+                          disabled={pwLoading}
+                        />
+                        <button type="button" className="pw-toggle-btn" onClick={() => setShowConfirmPw(v => !v)} tabIndex={-1}>
+                          <EyeIcon open={showConfirmPw} />
+                        </button>
+                      </div>
+                      {pwForm.newPassword && pwForm.confirmNewPassword && (
+                        <small className={pwForm.newPassword === pwForm.confirmNewPassword ? 'field-match' : 'field-mismatch'}>
+                          {pwForm.newPassword === pwForm.confirmNewPassword ? '✅ Passwords match' : '❌ Passwords do not match'}
+                        </small>
+                      )}
+                    </div>
+
+                    <button type="submit" className="btn-primary save-btn" disabled={pwLoading}>
+                      {pwLoading ? (
+                        <><span className="btn-spinner"></span> Updating...</>
+                      ) : (
+                        <><svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg> Update Password</>
+                      )}
+                    </button>
+                  </form>
                 </div>
               </div>
             )}
@@ -458,24 +573,17 @@ const AccountPage = () => {
               <div className="account-card">
                 <div className="card-header">
                   <h2 className="card-title">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
-                    </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
                     My Bookings
                   </h2>
                   <Link to="/tours" className="view-all-link">Book New Tour</Link>
                 </div>
 
                 {loadingBookings ? (
-                  <div className="loading-state">
-                    <div className="loading-spinner"></div>
-                    <p>Loading your bookings...</p>
-                  </div>
+                  <div className="loading-state"><div className="loading-spinner"></div><p>Loading your bookings...</p></div>
                 ) : bookings.length === 0 ? (
                   <div className="empty-state">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                      <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
-                    </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
                     <h3>No Bookings Yet</h3>
                     <p>Start your Sri Lankan adventure today!</p>
                     <Link to="/tours" className="btn-primary">Browse Tours</Link>
@@ -484,7 +592,6 @@ const AccountPage = () => {
                   <div className="bookings-grid">
                     {bookings.map((booking) => {
                       const tourImage = getTourImage({ name: booking.tourName });
-                      // Highlight cards created within last 24 h
                       const isNew = (Date.now() - new Date(booking.createdAt).getTime()) < 24 * 60 * 60 * 1000;
                       return (
                         <div key={booking._id} className={`booking-card${isNew ? ' booking-card--new' : ''}`}>
@@ -503,10 +610,7 @@ const AccountPage = () => {
                               <div className="meta-item"><span className="meta-icon">⏱️</span><span>{booking.duration} days</span></div>
                             </div>
                             {booking.guideName && (
-                              <div className="booking-guide">
-                                <span className="guide-icon">👤</span>
-                                <span>Guide: {booking.guideName}</span>
-                              </div>
+                              <div className="booking-guide"><span className="guide-icon">👤</span><span>Guide: {booking.guideName}</span></div>
                             )}
                             <div className="booking-price">
                               <span className="price-label">Total:</span>
@@ -538,24 +642,17 @@ const AccountPage = () => {
               <div className="account-card">
                 <div className="card-header">
                   <h2 className="card-title">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                    </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
                     My Reviews
                   </h2>
                   <Link to="/reviews" className="view-all-link">Write New Review</Link>
                 </div>
 
                 {loadingReviews ? (
-                  <div className="loading-state">
-                    <div className="loading-spinner"></div>
-                    <p>Loading your reviews...</p>
-                  </div>
+                  <div className="loading-state"><div className="loading-spinner"></div><p>Loading your reviews...</p></div>
                 ) : reviews.length === 0 ? (
                   <div className="empty-state">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                      <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                    </svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
                     <h3>No Reviews Yet</h3>
                     <p>Share your experience with other travelers!</p>
                     <Link to="/reviews" className="btn-primary">Write a Review</Link>
@@ -596,7 +693,6 @@ const AccountPage = () => {
                 )}
               </div>
             )}
-
           </main>
         </div>
       </div>

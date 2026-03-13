@@ -16,6 +16,15 @@ const GuideDashboard = () => {
   const [showCompletionModal, setShowCompletionModal] = useState(false);
   const [completionNote, setCompletionNote] = useState('');
   const [completingAssignment, setCompletingAssignment] = useState(null);
+  // Change password modal
+  const [showChangePassword, setShowChangePassword] = useState(false);
+  const [pwForm, setPwForm] = useState({ oldPassword: '', newPassword: '', confirmNewPassword: '' });
+  const [showOldPw, setShowOldPw] = useState(false);
+  const [showNewPw, setShowNewPw] = useState(false);
+  const [showConfirmPw, setShowConfirmPw] = useState(false);
+  const [pwLoading, setPwLoading] = useState(false);
+  const [pwSuccess, setPwSuccess] = useState('');
+  const [pwError, setPwError] = useState('');
   const navigate = useNavigate();
 
   const calculateStats = useCallback((assignmentsData) => {
@@ -128,6 +137,46 @@ const GuideDashboard = () => {
 
   const isSuspended = guide?.isSuspended;
 
+  const EyeIcon = ({ open }) =>
+    open ? (
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
+        <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
+        <line x1="1" y1="1" x2="23" y2="23"/>
+      </svg>
+    ) : (
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+        <circle cx="12" cy="12" r="3"/>
+      </svg>
+    );
+
+  const handleChangePassword = async (e) => {
+    e.preventDefault();
+    setPwError('');
+    setPwSuccess('');
+    if (pwForm.newPassword.length < 6) { setPwError('New password must be at least 6 characters.'); return; }
+    if (pwForm.newPassword !== pwForm.confirmNewPassword) { setPwError('New passwords do not match.'); return; }
+    setPwLoading(true);
+    try {
+      const token = localStorage.getItem('token');
+      const response = await fetch('http://localhost:5000/api/users/change-password', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ oldPassword: pwForm.oldPassword, newPassword: pwForm.newPassword })
+      });
+      const data = await response.json();
+      if (data.status === 'success') {
+        setPwSuccess('Password changed successfully!');
+        setPwForm({ oldPassword: '', newPassword: '', confirmNewPassword: '' });
+        setTimeout(() => { setPwSuccess(''); }, 4000);
+      } else {
+        setPwError(data.message || 'Failed to change password.');
+      }
+    } catch { setPwError('Network error. Please try again.'); }
+    finally { setPwLoading(false); }
+  };
+
   return (
     <div className="guide-dashboard">
       <div className="container">
@@ -150,10 +199,16 @@ const GuideDashboard = () => {
                 <span className="rating-text">{(guide?.rating || 0).toFixed(1)} &bull; {guide?.totalReviews || 0} reviews</span>
               </div>
             </div>
-            <button className="edit-profile-btn" onClick={() => setShowProfileEdit(true)}>
-              <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 14.66V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5.34"/><polygon points="18 2 22 6 12 16 8 16 8 12 18 2"/></svg>
-              Edit Profile
-            </button>
+            <div className="guide-header-actions">
+              <button className="edit-profile-btn" onClick={() => setShowProfileEdit(true)}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 14.66V20a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h5.34"/><polygon points="18 2 22 6 12 16 8 16 8 12 18 2"/></svg>
+                Edit Profile
+              </button>
+              <button className="change-pw-btn" onClick={() => setShowChangePassword(true)}>
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+                Change Password
+              </button>
+            </div>
           </div>
         </div>
 
@@ -351,6 +406,86 @@ const GuideDashboard = () => {
                     <p className="earnings-note">Based on daily rate of $70</p>
                   </div>
                 )}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Change Password Modal */}
+        {showChangePassword && (
+          <div className="modal-overlay" onClick={() => { setShowChangePassword(false); setPwError(''); setPwSuccess(''); }}>
+            <div className="modal-content" onClick={e => e.stopPropagation()} style={{ maxWidth: '480px' }}>
+              <div className="modal-header">
+                <h2>🔒 Change Password</h2>
+                <button className="modal-close" onClick={() => { setShowChangePassword(false); setPwError(''); setPwSuccess(''); }}>×</button>
+              </div>
+              <div className="modal-body">
+                <form onSubmit={handleChangePassword} style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+                  {pwSuccess && <div className="success-message" style={{ marginBottom: 0 }}>✅ {pwSuccess}</div>}
+                  {pwError && <div style={{ background: '#f8d7da', color: '#721c24', padding: '0.9rem 1.2rem', borderRadius: '10px', fontSize: '0.9rem' }}>❌ {pwError}</div>}
+
+                  <div className="form-group">
+                    <label>🔑 Current Password</label>
+                    <div className="pw-input-wrapper">
+                      <input
+                        type={showOldPw ? 'text' : 'password'}
+                        value={pwForm.oldPassword}
+                        onChange={e => setPwForm(p => ({ ...p, oldPassword: e.target.value }))}
+                        className="form-input" placeholder="Enter your current password"
+                        required disabled={pwLoading}
+                      />
+                      <button type="button" className="pw-toggle-btn" onClick={() => setShowOldPw(v => !v)} tabIndex={-1}>
+                        <EyeIcon open={showOldPw} />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="form-group">
+                    <label>🔒 New Password</label>
+                    <div className="pw-input-wrapper">
+                      <input
+                        type={showNewPw ? 'text' : 'password'}
+                        value={pwForm.newPassword}
+                        onChange={e => setPwForm(p => ({ ...p, newPassword: e.target.value }))}
+                        className="form-input" placeholder="Min. 6 characters"
+                        required minLength="6" disabled={pwLoading}
+                      />
+                      <button type="button" className="pw-toggle-btn" onClick={() => setShowNewPw(v => !v)} tabIndex={-1}>
+                        <EyeIcon open={showNewPw} />
+                      </button>
+                    </div>
+                  </div>
+
+                  <div className="form-group">
+                    <label>🔒 Confirm New Password</label>
+                    <div className="pw-input-wrapper">
+                      <input
+                        type={showConfirmPw ? 'text' : 'password'}
+                        value={pwForm.confirmNewPassword}
+                        onChange={e => setPwForm(p => ({ ...p, confirmNewPassword: e.target.value }))}
+                        className="form-input" placeholder="Re-enter new password"
+                        required disabled={pwLoading}
+                      />
+                      <button type="button" className="pw-toggle-btn" onClick={() => setShowConfirmPw(v => !v)} tabIndex={-1}>
+                        <EyeIcon open={showConfirmPw} />
+                      </button>
+                    </div>
+                    {pwForm.newPassword && pwForm.confirmNewPassword && (
+                      <small style={{ marginTop: '0.35rem', display: 'block', fontSize: '0.8rem', color: pwForm.newPassword === pwForm.confirmNewPassword ? '#155724' : '#721c24' }}>
+                        {pwForm.newPassword === pwForm.confirmNewPassword ? '✅ Passwords match' : '❌ Passwords do not match'}
+                      </small>
+                    )}
+                  </div>
+
+                  <div className="form-actions">
+                    <button type="submit" className="btn-primary" disabled={pwLoading}>
+                      {pwLoading ? 'Updating...' : '🔒 Update Password'}
+                    </button>
+                    <button type="button" className="btn-outline" onClick={() => { setShowChangePassword(false); setPwError(''); setPwSuccess(''); }}>
+                      Cancel
+                    </button>
+                  </div>
+                </form>
               </div>
             </div>
           </div>

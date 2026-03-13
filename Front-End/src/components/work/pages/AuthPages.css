@@ -399,3 +399,39 @@ auth-page {
     padding: 0.8rem;
   }
 }
+/* ── Password show/hide toggle ── */
+.password-input-wrapper {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-input-wrapper .form-input {
+  padding-right: 3rem;
+  width: 100%;
+}
+
+.password-toggle-btn {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #6c757d;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: color 0.2s ease;
+  line-height: 1;
+}
+
+.password-toggle-btn:hover {
+  color: #1e4c24;
+}
+
+.password-toggle-btn svg {
+  display: block;
+}
