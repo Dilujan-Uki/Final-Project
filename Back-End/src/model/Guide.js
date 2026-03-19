@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import bcrypt from 'bcryptjs';
 
 const guideSchema = new mongoose.Schema({
   name: {
@@ -99,10 +100,23 @@ const guideSchema = new mongoose.Schema({
   }
 });
 
-guideSchema.pre('save', function (next) {
+guideSchema.pre('save', async function (next) {
   this.updatedAt = Date.now();
+  // Hash password if it has been modified
+  if (this.isModified('password')) {
+    try {
+      const salt = await bcrypt.genSalt(10);
+      this.password = await bcrypt.hash(this.password, salt);
+    } catch (error) {
+      return next(error);
+    }
+  }
   next();
 });
+
+guideSchema.methods.comparePassword = async function (candidatePassword) {
+  return await bcrypt.compare(candidatePassword, this.password);
+};
 
 const Guide = mongoose.model('Guide', guideSchema);
 export default Guide;

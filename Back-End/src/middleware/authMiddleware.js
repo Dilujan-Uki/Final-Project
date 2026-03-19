@@ -1,5 +1,6 @@
 import jwt from 'jsonwebtoken';
 import User from '../model/User.js';
+import Guide from '../model/Guide.js';
 
 export const protect = async (req, res, next) => {
   let token;
@@ -8,9 +9,18 @@ export const protect = async (req, res, next) => {
     try {
       token = req.headers.authorization.split(' ')[1];
       const decoded = jwt.verify(token, process.env.JWT_SECRET || 'ceylon-tours-secret-key');
-      const user = await User.findById(decoded.id).select('-password');
 
+      // Try User collection first
+      let user = await User.findById(decoded.id).select('-password');
+
+      // If not found in User collection, try Guide collection (fallback for standalone guide accounts)
       if (!user) {
+        const guide = await Guide.findById(decoded.id).select('-password');
+        if (guide) {
+          req.user = { _id: guide._id, name: guide.name, email: guide.email, phone: guide.phone, role: 'guide', isSuspended: guide.isSuspended };
+          req.userId = decoded.id;
+          return next();
+        }
         return res.status(401).json({ status: 'error', message: 'User not found' });
       }
 
