@@ -102,7 +102,6 @@ const guideSchema = new mongoose.Schema({
 
 guideSchema.pre('save', async function (next) {
   this.updatedAt = Date.now();
-  // Hash password if it has been modified
   if (this.isModified('password')) {
     try {
       const salt = await bcrypt.genSalt(10);

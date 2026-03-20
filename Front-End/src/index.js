@@ -2,10 +2,8 @@ import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
 
-// Clear localStorage on initial page load (npm start)
-// This ensures no previous user session persists
+
 const clearStorageOnStart = () => {
-  // Check if this is a fresh start (not a refresh)
   const isFreshStart = !sessionStorage.getItem('app_initialized');
   
   if (isFreshStart) {

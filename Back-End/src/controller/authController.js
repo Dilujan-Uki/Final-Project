@@ -23,7 +23,6 @@ export const loginUser = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    // First, check the User collection (covers regular users, admins, and guide user accounts)
     const user = await User.findOne({ email });
     if (user) {
       const isPasswordValid = await user.comparePassword(password);
@@ -33,7 +32,6 @@ export const loginUser = async (req, res) => {
       return res.status(200).json({ status: 'success', message: 'Login successful', data: { _id: user._id, name: user.name, email: user.email, phone: user.phone, role: user.role, token } });
     }
 
-    // Fallback: check Guide collection directly (in case a guide exists without a linked User account)
     const guide = await Guide.findOne({ email });
     if (guide) {
       const isPasswordValid = await guide.comparePassword(password);
