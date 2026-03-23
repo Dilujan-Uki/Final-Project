@@ -1017,3 +1017,135 @@
     align-self: flex-start;
   }
 }
+/* ── Main tabs (Requests vs Assignments) ── */
+.main-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin: 1.5rem 0 1rem;
+  border-bottom: 2px solid #e5e7eb;
+  padding-bottom: 0;
+}
+.main-tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 1.25rem;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: #6b7280;
+  border-bottom: 3px solid transparent;
+  margin-bottom: -2px;
+  border-radius: 0;
+  transition: color 0.2s, border-color 0.2s;
+}
+.main-tab-btn:hover { color: #111827; }
+.main-tab-btn.active {
+  color: #d97706;
+  border-bottom-color: #d97706;
+  font-weight: 600;
+}
+.notif-badge {
+  background: #ef4444;
+  color: #fff;
+  border-radius: 999px;
+  padding: 1px 7px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  min-width: 20px;
+  text-align: center;
+}
+
+/* ── Booking Requests Grid ── */
+.booking-requests-section { margin-top: 1rem; }
+.requests-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+  gap: 1.25rem;
+}
+.request-card {
+  background: #fff;
+  border-radius: 12px;
+  border: 1px solid #e5e7eb;
+  padding: 1.25rem;
+  box-shadow: 0 1px 4px rgba(0,0,0,.06);
+  transition: box-shadow 0.2s;
+}
+.request-card:hover { box-shadow: 0 4px 12px rgba(0,0,0,.1); }
+.request-card--pending { border-left: 4px solid #f59e0b; }
+.request-card--accepted { border-left: 4px solid #10b981; }
+.request-card--rejected { border-left: 4px solid #ef4444; opacity: 0.75; }
+
+.request-actions {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1rem;
+  flex-wrap: wrap;
+}
+.accept-btn {
+  background: #10b981 !important;
+  border-color: #10b981 !important;
+  flex: 1;
+}
+.accept-btn:hover { background: #059669 !important; }
+.reject-btn {
+  color: #ef4444 !important;
+  border-color: #ef4444 !important;
+  flex: 1;
+}
+.reject-btn:hover { background: #fef2f2 !important; }
+
+.rejection-note {
+  background: #fef2f2;
+  border-radius: 6px;
+  padding: 0.6rem 0.85rem;
+  font-size: 0.85rem;
+  color: #7f1d1d;
+  margin-top: 0.75rem;
+}
+.request-meta {
+  font-size: 0.78rem;
+  color: #9ca3af;
+  margin-top: 0.75rem;
+  padding-top: 0.5rem;
+  border-top: 1px solid #f3f4f6;
+}
+
+/* ── Status badge extras ── */
+.status-badge.status-pending { background: #fef3c7; color: #92400e; }
+.status-badge.status-accepted { background: #d1fae5; color: #065f46; }
+.status-badge.status-rejected { background: #fee2e2; color: #991b1b; }
+
+/* ── BookingPage: field hints ── */
+.field-error { color: #dc2626; font-size: 0.8rem; margin-top: 0.3rem; }
+.field-success { color: #16a34a; font-size: 0.8rem; margin-top: 0.3rem; }
+.field-hint { color: #6b7280; font-size: 0.8rem; margin-top: 0.3rem; }
+.input-error { border-color: #dc2626 !important; }
+
+/* ── Guide request info banner (BookingPage) ── */
+.info-banner {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  padding: 0.85rem 1.1rem;
+  border-radius: 8px;
+  margin-bottom: 1.25rem;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+.guide-request-banner {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  color: #1e40af;
+}
+
+/* ── TourGuidesPage: check dates btn ── */
+.btn-check-dates {
+  background: #f59e0b !important;
+  border-color: #f59e0b !important;
+  color: #fff !important;
+  font-size: 0.82rem !important;
+}
+.btn-check-dates:hover { background: #d97706 !important; }

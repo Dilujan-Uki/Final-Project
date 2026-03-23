@@ -5,10 +5,12 @@ import './GuideDashboard.css';
 const GuideDashboard = () => {
   const [guide, setGuide] = useState(null);
   const [assignments, setAssignments] = useState([]);
+  const [bookingRequests, setBookingRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [selectedAssignment, setSelectedAssignment] = useState(null);
   const [activeTab, setActiveTab] = useState('upcoming');
+  const [mainTab, setMainTab] = useState('assignments'); // 'assignments' | 'requests'
   const [stats, setStats] = useState({ totalEarnings: 0, completedTours: 0, upcomingTours: 0, ongoingTours: 0, totalCustomers: 0, averageRating: 0, monthlyEarnings: 0 });
   const [showProfileEdit, setShowProfileEdit] = useState(false);
   const [profileForm, setProfileForm] = useState({ phone: '', bio: '', languages: [], specialties: [], dailyRate: 0, availability: '' });
@@ -16,6 +18,9 @@ const GuideDashboard = () => {
   const [showCompletionModal, setShowCompletionModal] = useState(false);
   const [completionNote, setCompletionNote] = useState('');
   const [completingAssignment, setCompletingAssignment] = useState(null);
+  const [rejectModal, setRejectModal] = useState(null); // { requestId, customerName }
+  const [rejectReason, setRejectReason] = useState('');
+  const [requestActionLoading, setRequestActionLoading] = useState(false);
   const navigate = useNavigate();
 
   const calculateStats = useCallback((assignmentsData) => {
@@ -40,6 +45,40 @@ const GuideDashboard = () => {
     finally { setLoading(false); }
   }, [calculateStats]);
 
+  const fetchBookingRequests = useCallback(async () => {
+    const token = localStorage.getItem('token');
+    try {
+      const response = await fetch('http://localhost:5000/api/guides/booking-requests', { headers: { 'Authorization': `Bearer ${token}` } });
+      const data = await response.json();
+      if (data.status === 'success') setBookingRequests(data.data);
+    } catch (err) { console.error('Error fetching booking requests:', err); }
+  }, []);
+
+  const respondToRequest = async (requestId, action, reason = '') => {
+    const token = localStorage.getItem('token');
+    setRequestActionLoading(true);
+    try {
+      const response = await fetch(`http://localhost:5000/api/guides/booking-requests/${requestId}/respond`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json', 'Authorization': `Bearer ${token}` },
+        body: JSON.stringify({ action, reason })
+      });
+      const data = await response.json();
+      if (data.status === 'success') {
+        alert(data.message);
+        fetchBookingRequests();
+        setRejectModal(null);
+        setRejectReason('');
+      } else {
+        alert(data.message || 'Action failed');
+      }
+    } catch (err) {
+      alert('Failed to respond to booking request');
+    } finally {
+      setRequestActionLoading(false);
+    }
+  };
+
   const fetchGuideProfile = useCallback(async () => {
     const token = localStorage.getItem('token');
     try {
@@ -59,7 +98,11 @@ const GuideDashboard = () => {
     if (!token || user.role !== 'guide') { navigate('/login'); return; }
     fetchGuideProfile();
     fetchAssignments();
-  }, [navigate, fetchGuideProfile, fetchAssignments]);
+    fetchBookingRequests();
+    // Poll for new booking requests every 30 seconds
+    const interval = setInterval(fetchBookingRequests, 30000);
+    return () => clearInterval(interval);
+  }, [navigate, fetchGuideProfile, fetchAssignments, fetchBookingRequests]);
 
   const updateStatus = async (assignmentId, newStatus, note = '') => {
     const token = localStorage.getItem('token');
@@ -214,6 +257,105 @@ const GuideDashboard = () => {
           <p className="earnings-target">Target: $2,000</p>
         </div>
 
+        {/* ── Main Tab: Booking Requests vs Assignments ── */}
+        <div className="main-tabs">
+          <button
+            className={`main-tab-btn ${mainTab === 'requests' ? 'active' : ''}`}
+            onClick={() => setMainTab('requests')}
+          >
+            📬 Booking Requests
+            {bookingRequests.filter(r => r.status === 'pending').length > 0 && (
+              <span className="notif-badge">{bookingRequests.filter(r => r.status === 'pending').length}</span>
+            )}
+          </button>
+          <button
+            className={`main-tab-btn ${mainTab === 'assignments' ? 'active' : ''}`}
+            onClick={() => setMainTab('assignments')}
+          >
+            📋 My Assignments
+          </button>
+        </div>
+
+        {mainTab === 'requests' && (
+          <div className="booking-requests-section">
+            {bookingRequests.length === 0 ? (
+              <div className="empty-state">
+                <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07A19.5 19.5 0 0 1 4.69 13a19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 3.6 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+                <h3>No booking requests yet</h3>
+                <p>When a customer selects you as their guide, their request will appear here.</p>
+              </div>
+            ) : (
+              <div className="requests-grid">
+                {bookingRequests.map((req) => (
+                  <div key={req._id} className={`request-card request-card--${req.status}`}>
+                    <div className="request-header">
+                      <div>
+                        <h3 className="tour-name">{req.tourName}</h3>
+                        <span className="assignment-id">#{req._id.slice(-6).toUpperCase()}</span>
+                      </div>
+                      <span className={`status-badge status-${req.status}`}>
+                        {req.status === 'pending' ? '⏳ Pending' : req.status === 'accepted' ? '✅ Accepted' : '❌ Declined'}
+                      </span>
+                    </div>
+
+                    <div className="customer-info">
+                      <h4>Customer Details</h4>
+                      <div className="customer-details-grid">
+                        <div className="detail-item"><span className="detail-label">Name:</span><span className="detail-value">{req.customerName}</span></div>
+                        <div className="detail-item"><span className="detail-label">Email:</span><span className="detail-value">{req.customerEmail}</span></div>
+                        {req.customerPhone && <div className="detail-item"><span className="detail-label">Phone:</span><span className="detail-value">{req.customerPhone}</span></div>}
+                      </div>
+                    </div>
+
+                    <div className="tour-details">
+                      <div className="detail-row"><span>Start:</span><strong>{formatDate(req.startDate)}</strong></div>
+                      <div className="detail-row"><span>End:</span><strong>{formatDate(req.endDate)}</strong></div>
+                      <div className="detail-row"><span>Group:</span><strong>{req.participants} people</strong></div>
+                      <div className="detail-row"><span>Duration:</span><strong>{req.duration} days</strong></div>
+                    </div>
+
+                    {req.specialRequests && (
+                      <div className="special-requests"><strong>Special Requests:</strong><p>{req.specialRequests}</p></div>
+                    )}
+
+                    {req.status === 'pending' && (
+                      <div className="request-actions">
+                        <button
+                          className="btn-primary accept-btn"
+                          disabled={requestActionLoading}
+                          onClick={() => respondToRequest(req._id, 'accept')}
+                        >
+                          ✅ Accept Booking
+                        </button>
+                        <button
+                          className="btn-outline reject-btn"
+                          disabled={requestActionLoading}
+                          onClick={() => { setRejectModal({ requestId: req._id, customerName: req.customerName }); setRejectReason(''); }}
+                        >
+                          ❌ Decline
+                        </button>
+                      </div>
+                    )}
+
+                    {req.status === 'rejected' && req.rejectionReason && (
+                      <div className="rejection-note">
+                        <strong>Your reason:</strong> {req.rejectionReason}
+                      </div>
+                    )}
+
+                    <div className="request-meta">
+                      Received: {formatDate(req.createdAt)}
+                      {req.respondedAt && ` · Responded: ${formatDate(req.respondedAt)}`}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {mainTab === 'assignments' && (
+          <>
         <div className="dashboard-tabs">
           {[['upcoming','Upcoming'], ['ongoing','Ongoing'], ['completed','Completed'], ['all','All']].map(([tab, label]) => (
             <button key={tab} className={`tab-btn ${activeTab === tab ? 'active' : ''}`} onClick={() => setActiveTab(tab)}>
@@ -299,6 +441,45 @@ const GuideDashboard = () => {
                 </div>
               </div>
             ))}
+          </div>
+        )}
+
+          </>
+        )}
+
+        {/* Reject Request Modal */}
+        {rejectModal && (
+          <div className="modal-overlay" onClick={() => setRejectModal(null)}>
+            <div className="modal-content" onClick={e => e.stopPropagation()}>
+              <div className="modal-header">
+                <h2>Decline Booking Request</h2>
+                <button className="modal-close" onClick={() => setRejectModal(null)}>×</button>
+              </div>
+              <div className="modal-body">
+                <p>You are declining the booking request from <strong>{rejectModal.customerName}</strong>.</p>
+                <p style={{color:'#888', fontSize:'0.9rem', marginBottom:'1rem'}}>The customer will be notified and asked to choose another guide.</p>
+                <div className="form-group">
+                  <label>Reason (optional — will be shown to the customer)</label>
+                  <textarea
+                    value={rejectReason}
+                    onChange={(e) => setRejectReason(e.target.value)}
+                    placeholder="e.g., Already have a personal commitment on those dates..."
+                    rows="3"
+                    className="form-textarea"
+                  />
+                </div>
+                <div className="modal-actions">
+                  <button
+                    className="btn-outline reject-btn"
+                    disabled={requestActionLoading}
+                    onClick={() => respondToRequest(rejectModal.requestId, 'reject', rejectReason)}
+                  >
+                    {requestActionLoading ? 'Declining...' : 'Confirm Decline'}
+                  </button>
+                  <button className="btn-outline" onClick={() => setRejectModal(null)}>Cancel</button>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 

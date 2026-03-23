@@ -187,17 +187,23 @@ const TourGuidesPage = () => {
       return;
     }
 
-    // Block if guide is not available
     const avail = guideAvailability[guide.name];
+    const dbGuideId = avail?.guideId || '';
+
+    // If guide has an active booking, warn the user but still allow selection
+    // (the booking page will do a real date-overlap check — they may be free on different dates)
     if (avail && !avail.isAvailable) {
       const freeDate = avail.currentBookingEnd
         ? new Date(avail.currentBookingEnd).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })
         : 'a later date';
-      alert(`${guide.name} is currently on another tour and will be available from ${freeDate}.\n\nPlease select a different guide.`);
-      return;
+      const proceed = window.confirm(
+        `${guide.name} currently has an active booking that ends around ${freeDate}.\n\n` +
+        `You can still select them — the booking page will check if your chosen dates are free.\n\n` +
+        `Would you like to continue and choose your dates?`
+      );
+      if (!proceed) return;
     }
 
-    const dbGuideId = avail?.guideId || '';
     navigate(
       `/booking?tour=${tour.id}&name=${encodeURIComponent(tour.name)}&duration=${tour.duration}&pricePerDay=${tour.pricePerDay}&guide=${guide.id}&guideName=${encodeURIComponent(guide.name)}&guideDailyRate=${guide.dailyRate}&guideDbId=${dbGuideId}`
     );
@@ -353,13 +359,17 @@ const TourGuidesPage = () => {
                   <div className="guide-actions">
                     {guideAvailability[guide.name] && !guideAvailability[guide.name]?.isAvailable ? (
                       <div className="busy-info">
-                        <button className="btn-busy" disabled>
+                        <button
+                          onClick={() => handleSelectGuide(guide)}
+                          className="btn-primary btn-check-dates"
+                          title="This guide has an active booking but may be free on your desired dates"
+                        >
                           <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                          Currently Booked
+                          Check My Dates
                         </button>
                         {guideAvailability[guide.name]?.currentBookingEnd && (
                           <p className="free-date">
-                            Free from{' '}
+                            Has booking until{' '}
                             {new Date(guideAvailability[guide.name].currentBookingEnd).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                           </p>
                         )}

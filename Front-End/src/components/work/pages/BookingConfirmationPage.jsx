@@ -16,7 +16,6 @@ const BookingConfirmationPage = () => {
     } else {
       // Try to reconstruct from localStorage as fallback
       try {
-        const bookingId = localStorage.getItem('lastBookingId');
         const lastBooking = localStorage.getItem('lastBookingDetails');
         if (lastBooking) {
           setConfirmationData(JSON.parse(lastBooking));

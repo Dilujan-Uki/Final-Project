@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useNavigate, Link } from 'react-router-dom';
 import { getTourImage } from '../../../utils/tourImageMapping';
 import './BookingDetailPage.css';
@@ -10,13 +10,9 @@ const BookingDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
 
-  useEffect(() => {
-    fetchBookingDetails();
-  }, [id]);
-
-  const fetchBookingDetails = async () => {
+  const fetchBookingDetails = useCallback(async () => {
     const token = localStorage.getItem('token');
-    
+
     if (!token) {
       navigate('/login');
       return;
@@ -46,7 +42,11 @@ const BookingDetailPage = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [id, navigate]);
+
+  useEffect(() => {
+    fetchBookingDetails();
+  }, [fetchBookingDetails]);
 
   const formatDate = (dateString) => {
     const options = { 

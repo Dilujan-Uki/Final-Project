@@ -1001,3 +1001,51 @@
 .booking-badge.pending::before {
   content: '📅';
 }
+/* ── Guide Request Notice Banners ── */
+.guide-notice {
+  display: flex;
+  gap: 0.75rem;
+  align-items: flex-start;
+  padding: 0.85rem 1rem;
+  border-radius: 8px;
+  margin: 0.75rem 0;
+  font-size: 0.875rem;
+  line-height: 1.5;
+}
+.guide-notice--rejected {
+  background: #fff3f3;
+  border: 1px solid #ffcdd2;
+  color: #b71c1c;
+}
+.guide-notice--pending {
+  background: #fffde7;
+  border: 1px solid #ffe082;
+  color: #6d4c00;
+}
+.guide-notice--accepted {
+  background: #f1f8e9;
+  border: 1px solid #aed581;
+  color: #2e5b00;
+}
+.guide-notice p { margin: 0.25rem 0 0; }
+.link-btn {
+  background: none;
+  border: none;
+  color: inherit;
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: underline;
+  padding: 0;
+  font-size: inherit;
+}
+.booking-card--alert {
+  border: 2px solid #ffcdd2 !important;
+}
+.status-rejected {
+  background: #b71c1c !important;
+  color: #fff !important;
+}
+.status-awaiting {
+  background: #f59e0b !important;
+  color: #fff !important;
+}

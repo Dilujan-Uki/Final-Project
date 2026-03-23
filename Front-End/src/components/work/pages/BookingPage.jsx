@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import './BookingPage.css';
 
@@ -7,7 +7,6 @@ const BookingPage = () => {
   const navigate = useNavigate();
   const queryParams = new URLSearchParams(location.search);
 
-  // Get tour and guide details from URL parameters
   const tourId = queryParams.get('tour');
   const tourName = queryParams.get('name') || "Cultural Triangle Explorer";
   const duration = parseInt(queryParams.get('duration')) || 3;
@@ -16,7 +15,7 @@ const BookingPage = () => {
   const guideId = queryParams.get('guide');
   const guideName = queryParams.get('guideName') || "";
   const guideDailyRate = parseInt(queryParams.get('guideDailyRate')) || 0;
-  const guideDbId = queryParams.get('guideDbId') || '';  // MongoDB _id for availability tracking
+  const guideDbId = queryParams.get('guideDbId') || '';
 
   const [bookingData, setBookingData] = useState({
     tourId: tourId || '',
@@ -24,18 +23,19 @@ const BookingPage = () => {
     guideName: guideName ? decodeURIComponent(guideName) : '',
     participants: 2,
     selectedDuration: duration,
-    extraServices: {
-      transport: false,
-      meals: false
-    },
+    extraServices: { transport: false, meals: false },
     bookingDate: '',
     specialRequests: ''
   });
 
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [dateError, setDateError] = useState('');
+  const [guideAvailCheck, setGuideAvailCheck] = useState(null);
+  const [guideCheckLoading, setGuideCheckLoading] = useState(false);
 
-  // Load saved selections from localStorage
+  const todayStr = new Date().toISOString().split('T')[0];
+
   useEffect(() => {
     const savedTour = localStorage.getItem('selectedTour');
     const savedGuide = localStorage.getItem('selectedGuide');
@@ -52,13 +52,9 @@ const BookingPage = () => {
 
     if (savedGuide && !guideId) {
       const guideData = JSON.parse(savedGuide);
-      setBookingData(prev => ({
-        ...prev,
-        guideName: guideData.name
-      }));
+      setBookingData(prev => ({ ...prev, guideName: guideData.name }));
     }
 
-    // Set booking date to tomorrow by default
     const tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     setBookingData(prev => ({
@@ -66,6 +62,42 @@ const BookingPage = () => {
       bookingDate: tomorrow.toISOString().split('T')[0]
     }));
   }, [tourId, guideId, duration]);
+
+  const checkGuideDateAvailability = useCallback(async (date, dur) => {
+    if (!guideDbId || !date || !dur) return;
+    const today = new Date(); today.setHours(0,0,0,0);
+    const selected = new Date(date); selected.setHours(0,0,0,0);
+    if (selected < today) {
+      setDateError('Booking date cannot be in the past. Please select today or a future date.');
+      setGuideAvailCheck(null);
+      return;
+    }
+    setDateError('');
+    const token = localStorage.getItem('token');
+    if (!token) return;
+    const endDateObj = new Date(date);
+    endDateObj.setDate(endDateObj.getDate() + parseInt(dur));
+    const endDate = endDateObj.toISOString().split('T')[0];
+    setGuideCheckLoading(true);
+    try {
+      const resp = await fetch(
+        `http://localhost:5000/api/new-booking/check-guide-dates?guideId=${guideDbId}&startDate=${date}&endDate=${endDate}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      const data = await resp.json();
+      if (data.success) setGuideAvailCheck({ available: data.available, message: data.message });
+    } catch (err) {
+      console.error('Guide availability check failed:', err);
+    } finally {
+      setGuideCheckLoading(false);
+    }
+  }, [guideDbId]);
+
+  useEffect(() => {
+    if (bookingData.bookingDate && bookingData.selectedDuration) {
+      checkGuideDateAvailability(bookingData.bookingDate, bookingData.selectedDuration);
+    }
+  }, [bookingData.bookingDate, bookingData.selectedDuration, checkGuideDateAvailability]);
 
   // Calculate prices
   const calculatePrices = () => {
@@ -92,7 +124,6 @@ const BookingPage = () => {
 
   const prices = calculatePrices();
 
-// src/pages/BookingPage.jsx - Fix handleSubmit function
 const handleSubmit = async (e) => {
   e.preventDefault();
 
@@ -105,16 +136,29 @@ const handleSubmit = async (e) => {
     return;
   }
 
+  // Past-date guard on the frontend too
+  const today = new Date(); today.setHours(0,0,0,0);
+  const selectedDate = new Date(bookingData.bookingDate); selectedDate.setHours(0,0,0,0);
+  if (selectedDate < today) {
+    setDateError('Booking date cannot be in the past. Please select today or a future date.');
+    return;
+  }
+
+  // Block if guide is not available for the dates
+  if (guideDbId && guideAvailCheck && !guideAvailCheck.available) {
+    setError('The selected guide is not available for your chosen dates. Please change the dates or choose a different guide.');
+    return;
+  }
+
   setLoading(true);
   setError('');
 
   try {
-    // Create booking payload
     const bookingPayload = {
       tourId: tourId || bookingData.tourId,
       tourName: bookingData.tourName,
       guideName: bookingData.guideName || '',
-      guideId: guideDbId || null,   // DB _id for availability locking
+      guideId: guideDbId || null,
       participants: parseInt(bookingData.participants),
       duration: parseInt(bookingData.selectedDuration),
       totalPrice: prices.total,
@@ -126,14 +170,8 @@ const handleSubmit = async (e) => {
       specialRequests: bookingData.specialRequests || ''
     };
 
-
-    // Save booking data to localStorage for payment page
     localStorage.setItem('pendingBooking', JSON.stringify(bookingPayload));
-    
-    // Navigate to payment page with the booking data
-    navigate('/payment', { 
-      state: { bookingData: bookingPayload } 
-    });
+    navigate('/payment', { state: { bookingData: bookingPayload } });
 
   } catch (err) {
     console.error('Booking error:', err);
@@ -198,6 +236,16 @@ const handleSubmit = async (e) => {
             ❌ {error}
           </div>
         )}
+
+        {/* Guide request notification banner */}
+        {guideDbId && bookingData.guideName && (
+          <div className="info-banner guide-request-banner">
+            <span>📬</span>
+            <div>
+              <strong>How guide booking works:</strong> After submitting, a request will be sent to <strong>{decodeURIComponent(guideName)}</strong>. They will accept or decline. If declined, you can choose another guide.
+            </div>
+          </div>
+        )}
         
         <div className="booking-container">
           {/* Left Column - Booking Form */}
@@ -216,10 +264,22 @@ const handleSubmit = async (e) => {
                       name="bookingDate"
                       value={bookingData.bookingDate}
                       onChange={handleChange}
-                      className="form-input"
+                      className={`form-input ${dateError ? 'input-error' : ''}`}
                       required
-                      min={new Date().toISOString().split('T')[0]}
+                      min={todayStr}
                     />
+                    {dateError && <p className="field-error">{dateError}</p>}
+                    {guideDbId && !dateError && bookingData.bookingDate && (
+                      guideCheckLoading ? (
+                        <p className="field-hint">⏳ Checking guide availability for these dates...</p>
+                      ) : guideAvailCheck ? (
+                        guideAvailCheck.available ? (
+                          <p className="field-success">✅ {decodeURIComponent(guideName)} is available for these dates!</p>
+                        ) : (
+                          <p className="field-error">❌ {guideAvailCheck.message} Please change the dates or choose a different guide.</p>
+                        )
+                      ) : null
+                    )}
                   </div>
 
                   <div className="form-group">
