@@ -15,6 +15,7 @@ import tourDetailRoutes from './routes/tourDetailRoutes.js';
 import guideApplicationRoutes from './routes/guideApplicationRoutes.js';
 import guideRoutes from './routes/guideRoutes.js';
 import guideProfileRoutes from './routes/guideProfileRoutes.js';
+import guideDetailRoutes from './routes/guideDetailRoutes.js';
 
 const app = express();
 
@@ -46,6 +47,7 @@ app.use('/api/tour-details', tourDetailRoutes);
 app.use('/api/guide-applications', guideApplicationRoutes);
 app.use('/api/guides', guideRoutes);
 app.use('/api/guides', guideProfileRoutes);
+app.use('/api/guide-details', guideDetailRoutes);
 
 //  HEALTH CHECK
 app.get('/api/health', (req, res) => {
